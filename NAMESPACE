@@ -1,0 +1,8 @@
+useDynLib(NAM)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+# Design matrix and matrix inversion
+importFrom(Matrix, sparseMatrix)
+importFrom(Matrix, nearPD)
+# For imputations
+importFrom(missForest, missForest)
