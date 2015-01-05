@@ -1,8 +1,8 @@
-815e7d6ed637532ee151440fb18696ca *DESCRIPTION
+1542747ebceb0202295d78e4c59f7569 *DESCRIPTION
 c037302056a085282f5e312c27dcd00a *NAMESPACE
 5b378f38eab30697b49bac4372b0188c *R/Fst.R
 9e3db6bda4e67cd695fb7e3a8b908556 *R/RcppExports.R
-1bba41b0c4afd17a348aabc7bc68544a *R/blup.R
+8c8cfb5dbb6f586fc719e7db395f0ff6 *R/blup.R
 dab330ee4cf10a5d47337fc6625f9434 *R/gwas.R
 cf48669a4f54e025b61d55c84fcdbdcd *R/manhattan.R
 5202cf79efe11982bec37a135b254581 *R/reference.R
@@ -11,8 +11,8 @@ cf48669a4f54e025b61d55c84fcdbdcd *R/manhattan.R
 ba758eb92ede6fffb814663a3e079f1e *data/tpod.RData
 cee0920e05757fdb5005fcb38f9df7d8 *man/Fst.Rd
 d5b93a084985b31f7a5b43826570582e *man/Internals.Rd
-0f55ac566716268eac6edd403952ed11 *man/NAM-package.Rd
-161a48d9a58e76ab0526fd53d4aa2749 *man/blup.Rd
+6a32aa752e2335b3755bc643872071b0 *man/NAM-package.Rd
+187d376a6d87409365cf53c960d72fce *man/blup.Rd
 8b885773a71e5c21181218ce176699ab *man/gwas.Rd
 cc8207b51dc49cf496152782d05612b5 *man/manhattan.Rd
 7ebed30f31bc5891b7247c0c147a27fc *man/reference.Rd

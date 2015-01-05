@@ -10,7 +10,9 @@ blup = function(y,Z=NULL,X=NULL,K=NULL,Z2=NULL,Z3=NULL,K2=NULL,K3=NULL,conv=1e-8
 
   tr = function(x){tr=sum(diag(x));return(tr)}
   n = length(y)
-
+  I = matrix(0, ncol=2, nrow=2);  s = matrix(0, ncol=1, nrow=2)
+  
+  
 # Allowing formulas for fixed variables
   if(class(X)=="formula"){X=model.matrix(X)}else{
     if(class(X)=="matrix"){X=X}else{

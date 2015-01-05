@@ -73,13 +73,13 @@ G = tcrossprod(gen)
 G = G/mean(diag(G))
 GBLUP = blup(y=y,K=G,maxit=10)
 
-# Fitting RKHS
+# Fitting a Gaussian Kernel Average model
 D=as.matrix(dist(gen)); D2 = D^2;
 h=quantile(as.vector(D2),probs=.05)
 K1 = exp(-5/h*D2)
 K2 = exp(-1/h*D2)
 K3 = exp(-0.2/h*D2)
-RKHS = blup(y=y,K=K1,K2=K2,K3=K3,maxit=10)
+KA = blup(y=y,K=K1,K2=K2,K3=K3,maxit=10)
 
 # Fitting VanRaden's BLUP
 Z=(lm(gen~1)$residuals)

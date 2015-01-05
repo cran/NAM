@@ -12,7 +12,7 @@ NAM, biparental and random populations toolbox. The NAM package includes functio
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.0 \cr
+Version: \tab 1.0.1 \cr
 Date: \tab 2014-23-12\cr
 License: \tab GPL-3 \cr
 }
