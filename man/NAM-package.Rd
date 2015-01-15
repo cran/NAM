@@ -6,14 +6,14 @@
 Nested Association Mapping analysis
 }
 \description{
-NAM, biparental and random populations toolbox. The NAM package includes functions for associations mapping of multiple populations (Wang 2015), marker quality control (Rutkoski et al 2013) and for solving mixed models using REML (Lee et al 2006).
+NAM, biparental and random populations toolbox. The NAM package includes functions for associations mapping of multiple populations (Wang 2015), marker quality control (Rutkoski et al 2013), solving mixed models and finding variance components through REML (VanRaden 2008, Kang et al 2008, Lee et al 2006).
 }
 \details{
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.0.1 \cr
-Date: \tab 2014-23-12\cr
+Version: \tab 1.0.2 \cr
+Date: \tab 2015-14-01\cr
 License: \tab GPL-3 \cr
 }
 
@@ -36,5 +36,5 @@ Wang, Q. An Empirical Bayes Method for Genome-Wide Association Studies. W799/Sta
 \keyword{ GWAS }
 \keyword{ REML }
 \seealso{
-Functions: blup, Fst, gwas, manhattan, reference, snpQC
+Functions: blup, reml, Fst, gwas, manhattan, reference, snpQC
 }

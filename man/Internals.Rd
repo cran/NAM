@@ -7,7 +7,7 @@
 \alias{timesMatrix}
 \alias{timesVec}
 \title{
-  Internals functions
+  Internal functions
 }
 \description{
   Functions written in C++ to speed up \eqn{gwas}.
