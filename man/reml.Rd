@@ -1,5 +1,6 @@
-\name{reml}
+\name{REML}
 \alias{reml}
+\alias{MCreml}
 \title{
 Restricted Maximum Likelihood
 }
@@ -24,10 +25,10 @@ Numeric matrix (\eqn{p} by \eqn{p}). Kinship matrix for random effect with \eqn{
 }
 }
 \details{
-Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008).
+Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). A sample strategy is also available as MCreml.
 }
 \value{
-Returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV).
+The function reml teturns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 
 }
 \references{
 
