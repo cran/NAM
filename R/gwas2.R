@@ -1,11 +1,10 @@
-gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL){
+gwas2 = function(y,gen,fam=NULL,chr=NULL){
 
 ##################
 ## INTRODUCTION ##
 ##################
 
-if(is.null(window)){method="RH"}else{method="EB"}
-
+method="RH"
 SNPs=colnames(gen)
 
 # SETTING THE FIXED EFFECT, CHROMOSOME AND FAMILY WHEN IT IS NULL
@@ -51,42 +50,31 @@ IMPUT=function(X){
   return(IMP)}
 if(anyNA(gen)==TRUE){gen=IMPUT(gen)} # calc
 
-# SPARSE DESING MATRIX FUNCTION
-
-cat("Generating Design Matrix",'\n')
-SDM=function(gen,fam){
-  Dim=as.numeric(dim(gen));gen[Dim[1],Dim[2]]=1# Done to debug 
-  if(nrow(gen)!=length(fam)) stop("NUMBER OF ROWS IN GENOTYPES DO NOT MATCH THE LENGTH OF THE VECTOR FAMILY!")
-  gen=t(gen)
-  # Sparse matrix
-  Sparse=function(G,fam){
-    f=max(fam)+1
-    ColNum=ncol(G)
-    A=c();B=c();C=c()
-    pb=txtProgressBar(style=3)
-    for(i in 1:ColNum){
-      size = calcSize(G[,i], fam)
-      a=funI(G[,i],fam[i],size,f)
-      b=rep(i,length(a))  
-      c=funX(G[,i], size)
-      A=c(A,a);B=c(B,b);C=c(C,c)
-      setTxtProgressBar(pb,i/ColNum)
-      #cat("Design matrix",round(i/ColNum,2)*100,"% done",'\n')
-      }
-    close(pb)
-    return(cbind(A,B,C))}
-  # Merging results
-  d=Sparse(gen,fam)
-  e=sparseMatrix(i=d[,1],j=d[,2],x=d[,3])
-  return(e)}
-GEN=SDM(gen,fam) # calc
-GEN=as.matrix(GEN)
-
-# GENOMIC RELATIONSHIP MATRIX
-Gmat=function(gen){
-  ZZ=crossprod(gen) #individuals are columns
-  lambda=sum(diag(ZZ))/nrow(ZZ)
-  G=ZZ/lambda
+# acceleration
+GGG=function(G,fam){
+  f=max(fam)+1
+  POP = function(gfa){
+    J = rep(0,f);g = gfa[1];fa = gfa[2]
+    if(g==2){J[1]=2}else{if(g==1)
+    {J[1]=1;J[fa+1]=1}else{J[fa+1]=2}}
+    return(J)}
+  gfa = cbind(G,fam)
+  return(unlist(apply(gfa,1,POP)))}
+Gmat = function(gen,fam){
+  # common parent linear kernel
+  g1 = tcrossprod(gen)
+  g1 = g1/mean(diag(g1))  
+  # founder parent linear kernel
+  g2 = ((gen-1)*-1)+1
+  g2 = tcrossprod(g2)
+  g2 = g2/mean(diag(g2))
+  # adjusting intra-family relationship
+  for(i in unique(fam)){
+    nam = which(fam==i)
+    g1[nam,nam]=g2[nam,nam]+g1[nam,nam]}
+  # Final estimates
+  lambda = mean(diag(g1))
+  G = g1/mean(diag(g1))
   return(list(G,lambda))}
 
 INPUT=function(gen,fam,chr){
@@ -227,7 +215,7 @@ mixed<-function(x,y,kk){
 
 # Shizhong's BLUP function
 blup<-function(gen,map,fam,x,y,kk,beta,lambda,cc){
-  qq<-eigen(as.matrix(kk))
+  qq<-eigen(as.matrix(kk),symmetric=T)
   delta<-qq[[1]]
   uu<-qq[[2]]
   yu<-t(uu)%*%y
@@ -250,7 +238,7 @@ blup<-function(gen,map,fam,x,y,kk,beta,lambda,cc){
 ## METHODS ##
 #############
 
-RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,SNPnames=SNPs){
+RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
   if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
   if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
   if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
@@ -262,7 +250,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
   map=MAP
   gen=GEN
   cat("Calculating G matrix",'\n')
-  G=Gmat(gen)
+  G=Gmat(gen,fam)
   kk=(t(G)[[1]]);cc=(t(G)[[2]])
   m<-nrow(map)
   r<-max(fam)+1
@@ -316,8 +304,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
   cat("Starting Marker Analysis",'\n')
   pb=txtProgressBar(style=3)
   for(k in 1:m){
-    sub<-seq(((k-1)*r+1),((k-1)*r+r))
-    genk<-gen[sub,]
+    genk<-GGG(gen[,k],fam)
     zu<-t(uu)%*%t(genk)
     yy<-sum(yu*h*yu)
     zu=as.matrix(zu)
@@ -345,141 +332,26 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
     parr<-rbind(parr,par)
     blupp<-rbind(blupp,blup)
     setTxtProgressBar(pb,k/m)
-    #cat(paste("LRT is",round((k/m)*100,2),"% completed",'\n'))
   };close(pb)
   cat("Calculations were performed successfully",'\n')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes","MAP"=MAP,"SNPs"=SNPnames))}
 
-RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,gen=gen,SNPnames=SNPs){
-  if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
-  if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
-  if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
-  if(is.matrix(gen)!=TRUE) stop("Genotypes: 'gen' must be a matrix")
-  if(sum(chr)!=ncol(gen)) stop("Number of markers and chromosomes do not match")
-  if(length(fam)!=nrow(gen)) stop("Family and genotype don't match")
-  if(length(y)!=length(fam)) stop("Family and phenotypes must have the same length")
-  if(length(y)!=nrow(gen)) stop("Dimensions of genotypes and phenotypes do not match")
-  gen=GEN
-  map=MAP
-  cat("Calculating G matrix",'\n')
-  G=Gmat(gen)
-  kk=(t(G)[[1]]);cc=(t(G)[[2]])
-  m<-nrow(map)
-  r<-max(fam)+1
-  s<-1
-  ccM<-map[,6]
-  n<-nrow(kk)
-  x<-COV
-  cat("Solving polygenic model",'\n')
-  parm<-mixed(x,y,kk)
-  lambda<-parm$lambda
-  beta<-parm$beta
-  cat("Starting Eigendecomposition",'\n')
-  qq<-eigen(as.matrix(kk),symmetric=T)
-  delta<-qq[[1]]
-  uu<-qq[[2]]
-  h<-1/(delta*lambda+1)
-  xu<-t(uu)%*%x
-  yu<-t(uu)%*%y
-  yy<-sum(yu*h*yu) 
-  yx=timesVec(yu,h,xu,s)
-  xx=timesMatrix(xu,h,xu,s,s)
-  loglike<-function(theta){
-    xi<-exp(theta)
-    q<-length(xi)
-    psi<-NULL
-    for(i in 1:q){psi<-c(psi,rep(xi[i],r))}
-    psi<-diag(psi)
-    tmp0<-zz%*%psi+diag(r*q)
-    tmp<-psi%*%solve(tmp0)
-    yHy<-yy-t(zy)%*%tmp%*%zy
-    yHx<-yx-zx%*%tmp%*%zy 
-    xHx<-xx-zx%*%tmp%*%t(zx)
-    logdt2<-log(det(tmp0))
-    loglike<- -0.5*logdt2-0.5*(n-s)*log(yHy-t(yHx)%*%solve(xHx)%*%yHx)-0.5*log(det(xHx))
-    return(-loglike)}
-  psi<-NULL
-  fixed<-function(xi){q<-length(xi);
-                      for(i in 1:q){psi<-c(psi,rep(xi[i],r))}
-                      psi<-diag(psi)
-                      tmp0<-zz%*%psi+diag(r*q)
-                      tmp<-psi%*%solve(tmp0)
-                      yHy<-yy-t(zy)%*%tmp%*%zy
-                      yHx<-yx-zx%*%tmp%*%zy
-                      xHx<-xx-zx%*%tmp%*%t(zx)
-                      zHy<-zy-zz%*%tmp%*%zy
-                      zHx<-zx-zx%*%tmp%*%zz
-                      zHz<-zz-zz%*%tmp%*%zz
-                      beta<-solve(xHx,yHx)
-                      tmp2<-solve(xHx)
-                      sigma2<-(yHy-t(yHx)%*%tmp2%*%yHx)/(n-s)
-                      gamma<-psi%*%zHy-psi%*%t(zHx)%*%tmp2%*%yHx
-                      var<-abs((psi%*%diag(r*q)-psi%*%zHz%*%psi)*as.numeric(sigma2))
-                      stderr<-sqrt(diag(var))
-                      result<-list(gamma,stderr,beta,sigma2)
-                      return(result)}
-  parr<-numeric()
-  blupp<-numeric()
-  cat("Starting Marker Analysis",'\n')  
-  pb=txtProgressBar(style=3)
-  window<-WIN
-  for(k in 1:m){
-    sub<-seq(((k-1)*r+1),((k-1)*r+r))
-    gen2<-gen[sub,]
-    c1<-ccM[k]-0.5*window
-    c3<-ccM[k]+0.5*window
-    k1<-suppressWarnings(max(which(ccM<=c1)))
-    k3<-suppressWarnings(min(which(ccM>=c3)))
-    if(k1==-Inf){gen1<-gen[sub,sample(1:n)]
-    } else {
-      sub1<-seq(((k1-1)*r+1),((k1-1)*r+r))
-      gen1<-gen[sub1,]}
-    if(k3==Inf){gen3<-gen[sub,sample(1:n)]
-    } else {
-      sub3<-seq(((k3-1)*r+1),((k3-1)*r+r))
-      gen3<-gen[sub3,]}
-    gen1=as.matrix(gen1);gen2=as.matrix(gen2);gen3=as.matrix(gen3);
-    ggg=t(rbind(gen1,gen2,gen3));
-    zu<-t(uu)%*%ggg
-    r3<-3*r
-    zx=timesMatrix(xu,h,zu,s,r3)
-    zy=timesVec(yu,h,zu,r3)
-    zz=timesMatrix(zu,h,zu,r3,r3)
-    theta<-c(0,0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
-    xi<-exp(parm$par)
-    conv<-parm$convergence
-    fn1<-parm$value
-    hess<-parm$hessian
-    parmfix<-fixed(xi)
-    gamma<-parmfix[[1]][(r+1):(2*r)]
-    stderr<-parmfix[[2]][(r+1):(2*r)]
-    beta<-parmfix[[3]]
-    sigma2<-parmfix[[4]]
-    lam_k<-xi[2]
-    tau_k<-lam_k*sigma2
-    zx<-matrix(zx[,-seq(r+1,2*r)],s,2*r)
-    zy<-matrix(zy[-seq(r+1,2*r),],2*r,1)
-    zz<-zz[-seq(r+1,2*r),-seq(r+1,2*r)]
-    theta<-c(0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
-    fn0<-parm$value
-    lrt<-2*(fn0-fn1)
-    par<-data.frame(conv,fn1,fn0,lrt,beta,sigma2,lam_k,tau_k)
-    blup<-c(gamma,stderr)
-    parr<-rbind(parr,par)
-    blupp<-rbind(blupp,blup)
-    setTxtProgressBar(pb,k/m)
-    #cat("LRT",round((k/m)*100,2),"% completed",'\n')
-  };close(pb)
-  cat("Calculations were performed successfully",'\n')
-  return(list("PolyTest"=parr,"Method"="Empirical Bayes with moving-window strategy","MAP"=MAP,"SNPs"=SNPnames))}
 
 #########
 ## RUN ##
 #########
 
-if(method=="RH"){fit=RANDOMsma(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,SNPnames=SNPs)}
-if(method=="EB"){fit=RandomCIM(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,gen=gen,SNPnames=SNPs)}
+fit=RANDOMsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
+
+moda=function (x){
+  it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
+    y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
+    diffs=sup-inf; i=min(which(diffs==min(diffs)))
+    M=median(y[i:(i+k)]); it=it-1}; return(M)}
+
 neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
+
+mo = moda(fit$PolyTest$lrt)
+mos = which(fit$PolyTest$lrt==mo);fit$PolyTest$lrt[mo]=0
+
 return(fit)}

@@ -1,5 +1,6 @@
 \name{gwas}
 \alias{gwas}
+\alias{gwas2}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
@@ -37,6 +38,8 @@ The base model for genome scanning includes the fixed effect (\eqn{Xb}), the mar
 If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). 
 
 The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities.
+
+To avoid memory issues, one can use the function \eqn{gwas2} with the same arguments, except that window is not allowed.
 }
 \value{
 The function nam returns a list containing the method deployed (\eqn{Method}), predicted parameters and statistical test (\eqn{PolyTest}), genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).

@@ -6,14 +6,14 @@
 Nested Association Mapping analysis
 }
 \description{
-The NAM package was designed for association studies in nested association mapping (NAM) panels, but it also can handle biparental and random populations. It includes functions for genome-wide associations mapping of multiple populations, marker quality control, solving mixed models and finding variance components through REML.
+Package designed for association studies in nested association mapping (NAM) panels, but it also can handle biparental and random populations. It includes functions for genome-wide associations mapping of multiple populations, marker quality control, solving mixed models and finding variance components through REML.
 }
 \details{
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.0.2.1 \cr
-Date: \tab 2015-23-01\cr
+Version: \tab 1.0.2.2 \cr
+Date: \tab 2015-02-02\cr
 License: \tab GPL-3 \cr
 }
 
