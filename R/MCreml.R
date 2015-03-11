@@ -17,10 +17,11 @@ MCreml = function(y,K,MC=300,samp=300){
   
   for(i in 1:n){
     R = sample(1:length(y),t)
-    if(anyNA(y[R])){mis = which(is.na(y[R])); R=R[-mis] }    
-    Vg = c( reml(y[R],K=G[R,R])$VC[1], Vg )
-    Ve = c( reml(y[R],K=G[R,R])$VC[2], Ve )
-    h2 = c( reml(y[R],K=G[R,R])$VC[3], h2 )
+    if(any(is.na(y[R]))){mis = which(is.na(y[R])); R=R[-mis] }
+    fit = reml(y[R],K=K[R,R])
+    Vg = c( fit$VC[1], Vg )
+    Ve = c( fit$VC[2], Ve )
+    h2 = c( fit$VC[3], h2 )
   }
   
   H = unlist(h2); G = unlist(Vg); E = unlist(Ve)
@@ -36,5 +37,3 @@ MCreml = function(y,K,MC=300,samp=300){
   return(result)
   
 }
-
-

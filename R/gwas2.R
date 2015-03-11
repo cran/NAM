@@ -9,7 +9,7 @@ SNPs=colnames(gen)
 
 # SETTING THE FIXED EFFECT, CHROMOSOME AND FAMILY WHEN IT IS NULL
 covariate=matrix(1,length(y),1)
-if(is.null(fam)){fam=rep(1,length(y))} else{if(anyNA(fam)) stop("Family vector must have no NA's")} # calc
+if(is.null(fam)){fam=rep(1,length(y))} else{if(any(is.na(fam))) stop("Family vector must have no NA's")} # calc
 if(is.null(chr)){chr=ncol(gen)} # calc
 
 # ORDERING DATA BY FAMILY
@@ -33,7 +33,7 @@ covariate=matrix(covariate,ncol=1)
       y[W]=IMP;return(y)}
     imp=tapply(y,fam,MC)
     y=unlist(imp);return(as.vector(y))}
-  if(anyNA(y)==TRUE) y=Ymc(y,fam) # calc
+  if(any(is.na(y))) y=Ymc(y,fam) # calc
 
 # MARKER IMPUT FUNCTION
 gen[gen==5]=NA
@@ -48,7 +48,7 @@ IMPUT=function(X){
   N=length(X[1,])
   IMP=t(apply(X, MARGIN=1, FUN=inputRow, n = N, exp = EXP))
   return(IMP)}
-if(anyNA(gen)==TRUE){gen=IMPUT(gen)} # calc
+if(any(is.na(gen))){gen=IMPUT(gen)} # calc
 
 # acceleration
 GGG=function(G,fam){
@@ -195,7 +195,7 @@ mixed<-function(x,y,kk){
   yu<-t(uu)%*%y
   xu<-t(uu)%*%x
   theta<-0
-  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
   lambda<-exp(parm$par)
   conv<-parm$convergence
   fn1<-parm$value
@@ -304,7 +304,11 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
   cat("Starting Marker Analysis",'\n')
   pb=txtProgressBar(style=3)
   for(k in 1:m){
-    genk<-GGG(gen[,k],fam)
+    
+    if(max(fam)==1){
+      genk<-t(gen[,k])
+    }else{genk<-GGG(gen[,k],fam)}
+    
     zu<-t(uu)%*%t(genk)
     yy<-sum(yu*h*yu)
     zu=as.matrix(zu)
@@ -313,7 +317,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
     zy=timesVec(yu,h,zu,r)
     zz=timesMatrix(zu,h,zu,r,r)
     theta<-c(0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value

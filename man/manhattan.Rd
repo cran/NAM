@@ -7,7 +7,7 @@ Plotting Genome-Wide Association Study
 Generates a Manhattan plot for a \eqn{gwas} object.
 }
 \usage{
-manhattan(gwas, colA = 2, colB = 4, GenDist = FALSE, OtherDist = NULL, ...)
+manhattan(gwas, colA = 2, colB = 4, alpha=NULL, GenDist = FALSE, OtherDist = NULL, ...)
 }
 \arguments{
   \item{gwas}{
@@ -18,6 +18,9 @@ Color of even chromosomes.
 }
   \item{colB}{
 Color of odd chromosomes.
+}
+  \item{alpha}{
+If specified, it provides the negative log p-value based on a chi squared distribution with a significance threshold for the given alpha.
 }
   \item{GenDist}{
 Logical. If true, it displays the Manhattan plot with the estimated genetic map for NAM populations.

@@ -18,7 +18,7 @@ Numeric vector of observations (\eqn{n}) describing the trait to be analyzed. \c
 Formula or incidence matrix (\eqn{n} by \eqn{p}) for fixed effect. \code{NA} is not allowed.
 }
   \item{Z}{
-Formula or numeric matrix (\eqn{n} by \eqn{p}) to incidence matrix for random effect. \code{NA} is not allowed.
+Formula or numeric matrix (\eqn{n} by \eqn{p}) that corresponds to the incidence matrix of random effect. \code{NA} is not allowed.
 }
   \item{K}{
 Numeric matrix (\eqn{p} by \eqn{p}). Kinship matrix for random effect with \eqn{p} parameters. \code{NA} is not allowed.
@@ -28,7 +28,7 @@ Numeric matrix (\eqn{p} by \eqn{p}). Kinship matrix for random effect with \eqn{
 Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). A sample strategy is also available as MCreml.
 }
 \value{
-The function reml teturns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 
+The function reml returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 
 }
 \references{
 

@@ -10,7 +10,7 @@ SNPs=colnames(gen)
 
 # SETTING THE FIXED EFFECT, CHROMOSOME AND FAMILY WHEN IT IS NULL
 covariate=matrix(1,length(y),1)
-if(is.null(fam)){fam=rep(1,length(y))} else{if(anyNA(fam)) stop("Family vector must have no NA's")} # calc
+if(is.null(fam)){fam=rep(1,length(y))} else{if(any(is.na(fam))) stop("Family vector must have no NA's")} # calc
 if(is.null(chr)){chr=ncol(gen)} # calc
 
 # ORDERING DATA BY FAMILY
@@ -34,7 +34,7 @@ covariate=matrix(covariate,ncol=1)
       y[W]=IMP;return(y)}
     imp=tapply(y,fam,MC)
     y=unlist(imp);return(as.vector(y))}
-  if(anyNA(y)==TRUE) y=Ymc(y,fam) # calc
+  if(any(is.na(y))) y=Ymc(y,fam) # calc
 
 # MARKER IMPUT FUNCTION
 gen[gen==5]=NA
@@ -49,7 +49,7 @@ IMPUT=function(X){
   N=length(X[1,])
   IMP=t(apply(X, MARGIN=1, FUN=inputRow, n = N, exp = EXP))
   return(IMP)}
-if(anyNA(gen)==TRUE){gen=IMPUT(gen)} # calc
+if(any(is.na(gen))) gen=IMPUT(gen) # calc
 
 # SPARSE DESING MATRIX FUNCTION
 
@@ -207,7 +207,7 @@ mixed<-function(x,y,kk){
   yu<-t(uu)%*%y
   xu<-t(uu)%*%x
   theta<-0
-  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
   lambda<-exp(parm$par)
   conv<-parm$convergence
   fn1<-parm$value
@@ -326,7 +326,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
     zy=timesVec(yu,h,zu,r)
     zz=timesMatrix(zu,h,zu,r,r)
     theta<-c(0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value
@@ -446,7 +446,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     zy=timesVec(yu,h,zu,r3)
     zz=timesMatrix(zu,h,zu,r3,r3)
     theta<-c(0,0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value
@@ -462,7 +462,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     zy<-matrix(zy[-seq(r+1,2*r),],2*r,1)
     zz<-zz[-seq(r+1,2*r),-seq(r+1,2*r)]
     theta<-c(0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
     fn0<-parm$value
     lrt<-2*(fn0-fn1)
     par<-data.frame(conv,fn1,fn0,lrt,beta,sigma2,lam_k,tau_k)

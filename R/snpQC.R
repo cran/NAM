@@ -30,7 +30,7 @@ snpQC=function(gen,psy=1,MAF=0.05,remove=TRUE,impute=FALSE){
      k=round(k,2);cat(k,"% of missing data",'\n')
      cat("Imputations being performed by Random Forest",'\n')
     # IMPUTATION by Random Forest implemented in the missForest package
-    if(anyNA(gen)){options(warn=-1);gen=missForest(gen);gen=gen$ximp
+    if(any(is.na(gen))){options(warn=-1);gen=missForest(gen);gen=gen$ximp
         gen=round(gen,0);options(warn=0)}
     gen3=gen}
 return(gen3)}

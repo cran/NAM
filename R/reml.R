@@ -23,7 +23,7 @@ K=V
 
 # Function starts here
   m = which(is.na(y)) # missing values
-  if(anyNA(y)){
+  if(any(is.na(y))){
     y=y[-m];x=X[-m,]
     k=K[m,-m];K=K[-m,-m]
   }else{x=X}

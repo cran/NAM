@@ -14,7 +14,7 @@ function(gen,ref=NULL){
     
   }else{
     if(ncol(gen)!=length(ref)) stop("Reference parent and matrix of genotypes display non compatible dimensions")
-    if(anyNA(ref)||length(which(ref==5))>0) {"Reference parent must have no missing values"}
+    if(any(is.na(ref))||length(which(ref==5))>0) {"Reference parent must have no missing values"}
     gen[is.na(gen)]=5    
     CA = which(ref==0) # Changing Alleles
     W = gen-1

@@ -72,6 +72,22 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// SAMP
+void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, int Ve);
+RcppExport SEXP NAM_SAMP(SEXP CSEXP, SEXP gSEXP, SEXP rSEXP, SEXP NSEXP, SEXP VeSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< NumericMatrix >::type C(CSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP );
+        Rcpp::traits::input_parameter< int >::type N(NSEXP );
+        Rcpp::traits::input_parameter< int >::type Ve(VeSEXP );
+        SAMP(C, g, r, N, Ve);
+    }
+    return R_NilValue;
+END_RCPP
+}
 // timesMatrix
 NumericMatrix timesMatrix(NumericMatrix ma1, NumericVector h, NumericMatrix ma2, int rows, int cols);
 RcppExport SEXP NAM_timesMatrix(SEXP ma1SEXP, SEXP hSEXP, SEXP ma2SEXP, SEXP rowsSEXP, SEXP colsSEXP) {
