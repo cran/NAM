@@ -482,4 +482,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
 if(method=="RH"){fit=RANDOMsma(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,SNPnames=SNPs)}
 if(method=="EB"){fit=RandomCIM(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,gen=gen,SNPnames=SNPs)}
 neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
+
+class(fit) <- "NAM"
+
 return(fit)}

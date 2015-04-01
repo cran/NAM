@@ -1,4 +1,4 @@
-\name{reference}
+\name{Reference}
 \alias{reference}
 \title{
 Changing the Reference Genotype

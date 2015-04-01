@@ -1,5 +1,5 @@
 
-gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
+gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=NULL){
     
   # Default for X; changing X to matrix if it is a formulas
   if(is.null(X)) X=matrix(1,length(y),1)
@@ -12,7 +12,10 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
     rm(XX,Fixes)
   }
   
-  # Defaults for Z, and making "Z formula" as "Z list"
+  # Defaults of Z: making "NULL","formula" and "matrix" as "list"
+  if(is.null(Z)&is.null(iK)) stop("Either Z or iK must be specified")
+  if(is.null(Z)) Z=list(diag(length(y)))
+  if(class(Z)=="matrix") Z = list(Z)
   if(class(Z)=="formula") {
     Z=model.frame(Z)
     Randoms=ncol(Z)
@@ -21,7 +24,7 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
     Z=ZZ
     rm(ZZ,Randoms)
   }
-  if(is.null(Z)) Z=list(diag(length(y)))
+
   
   # Defaults for null and incomplete iK
   if(is.null(iK)){
@@ -52,7 +55,7 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
   # Thinning - which Markov Chains are going to be stored
   THIN = seq(Burn,Iter,Thin)
   
-  # Some parameters with similar notation from the book
+  # Some parameters with notation from the book
   nx = ncol(X)
   Randoms = length(Z) # number of random variables
   q = rep(0,Randoms); for(i in 1:Randoms) q[i]=ncol(Z[[i]])  
@@ -78,8 +81,8 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
   if(any(is.na(y))){MIS = which(is.na(y));W=W[-MIS,];y=y[-MIS]} 
   n = length(y)
   # Keeping on
-  r = crossprod(W,y) # Need adjust to accept W.iR.y
-  WW = (crossprod(W)) # Need adjust to accept W.iR.W
+  r = crossprod(W,y) # Need adjust to accept residual correlation (W.iR.y)
+  WW = (crossprod(W)) # Need adjust to accept residual correlation (W.iR.W)
   # Covariance Matrix
   Sigma = matrix(0,N,N)
   for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
@@ -92,14 +95,19 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
   POSTg = matrix(0,ncol = length(THIN), N)
   POSTv = matrix(0,ncol = length(THIN), nrow = (Randoms+1))
   
-  # Prior degrees of freedom Prior solution for shape/variances
+  # Hperpriors: Degrees of freedom (DF) and Shape (S)
   df0 = DF
-  S0=rep(0,Randoms) # S0 has analystical solution (De los Campos et al 2013)
-  for(i in 1:Randoms) 
-    S0[i]=(var(y,na.rm=T)*0.5)/mean(
-      (t((t(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]])-
-            colMeans(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]]))))^2 )
   
+  if(is.null(S)){
+  
+    S0=rep(0,Randoms) # S0 has analystical solution (De los Campos et al 2013)
+    for(i in 1:Randoms) 
+      S0[i]=(var(y,na.rm=T)*0.5)/mean(
+        (t((t(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]])-
+              colMeans(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]]))))^2 )
+  
+  }else{S0=rep(S,Randoms)}
+    
   # Saving memory for some vectors
   e = rep(0,N)
   
@@ -160,10 +168,10 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
   for(i in 1:Randoms) rownames(POSTg)[Qs1[i+1]:Qs2[i+1]] = paste("u",i,".",1:Qs0[i+1],sep="")
   
   # Mean and Mode Posterior
-  Post.B = apply(POSTg,1,moda)
   Mean.B = apply(POSTg,1,mean)
   Post.VC = c(apply(POSTv,1,moda))
-  names(Post.VC)=c(paste("Va",1:Randoms,sep=""),"Ve")
+  names(Post.VC) = c(paste("Va",1:Randoms,sep=""),"Ve")
+  rownames(POSTv) = c(paste("Va",1:Randoms,sep=""),"Ve")
   
   # List of Coefficients
   Coefficients = list()
@@ -172,14 +180,18 @@ gibbs = function(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5){
   names(Coefficients)[1]="Fixed"
   for(i in 1:Randoms) names(Coefficients)[i+1]=paste("Random",i,sep="")
   
+  
+  RESULTS = list(
+                 "Coef.estimate" = Mean.B,
+                 "VC.estimate" = Post.VC,
+                 "Posterior.Coef" = Coefficients,
+                 "Posterior.VC" = POSTv,
+                 "Fit.mean" = W1%*%Mean.B
+                 )
+  
+  class(RESULTS) = "BGS"
+  
   # Return
-  return( list("Coef.mode" = Post.B,
-               "Coef.mean" = Mean.B,
-               "VC.mode" = Post.VC,
-               "Posterior.Coef" = Coefficients,
-               "Posterior.VC" = POSTv,
-               "Fit.mean" = W1%*%Post.B,
-               "Fit.mode" = W1%*%Mean.B
-  ) )
+  return( RESULTS )
   
 }

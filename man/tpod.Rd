@@ -1,4 +1,4 @@
-\name{tpod}
+\name{Dataset}
 \alias{tpod}
 \alias{gen}
 \alias{chr}

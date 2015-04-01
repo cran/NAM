@@ -1,4 +1,4 @@
-\name{snpH2}
+\name{SNP h2}
 \alias{snpH2}
 \title{
 SNP heritability

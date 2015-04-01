@@ -1,4 +1,4 @@
-\name{snpQC}
+\name{SNP QC}
 \alias{snpQC}
 \title{
 SNP Quality Control

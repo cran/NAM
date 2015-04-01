@@ -17,7 +17,7 @@ if(is.null(Z)){V=K}
 
 if(is.null(Z)!=T&&is.null(K)!=T){
   if(class(Z)=="formula"){Z=model.matrix(Z)-1}
-  V=crossprod(Z,K);V=tcrossprod(V,Z)}
+  V=crossprod(t(Z),K);V=tcrossprod(V,Z)}
 
 K=V
 

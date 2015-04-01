@@ -1,4 +1,4 @@
-\name{manhattan}
+\name{Manhattan Plot}
 \alias{manhattan}
 \title{
 Plotting Genome-Wide Association Study
@@ -7,7 +7,7 @@ Plotting Genome-Wide Association Study
 Generates a Manhattan plot for a \eqn{gwas} object.
 }
 \usage{
-manhattan(gwas, colA = 2, colB = 4, alpha=NULL, GenDist = FALSE, OtherDist = NULL, ...)
+manhattan(gwas, colA = 2, colB = 4, alpha=0.05, ...)
 }
 \arguments{
   \item{gwas}{
@@ -22,12 +22,6 @@ Color of odd chromosomes.
   \item{alpha}{
 If specified, it provides the negative log p-value based on a chi squared distribution with a significance threshold for the given alpha.
 }
-  \item{GenDist}{
-Logical. If true, it displays the Manhattan plot with the estimated genetic map for NAM populations.
-}
-  \item{OtherDist}{
-Numeric vector of length (\eqn{m}), equal to the number of columns in \eqn{gen}. If provided, it changes the X coordinates used for the Manhattan plot.
-}
   \item{...}{
 Other arguments for plotting function.
 }
@@ -37,7 +31,8 @@ Alencar Xavier
 }
 \examples{
 data(tpod)
-test=gwas(y=y,gen=gen,fam=fam,chr=chr)
+test=gwas(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
 manhattan(gwas=test,colA=3,colB=1,type="h",lwd=2)
-manhattan(gwas=test,GenDist=TRUE,pch=20)
+ii = 1+(2*test$PolyTest$lrt>4.9)
+manhattan(gwas=test,pch=ii+3,lwd=ii)
 }

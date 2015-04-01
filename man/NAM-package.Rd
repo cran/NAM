@@ -12,8 +12,8 @@ Designed for association studies in nested association mapping (NAM) panels, but
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.1 \cr
-Date: \tab 2015-03-10\cr
+Version: \tab 1.1.2 \cr
+Date: \tab 2015-04-01\cr
 License: \tab GPL-3 \cr
 }
 
@@ -28,7 +28,7 @@ Maintainer: Alencar Xavier <xaviera@purdue.edu>
 \keyword{ BLUP }
 \keyword{ GWAS }
 \keyword{ REML }
-\keyword{ GIBBS }
+\keyword{ BGS }
 \seealso{
 Functions: gibbs, reml, Fst, gwas/gwas2, manhattan, reference, snpQC, snpH2
 }

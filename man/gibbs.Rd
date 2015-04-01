@@ -1,4 +1,4 @@
-\name{Bayesian Gibbs Sampler}
+\name{BGS}
 \alias{gibbs}
 \title{
 Bayesian Gibbs Sampler
@@ -7,17 +7,17 @@ Bayesian Gibbs Sampler
 Univariate mixed model solver through Gibbs Sampling.
 }
 \usage{
-gibbs(y,X=NULL,Z=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5)
+gibbs(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=NULL)
 }
 \arguments{
   \item{y}{
 Numeric vector of observations (\eqn{n}) describing the trait to be analyzed. \code{NA} is allowed.
 }
-  \item{X}{
-Formula or incidence matrix (\eqn{n} by \eqn{p}) for fixed effect. \code{NA} is not allowed.
-}
   \item{Z}{
-Formula or list of numeric matrix (\eqn{n} by \eqn{p}) with incidence matrices for random effect. \code{NA} is not allowed.
+Right-hand side formula or list of numeric matrices (\eqn{n} by \eqn{p}) with incidence matrices for random effect. \code{NA} is not allowed.
+}
+  \item{X}{
+Right-hand side formula or incidence matrices (\eqn{n} by \eqn{p}) for fixed effect. \code{NA} is not allowed.
 }
   \item{iK}{
 Numeric matrix or list of numeric matrices (\eqn{p} by \eqn{p}) corresponding to the the inverse kinship matrix of each random effect with \eqn{p} parameters.
@@ -32,11 +32,14 @@ Integer. Number of iterations or samples to be discarted.
 Integer. Thinning parameter, used to save memory by storing only one every 'Thin' samples.
 }
   \item{DF}{
-Integer. Hyper-parameter regarding degrees of freedom.
+Integer. Hyperprior degrees of freedom of variance components.
+}
+  \item{S}{
+Integer of NULL. Hyperprior shape of variance components. If NULL, the hyperprior solution for the scale parameter is calculated as proposed by de los Campos et al. (2013).
 }
 }
 \details{
-Solve Gaussian mixed models in the Bayesian framework as described by Garc?a-Cort?s and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. The hyper-prior solution for the scale parameter of inverse Chi squared is calculated as proposed by de los Campos et al. (2013).
+Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. 
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.mode), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mode (Coef.mode) and mean (Coef.mean), and the fitted values using the mean (Fit.mean) and mode (Fit.mode) of posterior coefficients. 
@@ -58,8 +61,8 @@ Alencar Xavier
 # Fitting Mixed Model
 data(tpod)
 S = seq(1,350,50)
-test=gibbs(y,X=gen[,S],Z=~factor(fam))
-plot(test$Fit.mean,y)
+test1=gibbs(y,X=~factor(fam),Z=gen[,S],S=0.5)
+plot(test1$Fit.mean,y)
 
 # Fitting GBLUP
 K = tcrossprod(gen)
@@ -70,4 +73,4 @@ plot(test2$Fit.mean,y)
 
 }
 \keyword{ BLUP }
-\keyword{ GIBBS }
+\keyword{ BGS }

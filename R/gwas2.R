@@ -347,15 +347,15 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
 
 fit=RANDOMsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
 
-moda=function (x){
+moda=function(x){
   it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
     y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
     diffs=sup-inf; i=min(which(diffs==min(diffs)))
     M=median(y[i:(i+k)]); it=it-1}; return(M)}
-
 neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
-
 mo = moda(fit$PolyTest$lrt)
 mos = which(fit$PolyTest$lrt==mo);fit$PolyTest$lrt[mo]=0
+
+class(fit) <- "NAM"
 
 return(fit)}
