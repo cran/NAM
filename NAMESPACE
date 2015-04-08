@@ -1,8 +1,7 @@
 useDynLib(NAM)
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
-# Design matrix and matrix inversion
-importFrom(Matrix, sparseMatrix)
-importFrom(Matrix, nearPD)
-# For imputations
 importFrom(missForest, missForest)
+S3method(plot, NAM)
+S3method(plot, fst)
+S3method(plot, H2)

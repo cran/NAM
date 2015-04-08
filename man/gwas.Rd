@@ -1,6 +1,7 @@
 \name{GWAS}
 \alias{gwas}
 \alias{gwas2}
+\alias{plot.NAM}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
@@ -54,7 +55,20 @@ Alencar Xavier, Tiago Pimenta, Qishan Wang and Shizhong Xu
 \examples{
 data(tpod)
 test=gwas(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
-manhattan(test,type="p",lwd=3)
+
+par(mfrow=c(3,1))
+
+# Example Manhattan 1
+plot(x=test,colA=2,colB=3,alpha=0.05,type="h",lwd=2,main="Example 1")
+
+# Example Manhattan 2
+SIGNIF = 1+(2*test$PolyTest$lrt>4.9)
+plot(x=test,pch=SIGNIF+3,lwd=SIGNIF,main="Example 2")
+
+# Example Manhattan 2
+plot(x=test,main="Example 3",pch=20,lwd=2)
+Kern = ksmooth(1:240,test$PolyTest$lrt,bandwidth=1)
+lines(Kern,type="l",lwd=2)
 }
 \keyword{ NAM }
 \keyword{ GWAS }

@@ -54,33 +54,24 @@ if(any(is.na(gen))) gen=IMPUT(gen) # calc
 # SPARSE DESING MATRIX FUNCTION
 
 cat("Generating Design Matrix",'\n')
-SDM=function(gen,fam){
-  Dim=as.numeric(dim(gen));gen[Dim[1],Dim[2]]=1# Done to debug 
-  if(nrow(gen)!=length(fam)) stop("NUMBER OF ROWS IN GENOTYPES DO NOT MATCH THE LENGTH OF THE VECTOR FAMILY!")
-  gen=t(gen)
-  # Sparse matrix
-  Sparse=function(G,fam){
-    f=max(fam)+1
-    ColNum=ncol(G)
-    A=c();B=c();C=c()
-    pb=txtProgressBar(style=3)
-    for(i in 1:ColNum){
-      size = calcSize(G[,i], fam)
-      a=funI(G[,i],fam[i],size,f)
-      b=rep(i,length(a))  
-      c=funX(G[,i], size)
-      A=c(A,a);B=c(B,b);C=c(C,c)
-      setTxtProgressBar(pb,i/ColNum)
-      #cat("Design matrix",round(i/ColNum,2)*100,"% done",'\n')
-      }
-    close(pb)
-    return(cbind(A,B,C))}
-  # Merging results
-  d=Sparse(gen,fam)
-  e=sparseMatrix(i=d[,1],j=d[,2],x=d[,3])
-  return(e)}
+SDM = function(gen,fam){
+  m = ncol(gen)
+  n = nrow(gen)
+  u = unique(fam)
+  f = length(u)+1
+  gg=matrix(0,n,m*f)
+  # filling standard parent
+  gg[,(1:m-1)*f+1]=gen
+  # filling founder parent
+  gen=-(gen-2)
+  pb=txtProgressBar(style=3)
+  for(i in 1:(f-1)){
+    w = which(fam==i)
+    gg[w,(1:m-1)*f+1+i]=gen[w,]
+    setTxtProgressBar(pb,i/(f-1))
+  };close(pb)
+  return(t(gg))}
 GEN=SDM(gen,fam) # calc
-GEN=as.matrix(GEN)
 
 # GENOMIC RELATIONSHIP MATRIX
 Gmat=function(gen){

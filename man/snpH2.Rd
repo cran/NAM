@@ -1,5 +1,6 @@
 \name{SNP h2}
 \alias{snpH2}
+\alias{plot.H2}
 \title{
 SNP heritability
 }
@@ -29,6 +30,6 @@ Alencar Xavier
 
 data(tpod)
 Heritability=snpH2(gen)
-plot(Heritability)
+plot(Heritability,chr=chr)
 
 }

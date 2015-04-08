@@ -68,6 +68,19 @@ for(i in 1:snps){
 };close(pb)
 
 names(H2)=colnames(gen)
+class(H2)="H2"
 return(H2)
+}
 
+# Plot
+
+plot.H2 = function(x,...,chr=NULL){
+  her = as.numeric(x)
+  plot(her,xlab="Genome",ylab="Heritability",main="Gene content")
+  rect(par("usr")[1],par("usr")[3],
+       par("usr")[2],par("usr")[4],
+       col=rgb(0.25,0.25,0.25,0.5))
+  lines(her,lwd=4,pch=20,type="p",col="blue")
+  lines(her,lwd=1,pch=20,type="p",col="lightblue")
+  if(is.null(chr)!=T) abline(v=cumsum(chr[-length(chr)])+0.5,lty=3)
 }

@@ -7,7 +7,7 @@ Bayesian Gibbs Sampler
 Univariate mixed model solver through Gibbs Sampling.
 }
 \usage{
-gibbs(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=NULL)
+gibbs(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1)
 }
 \arguments{
   \item{y}{
@@ -35,14 +35,14 @@ Integer. Thinning parameter, used to save memory by storing only one every 'Thin
 Integer. Hyperprior degrees of freedom of variance components.
 }
   \item{S}{
-Integer of NULL. Hyperprior shape of variance components. If NULL, the hyperprior solution for the scale parameter is calculated as proposed by de los Campos et al. (2013).
+Integer or NULL. Hyperprior shape of variance components. If NULL, the hyperprior solution for the scale parameter is calculated as proposed by de los Campos et al. (2013).
 }
 }
 \details{
 Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. 
 }
 \value{
-The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.mode), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mode (Coef.mode) and mean (Coef.mean), and the fitted values using the mean (Fit.mean) and mode (Fit.mode) of posterior coefficients. 
+The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 
 }
 \references{
 

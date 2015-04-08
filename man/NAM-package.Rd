@@ -6,14 +6,14 @@
 Nested Association Mapping Analysis
 }
 \description{
-Designed for association studies in nested association mapping (NAM) panels, but also handling biparental and random panels. It includes functions for genome-wide associations mapping of multiple populations, marker quality control, solving mixed models and finding variance components through REML and Gibbs sampling.
+Designed for association studies in nested association mapping (NAM) panels, also handling biparental and random panels. It includes functions for genome-wide associations mapping of multiple populations, marker quality control, solving mixed models and finding variance components through REML and Gibbs sampling.
 }
 \details{
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.1.2 \cr
-Date: \tab 2015-04-01\cr
+Version: \tab 1.2 \cr
+Date: \tab 2015-04-07\cr
 License: \tab GPL-3 \cr
 }
 
@@ -30,5 +30,5 @@ Maintainer: Alencar Xavier <xaviera@purdue.edu>
 \keyword{ REML }
 \keyword{ BGS }
 \seealso{
-Functions: gibbs, reml, Fst, gwas/gwas2, manhattan, reference, snpQC, snpH2
+Functions: gibbs, reml, Fst, gwas/gwas2, reference, snpQC, snpH2
 }

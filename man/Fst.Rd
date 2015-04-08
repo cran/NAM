@@ -1,5 +1,6 @@
 \name{Fst}
 \alias{Fst}
+\alias{plot.fst}
 \title{
   Fixation Index
 }
@@ -19,20 +20,26 @@ rows of observations and (\eqn{m}) columns of molecular markers. SNPs must be co
   }
 }
 \details{
-Fst (Wright 1943) represents the differentiation among populations for the given locus. It is also a measure of genetic divergence between admixed populations. Neutral markers have an expected Fst 0.05, but may change according to the population.
-Outlier Fst supports signatures of selection. Permutation threshold is commonly used to verify statistical significance.
+F-statistics (Wright 1965) represent the differentiation among populations for a given locus. Weir and Cockerham (1984) provided an unbiased version for molecular analysis. 
+
+FIT is the correlation between gametes that unite to produce the individuals, relative to the gametes of the total population. FIS is the average over all subdivisions of the correlation between uniting gametes relative to those of their own subdivision. FST is the correlation between random gametes within subdivisions, relative to gametes of the total population. Neutral markers have an expected FST 0.05.
 }
 \value{
-  Wright's FST.
+List with values of FST, FIS and FIT. Unbiased F-statistics from weighted AOV (Weir and Cockerham 1984).
 }
 \references{
-Wright, S. (1943). Isolation by distance. Genetics, 28(2), 114.
+
+Weir, B. S., and Cockerham, C. C. (1984). Estimating F-statistics for the analysis of population structure. Evolution, 38(6), 1358-1370.
+
+Wright, S. (1965). The interpretation of population structure by F-statistics with special regard to systems of mating. Evolution, 19(3), 395-420.
+
 }
 \author{
   Alencar Xavier and William Muir
 }
 \examples{
   data(tpod)
-  Fst(gen=gen,fam=fam)
+  Fstat = Fst(gen=gen,fam=fam)
+  plot(Fstat,p=0.05,chr=chr)
 }
 \keyword{ Fst }

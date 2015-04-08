@@ -1,6 +1,7 @@
-manhattan <-
-  function(gwas,colA=2,colB=4,alpha=0.05,...){
-    
+plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4){
+   
+  gwas=x
+  
     chr=as.numeric(summary(factor(as.numeric(gwas$MAP[,1]))))
     
     RGWASplot=function(Rgwas,chr,AA,BB,alpha,...){

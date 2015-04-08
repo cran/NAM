@@ -1,5 +1,5 @@
 
-gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=NULL){
+gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
     
   # Default for X; changing X to matrix if it is a formulas
   if(is.null(X)) X=matrix(1,length(y),1)
@@ -121,7 +121,7 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=NULL){
     S0a = runif(Randoms,S0*0.66,S0*1.33)
     df0a = runif(Randoms,df0*0.66,df0*1.33)
     dfu = q + df0a
-    S0b = runif(1,0.5,1.2)
+    if(is.null(S)){ S0b = runif(1,0.1,2) }else{ S0b = runif(Randoms,S*0.66,S*1.33) }
     df0b = runif(1,df0*0.66,df0*1.33)
     dfe = n + df0b
     
