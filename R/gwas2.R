@@ -1,10 +1,11 @@
-gwas2 = function(y,gen,fam=NULL,chr=NULL){
+gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE){
 
 ##################
 ## INTRODUCTION ##
 ##################
 
 method="RH"
+fx=fixed
 SNPs=colnames(gen)
 
 # SETTING THE FIXED EFFECT, CHROMOSOME AND FAMILY WHEN IT IS NULL
@@ -60,7 +61,8 @@ GGG=function(G,fam){
     return(J)}
   gfa = cbind(G,fam)
   return(unlist(apply(gfa,1,POP)))}
-Gmat = function(gen,fam){
+if(any(fam!=1)){
+  Gmat = function(gen,fam){
   # common parent linear kernel
   g1 = tcrossprod(gen)
   g1 = g1/mean(diag(g1))  
@@ -76,6 +78,16 @@ Gmat = function(gen,fam){
   lambda = mean(diag(g1))
   G = g1/mean(diag(g1))
   return(list(G,lambda))}
+}else{
+  Gmat = function(gen,fam){
+    # common parent linear kernel
+    g1 = tcrossprod(gen)
+    g1 = g1/mean(diag(g1))  
+    # Final estimates
+    lambda = mean(diag(g1))
+    G = g1/mean(diag(g1))
+    return(list(G,lambda))}
+}
 
 INPUT=function(gen,fam,chr){
   if(sum(chr)!=ncol(gen)) stop("Number of markers and chromosomes don't match")
@@ -195,7 +207,7 @@ mixed<-function(x,y,kk){
   yu<-t(uu)%*%y
   xu<-t(uu)%*%x
   theta<-0
-  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
   lambda<-exp(parm$par)
   conv<-parm$convergence
   fn1<-parm$value
@@ -238,7 +250,7 @@ blup<-function(gen,map,fam,x,y,kk,beta,lambda,cc){
 ## METHODS ##
 #############
 
-RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
+RANDOMsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
   if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
   if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
   if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
@@ -303,6 +315,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
   blupp<-numeric()
   cat("Starting Marker Analysis",'\n')
   pb=txtProgressBar(style=3)
+  if(max(fam)==1) r=1
   for(k in 1:m){
     
     if(max(fam)==1){
@@ -317,7 +330,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
     zy=timesVec(yu,h,zu,r)
     zz=timesMatrix(zu,h,zu,r,r)
     theta<-c(0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value
@@ -340,21 +353,99 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
   cat("Calculations were performed successfully",'\n')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes","MAP"=MAP,"SNPs"=SNPnames))}
 
+FIXEDsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
+  if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
+  if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
+  if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
+  if(is.matrix(gen)!=TRUE) stop("Genotypes: 'gen' must be a matrix")
+  if(sum(chr)!=ncol(gen)) stop("Number of markers and chromosomes do not match")
+  if(length(fam)!=nrow(gen)) stop("Family and genotype don't match")
+  if(length(y)!=length(fam)) stop("Family and phenotypes must have the same length")
+  if(length(y)!=nrow(gen)) stop("Dimensions of genotypes and phenotypes do not match")
+  map=MAP
+  gen=GEN
+  cat("Calculating genomic kinship",'\n')
+  G=Gmat(gen)
+  kk=(t(G)[[1]]);cc=(t(G)[[2]])
+  m<-nrow(map)
+  r<-max(fam)+1
+  q<-1
+  ccM<-map[,6]
+  n<-nrow(kk)
+  x<-COV
+  cat("Solving polygenic model (P3D)",'\n')
+  parm<-mixed(x,y,kk)
+  lambda<-parm$lambda
+  beta<-parm$beta
+  cat("Starting Eigendecomposition",'\n')
+  qq<-eigen(as.matrix(kk),symmetric=T,EISPACK=T)
+  delta<-qq[[1]]
+  uu<-qq[[2]]
+  h<-1/(delta*lambda+1)
+  xu<-t(uu)%*%x
+  yu<-t(uu)%*%y
+  yy<-sum(yu*h*yu)
+  yx = timesVec(yu,h,xu,q)
+  xx = timesMatrix(xu,h,xu,q,q)
+  beta<-solve(xx,yx)
+  parr<-numeric()
+  blupp<-numeric()
+  cat("Starting Single Marker Analysis",'\n')
+  pb=txtProgressBar(style=3)
+  if(max(fam)==1) r=1
+  for(k in 1:m){
+    
+    if(max(fam)==1){
+      genk<-t(gen[,k])
+    }else{genk<-GGG(gen[,k],fam)}
+    
+    zu<-t(uu)%*%t(genk)
+    zu = as.matrix(zu)
+    zx = timesMatrix(xu,h,zu,q,r)
+    zy = timesVec(yu,h,zu,r)
+    zz = timesMatrix(zu,h,zu,r,r)
+    zzi<-solve(zz+diag(.0001,ncol(zz)))
+    b<-solve(zz+diag(.0001,ncol(zz)),zy)
+    s2<-(yy-t(zy)%*%zzi%*%zy)/(n-r-q)
+    v<-zzi*drop(s2);
+    if(max(fam)==1){
+      wald<-t(b)%*%solve(v)%*%b
+    }else{
+      g<-b-mean(b); gamma<-g
+      wald<-t(g)%*%solve(v)%*%g}
+    stderr<-sqrt(diag(v))
+    sigma2<-s2
+    par<-data.frame(wald,beta,sigma2)
+    blup<-c(gamma,stderr)
+    parr<-rbind(parr,par)
+    blupp<-rbind(blupp,blup)
+    setTxtProgressBar(pb,k/m)
+  };close(pb)
+  cat("Calculations were performed successfully",'\n')
+  return(list("PolyTest"=parr,"Method"="P3D","MAP"=MAP,"SNPs"=SNPnames))}
+
 
 #########
 ## RUN ##
 #########
 
-fit=RANDOMsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
-
-moda=function(x){
+if(fx==1){
+  
+  fit=FIXEDsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
+  
+  }else{
+  
+    fit=RANDOMsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
+  moda=function(x){
   it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
     y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
     diffs=sup-inf; i=min(which(diffs==min(diffs)))
     M=median(y[i:(i+k)]); it=it-1}; return(M)}
-neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
-mo = moda(fit$PolyTest$lrt)
-mos = which(fit$PolyTest$lrt==mo);fit$PolyTest$lrt[mo]=0
+  neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
+  mo = moda(fit$PolyTest$lrt)
+  mos = which(fit$PolyTest$lrt==mo);fit$PolyTest$lrt[mo]=0
+
+  }
 
 class(fit) <- "NAM"
 

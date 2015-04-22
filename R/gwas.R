@@ -1,4 +1,4 @@
-gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL){
+gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
 
 ##################
 ## INTRODUCTION ##
@@ -198,7 +198,7 @@ mixed<-function(x,y,kk){
   yu<-t(uu)%*%y
   xu<-t(uu)%*%x
   theta<-0
-  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+  parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
   lambda<-exp(parm$par)
   conv<-parm$convergence
   fn1<-parm$value
@@ -241,7 +241,7 @@ blup<-function(gen,map,fam,x,y,kk,beta,lambda,cc){
 ## METHODS ##
 #############
 
-RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,SNPnames=SNPs){
+RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
   if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
   if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
   if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
@@ -317,7 +317,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
     zy=timesVec(yu,h,zu,r)
     zz=timesMatrix(zu,h,zu,r,r)
     theta<-c(0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value
@@ -341,7 +341,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,
   cat("Calculations were performed successfully",'\n')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes","MAP"=MAP,"SNPs"=SNPnames))}
 
-RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,gen=gen,SNPnames=SNPs){
+RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,SNPnames=SNPs){
   if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
   if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
   if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
@@ -437,7 +437,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     zy=timesVec(yu,h,zu,r3)
     zz=timesMatrix(zu,h,zu,r3,r3)
     theta<-c(0,0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
     xi<-exp(parm$par)
     conv<-parm$convergence
     fn1<-parm$value
@@ -453,7 +453,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     zy<-matrix(zy[-seq(r+1,2*r),],2*r,1)
     zz<-zz[-seq(r+1,2*r),-seq(r+1,2*r)]
     theta<-c(0,0)
-    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-10,upper=10)
+    parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
     fn0<-parm$value
     lrt<-2*(fn0-fn1)
     par<-data.frame(conv,fn1,fn0,lrt,beta,sigma2,lam_k,tau_k)
@@ -466,14 +466,82 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
   cat("Calculations were performed successfully",'\n')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes with moving-window strategy","MAP"=MAP,"SNPs"=SNPnames))}
 
+FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
+  if(is.vector(y)!=TRUE) stop("Phenotypes: 'y' must be a vector")
+  if(is.vector(chr)!=TRUE) stop("Chromosome: 'chr' must be a vector")
+  if(is.vector(fam)!=TRUE) stop("Family: 'fam' must be a vector")
+  if(is.matrix(gen)!=TRUE) stop("Genotypes: 'gen' must be a matrix")
+  if(sum(chr)!=ncol(gen)) stop("Number of markers and chromosomes do not match")
+  if(length(fam)!=nrow(gen)) stop("Family and genotype don't match")
+  if(length(y)!=length(fam)) stop("Family and phenotypes must have the same length")
+  if(length(y)!=nrow(gen)) stop("Dimensions of genotypes and phenotypes do not match")
+  map=MAP
+  gen=GEN
+  cat("Calculating genomic kinship",'\n')
+  G=Gmat(gen)
+  kk=(t(G)[[1]]);cc=(t(G)[[2]])
+  m<-nrow(map)
+  r<-max(fam)+1
+  q<-1
+  ccM<-map[,6]
+  n<-nrow(kk)
+  x<-COV
+  cat("Solving polygenic model (P3D)",'\n')
+  parm<-mixed(x,y,kk)
+  lambda<-parm$lambda
+  beta<-parm$beta
+  cat("Starting Eigendecomposition",'\n')
+  qq<-eigen(as.matrix(kk),symmetric=T,EISPACK=T)
+  delta<-qq[[1]]
+  uu<-qq[[2]]
+  h<-1/(delta*lambda+1)
+  xu<-t(uu)%*%x
+  yu<-t(uu)%*%y
+  yy<-sum(yu*h*yu)
+  yx = timesVec(yu,h,xu,q)
+  xx = timesMatrix(xu,h,xu,q,q)
+  beta<-solve(xx,yx)
+  parr<-numeric()
+  blupp<-numeric()
+  cat("Starting Single Marker Analysis",'\n')
+  pb=txtProgressBar(style=3)
+  for(k in 1:m){
+    sub<-seq(((k-1)*r+1),((k-1)*r+r))
+    zu<-t(uu)%*%t(gen[sub,])
+    zu = as.matrix(zu)
+    zx = timesMatrix(xu,h,zu,q,r)
+    zy = timesVec(yu,h,zu,r)
+    zz = timesMatrix(zu,h,zu,r,r)
+    zzi<-solve(zz+diag(.0001,ncol(zz)))
+    b<-solve(zz+diag(.0001,ncol(zz)),zy)
+    s2<-(yy-t(zy)%*%zzi%*%zy)/(n-r-q);
+    v<-zzi*drop(s2);
+    g<-b-mean(b)
+    gamma<-g
+    wald<-t(g)%*%solve(v)%*%g
+    stderr<-sqrt(diag(v))
+    sigma2<-s2
+    par<-data.frame(wald,beta,sigma2)
+    blup<-c(gamma,stderr)
+    parr<-rbind(parr,par)
+    blupp<-rbind(blupp,blup)
+    setTxtProgressBar(pb,k/m)
+  };close(pb)
+  cat("Calculations were performed successfully",'\n')
+  return(list("PolyTest"=parr,"Method"="P3D","MAP"=MAP,"SNPs"=SNPnames))}
+
+
 #########
 ## RUN ##
 #########
 
-if(method=="RH"){fit=RANDOMsma(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,gen=gen,SNPnames=SNPs)}
-if(method=="EB"){fit=RandomCIM(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,gen=gen,SNPnames=SNPs)}
-neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
-
+if(fixed==TRUE){
+  fit=FIXEDsma(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
+}else{
+  if(method=="RH"){fit=RANDOMsma(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)}
+  if(method=="EB"){fit=RandomCIM(GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,SNPnames=SNPs)}
+  neg = which(fit$PolyTest$lrt<0);fit$PolyTest$lrt[neg]=0
+}
 class(fit) <- "NAM"
 
 return(fit)}

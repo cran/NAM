@@ -189,9 +189,23 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
                  "Fit.mean" = W1%*%Mean.B
                  )
   
-  class(RESULTS) = "BGS"
+  class(RESULTS) = "gibbs"
   
   # Return
   return( RESULTS )
   
+}
+
+plot.gibbs = function(x,...){
+  par(ask=TRUE)
+  
+  plot(x$Fit.mean,x$Obsevations,...)
+  lines(c(min(x$Fit.mean),max(x$Fit.mean)),
+        c(min(x$Obsevations),max(x$Obsevations)),lty=2)
+  
+  vc = nrow(x$Posterior.VC)-1
+  for(i in 1:vc) plot(density(x$Posterior.VC[i,],...),main=paste("Posterior: Term",i,"variance"))
+  plot(density(x$Posterior.VC[vc+1,]),main=paste("Posterior: Residual Variance"),...)
+  
+  par(ask=FALSE)
 }

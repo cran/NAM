@@ -1,5 +1,6 @@
 \name{BGS}
 \alias{gibbs}
+\alias{plot.gibbs}
 \title{
 Bayesian Gibbs Sampler
 }
@@ -62,14 +63,14 @@ Alencar Xavier
 data(tpod)
 S = seq(1,350,50)
 test1=gibbs(y,X=~factor(fam),Z=gen[,S],S=0.5)
-plot(test1$Fit.mean,y)
+plot(test1)
 
 # Fitting GBLUP
 K = tcrossprod(gen)
 K = K/mean(diag(K))
 iK = chol2inv(K)
 test2=gibbs(y,iK=iK)
-plot(test2$Fit.mean,y)
+plot(test2)
 
 }
 \keyword{ BLUP }
