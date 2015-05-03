@@ -4,8 +4,14 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
 ## INTRODUCTION ##
 ##################
 
-if(is.null(window)){method="RH"}else{method="EB"}
+# REMOVAL OF MISSING Y's  
+anyNA = function(x) any(is.na(x))
+if(any(is.na(y))){
+  w=which(is.na(y))
+  y=y[-w];gen=gen[-w,];fam=fam[-w]
+}
 
+if(is.null(window)){method="RH"}else{method="EB"}
 SNPs=colnames(gen)
 
 # SETTING THE FIXED EFFECT, CHROMOSOME AND FAMILY WHEN IT IS NULL

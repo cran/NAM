@@ -1,5 +1,5 @@
-plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4){
-   
+plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL){
+  anyNA = function(x) any(is.na(x))
   gwas=x
   chr=as.numeric(summary(factor(as.numeric(gwas$MAP[,1]))))
       
@@ -7,11 +7,14 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4){
     FGWASplot=function(Fgwas,chr,AA,BB,alpha,...){
       col=c();for(i in 1:length(chr)){if((i%%2)==0){b=AA}else{b=BB};a=rep(b,chr[i]); col=c(col,a)}
       W = Fgwas$PolyTest$wald
-      plot(1:length(W),W,col=col,xlab="Chromosome",ylab="Wald Statistic",xaxt = "n",...)}
+      plot(1:length(W),W,col=col,xlab="Chromosome",ylab="Wald Statistic",xaxt = "n",...)
+      return(W)}
     # Plot
-    if (is.null(alpha)){FGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,...)}
-    else {FGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,...)
+    if (is.null(alpha)){pv=FGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,qtl=NULL,...)}
+    else {pv=FGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,...)
           A=1-alpha;LRmax=qchisq(A,0.5);lim=-log(dchisq(LRmax, 0.5));abline(h=lim,col=1,lty=2)}
+    # QTL
+    if(!is.null(find)){Loc=identify(n=find,x=1:length(pv),y=pv,labels=gwas$SNPs);for(i in Loc) cat(gwas$SNPs[i],'\n')}
     
     }else{
     
@@ -22,13 +25,19 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4){
         funLRT = function(lrt){if(lrt<0|lrt==Inf|lrt==-Inf){lrt=0};return(lrt)}
         LRT = sapply(LRT,FUN = funLRT)}
       col=c();for(i in 1:length(chr)){if((i%%2)==0){b=AA}else{b=BB};a=rep(b,chr[i]); col=c(col,a)}
-      plot(1:length(Rgwas$PolyTest$lrt),LRT,col=col,xlab="Chromosome",xaxt = "n",...)}
-    # Plot
-    if (is.null(alpha)){RGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,...)}
-    else {RGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,ylab="-log(p-value)",...)
-      A=1-alpha;LRmax=qchisq(A,0.5);lim=-log(dchisq(LRmax, 0.5));abline(h=lim,col=1,lty=2)}
+      plot(1:length(Rgwas$PolyTest$lrt),LRT,col=col,xlab="Chromosome",xaxt = "n",...)
+      return(LRT)
     }
+    # Plot
+    if (is.null(alpha)){pv=RGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,...)}
+    else {pv=RGWASplot(gwas,chr=chr,AA=colA,BB=colB,alpha=alpha,ylab="-log(p-value)",...)
+      A=1-alpha;LRmax=qchisq(A,0.5);lim=-log(dchisq(LRmax, 0.5));abline(h=lim,col=1,lty=2)}
+    # QTL
+    if(!is.null(find)){Loc=identify(n=find,x=1:length(pv),y=pv,labels=gwas$SNPs);for(i in Loc) cat(gwas$SNPs[i],'\n')}
+    
+    }
+  
   medians=rep(NA,length(chr))
   for(i in 1:length(chr)) medians[i] = median(which(gwas$MAP[,1]==i))
-  axis(1, at=round(medians), labels=1:length(medians))
+  axis(1, at=round(medians), labels=1:length(medians),...)
 }

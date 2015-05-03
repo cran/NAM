@@ -1,4 +1,5 @@
 Fst = function(gen,fam){ 
+  anyNA = function(x) any(is.na(x))
   # Weir and Cockerham (1984): Unbiased Fst from weighted AOV 
   if(anyNA(fam)) stop("No missing fam is allowed")
   if(anyNA(gen)) gen[is.na(gen)]=1 # replacing missing
@@ -38,6 +39,7 @@ Fst = function(gen,fam){
 }
 
 plot.fst = function(x,..., p=NULL,chr=NULL){
+  anyNA = function(x) any(is.na(x))
   class(x)=NULL; FST=x$fst
   C = 1 - 0.1 * (4 + 6 * abs(FST)/max(abs(FST)))
   plot(FST,...,main="Fixation Index",pch=20,xlab="Genome",col=(rgb(C,C,C)))
@@ -53,4 +55,5 @@ plot.fst = function(x,..., p=NULL,chr=NULL){
     if(is.null(chr)!=T) abline(v=cumsum(chr[-length(chr)])+0.5,lty=3)
     abline(h=THR,col=rgb(1,0,0,0.4),lty=2);par(ask=FALSE)
     KK = ksmooth(1:length(FST),Pval,"normal",bandwidth = 10)
-    lines(KK,type="h",lwd=2,col=rgb(1,0.5,0,0.6))}}
+    lines(KK,type="h",lwd=2,col=rgb(1,0.5,0,0.6))}
+  }

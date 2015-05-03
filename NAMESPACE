@@ -1,7 +1,7 @@
 useDynLib(NAM)
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
-importFrom(missForest, missForest)
+importFrom(randomForest, randomForest)
 S3method(plot, NAM)
 S3method(plot, fst)
 S3method(plot, H2)

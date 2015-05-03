@@ -1,5 +1,6 @@
 \name{SNP QC}
 \alias{snpQC}
+\alias{cleanREP}
 \title{
 SNP Quality Control
 }

@@ -1,6 +1,6 @@
 
-gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
-    
+gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
+  anyNA = function(x) any(is.na(x))  
   # Default for X; changing X to matrix if it is a formulas
   if(is.null(X)) X=matrix(1,length(y),1)
   if(class(X)=="formula"){
@@ -78,18 +78,27 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
   for(i in 1:Randoms) W=cbind(W,Z[[i]])
   # MISSING
   W1=W
-  if(any(is.na(y))){MIS = which(is.na(y));W=W[-MIS,];y=y[-MIS]} 
+  if(any(is.na(y))){
+    MIS = which(is.na(y))
+    W=W[-MIS,]
+    y=y[-MIS]
+    if(!is.null(iR)) iR=iR[-MIS,-MIS]
+  }
   n = length(y)
   # Keeping on
-  r = crossprod(W,y) # Need adjust to accept residual correlation (W.iR.y)
-  WW = (crossprod(W)) # Need adjust to accept residual correlation (W.iR.W)
+  if(is.null(iR)){
+    r = crossprod(W,y)
+    WW = (crossprod(W))
+  }else{
+    r = crossprod(W,iR)%*%y
+    WW = (crossprod(W,iR))%*%W
+  }
   # Covariance Matrix
   Sigma = matrix(0,N,N)
   for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
   # Matching WW and Sigma
   C = WW+Sigma
   g = rep(0,N)
-  
   # Saving space for the posterior
   include = 0
   POSTg = matrix(0,ncol = length(THIN), N)
@@ -118,11 +127,11 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
   for(iteration in 1:Iter){
     
     # Sampling hyper-priors
-    S0a = runif(Randoms,S0*0.66,S0*1.33)
-    df0a = runif(Randoms,df0*0.66,df0*1.33)
+    S0a = runif(Randoms,S0*0.5,S0*1.5)
+    df0a = runif(Randoms,df0*0.5,df0*1.5)
     dfu = q + df0a
-    if(is.null(S)){ S0b = runif(1,0.1,2) }else{ S0b = runif(Randoms,S*0.66,S*1.33) }
-    df0b = runif(1,df0*0.66,df0*1.33)
+    if(is.null(S)){ S0b = runif(1,0.001,5) }else{ S0b = runif(1,S*0.5,S*1.5) }
+    df0b = runif(1,df0*0.5,df0*1.5)
     dfe = n + df0b
     
     # Random variance
@@ -143,6 +152,7 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
       Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
     C = WW+Sigma
     
+
     SAMP(C,g,r,N,Ve) # the C++ SAMP updates "g" and doesn't return anything
     
     if(is.element(iteration,THIN)){
@@ -197,15 +207,37 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
 }
 
 plot.gibbs = function(x,...){
+  anyNA = function(x) any(is.na(x))
   par(ask=TRUE)
-  
-  plot(x$Fit.mean,x$Obsevations,...)
-  lines(c(min(x$Fit.mean),max(x$Fit.mean)),
-        c(min(x$Obsevations),max(x$Obsevations)),lty=2)
-  
   vc = nrow(x$Posterior.VC)-1
   for(i in 1:vc) plot(density(x$Posterior.VC[i,],...),main=paste("Posterior: Term",i,"variance"))
   plot(density(x$Posterior.VC[vc+1,]),main=paste("Posterior: Residual Variance"),...)
-  
   par(ask=FALSE)
+}
+
+covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
+  if(is.null(sp)) {
+    sp = cbind(rep(1,49),rep(c(1:7),7),as.vector(matrix(rep(c(1:7),7),7,7,byrow=T)))
+    colnames(sp)=c("block","row","col")
+    cat("Example of field information input 'sp'\n")
+    print(head(sp,10))
+  }
+  if(type==1) cat("Exponential Kernel\n")
+  if(type==2) cat("Gaussian Kernel\n")
+  obs=nrow(sp)
+  sp[,2]=sp[,2]*dist
+  fields=sp[,1]
+  Nfield=length(unique(fields))
+  quad=matrix(0,obs,obs)
+  for(j in 1:Nfield){
+    f=which(fields==j);q=sp[f,2:3]    
+    e=dist(q);e=as.matrix(e);e=round(e,3)
+    d=exp(-e^type/(rho^type))
+    d2=round(d,2);quad[f,f]=d2} 
+  if(obs==49){
+    M=matrix(quad[,25],7,7)
+    dimnames(M) = list(abs(-3:3),abs(-3:3))
+    print(M)
+  } 
+  if(obs!=49) return(quad)
 }

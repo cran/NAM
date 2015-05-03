@@ -25,12 +25,14 @@ Numeric matrix (\eqn{p} by \eqn{p}). Kinship matrix for random effect with \eqn{
 }
 }
 \details{
-Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). A sample strategy is also available as MCreml.
+Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). If y is a matrix with multiple traits, the fuctions solves the mixed model via an ECM algorithm adapted from the EMMREML package (Akdemir and Godfrey 2014). A sample strategy for large datasets is also available as MCreml.
 }
 \value{
 The function reml returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 
 }
 \references{
+
+Akdemir, D., and O. U. Godfrey (2014) EMMREML: Fitting Mixed Models with Known Covariance Structures. R Package Version 2.0. Available at: http://CRAN.R-project.org/package=EMMREML.
 
 Kang, H. M., Zaitlen, N. A., Wade, C. M., Kirby, A., Heckerman, D., Daly, M. J., & Eskin, E. (2008). Efficient control of population structure in model organism association mapping. Genetics, 178(3), 1709-1723.
 

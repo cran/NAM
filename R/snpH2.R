@@ -1,5 +1,5 @@
 snpH2=function(gen){
-
+  anyNA = function(x) any(is.na(x))
 if(any(is.na(gen))) stop("Missing values not allowed")
 if(is.numeric(gen)!=T) stop("Object gen must to be a numeric matrix")
 
@@ -54,7 +54,7 @@ for(i in 1:snps){
   xu<-t(uu)%*%x
   vp<-var(y)
   # Finding lambda through optimization
-  parm<-optim(par=theta,fn=loglike,method="L-BFGS-B",lower=-10,upper=10)
+  parm<-optim(par=theta,fn=loglike,method="L-BFGS-B",lower=0,upper=10)
   lambda<-exp(parm$par)
   # Results
   parmfix<-fixed(lambda)
@@ -75,6 +75,7 @@ return(H2)
 # Plot
 
 plot.H2 = function(x,...,chr=NULL){
+  anyNA = function(x) any(is.na(x))
   her = as.numeric(x)
   plot(her,xlab="Genome",ylab="Heritability",main="Gene content")
   rect(par("usr")[1],par("usr")[3],

@@ -1,8 +1,16 @@
 gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE){
-
+  
 ##################
 ## INTRODUCTION ##
 ##################
+
+
+# REMOVAL OF MISSING Y's  
+anyNA = function(x) any(is.na(x))
+if(any(is.na(y))){
+  w=which(is.na(y))
+  y=y[-w];gen=gen[-w,];fam=fam[-w]
+}
 
 method="RH"
 fx=fixed

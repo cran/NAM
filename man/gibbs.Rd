@@ -1,6 +1,7 @@
 \name{BGS}
 \alias{gibbs}
 \alias{plot.gibbs}
+\alias{covar}
 \title{
 Bayesian Gibbs Sampler
 }
@@ -8,7 +9,7 @@ Bayesian Gibbs Sampler
 Univariate mixed model solver through Gibbs Sampling.
 }
 \usage{
-gibbs(y,Z=NULL,X=NULL,iK=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1)
+gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1)
 }
 \arguments{
   \item{y}{
@@ -22,6 +23,9 @@ Right-hand side formula or incidence matrices (\eqn{n} by \eqn{p}) for fixed eff
 }
   \item{iK}{
 Numeric matrix or list of numeric matrices (\eqn{p} by \eqn{p}) corresponding to the the inverse kinship matrix of each random effect with \eqn{p} parameters.
+}
+  \item{iR}{
+Numeric matrix (\eqn{n} by \eqn{n}) corresponding to the inverse residual correlation matrix.
 }
   \item{Iter}{
 Integer. Number of iterations or samples to be generated.

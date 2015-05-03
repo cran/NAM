@@ -19,7 +19,7 @@ Numeric matrix containing the genotypic data. A matrix with \eqn{n} rows of obse
 Numeric vector containing the heritability of each markers. 
 }
 \references{
-Forneris, N. et al (2014). Quality Control of Genotypes Using Heritability Estimates of Gene Content. In 10th World Congress on Genetics Applied to Livestock Production. Asas.
+Forneris, N. S., Legarra, A., Vitezica, Z. G., Tsuruta, S., Aguilar, I., Misztal, I., & Cantet, R. J. (2015). Quality Control of Genotypes Using Heritability Estimates of Gene Content at the Marker. Genetics, genetics-114.
 }
 \author{
 

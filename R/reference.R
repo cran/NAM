@@ -1,5 +1,6 @@
 reference <-
 function(gen,ref=NULL){
+  anyNA = function(x) any(is.na(x))
   if(is.null(ref)){
     maf=function(z){
       Z=z
