@@ -1,4 +1,4 @@
-\name{SNP h2}
+\name{SNP H2}
 \alias{snpH2}
 \alias{plot.H2}
 \title{

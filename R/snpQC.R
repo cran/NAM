@@ -75,8 +75,9 @@ rf <- function(xmis){ # Author: D.Stekhoven, stekhoven@stat.math.ethz.ch
     if(any(is.na(gen))){gen=suppressWarnings(rf(gen));gen=round(gen)}
     gen3=gen}
 return(gen3)}
+
 # function to remove repeated genotypes
-cleanREP = function(y,fam,gen){
+cleanREP = function(y,fam,gen,thr=0.95){
   if(is.vector(y)) y=matrix(y,ncol=1)
   GG=function(gen,r=1){
     a1=(gen-1)
@@ -93,7 +94,7 @@ cleanREP = function(y,fam,gen){
   G = GG(gen) # identity
   rownames(G) = 1:nrow(G)
   lt = G*lower.tri(G) # lower triang
-  r = 1* lt>0.95 # logical matrix: repeatitions
+  r = 1* lt>thr # logical matrix: repeatitions
   # starting point of new data
   rownames(gen) = 1:nrow(gen)
   Ny=y;  Nfam=fam;  Ngen=gen
@@ -103,8 +104,9 @@ cleanREP = function(y,fam,gen){
     i = which(cs>0)[1]
     cat("indiviual",rownames(gen)[i],"had",cs[i],'duplicate(s)\n')
     w = which(r[,i])
-    y[i,] = colMeans(y[c(i,w),],na.rm=T)
-    Ny=Ny[-w,]
+    if(ncol(y)>1){y[i,] = colMeans(y[c(i,w),],na.rm=T)
+    }else{y[i] = mean(y[c(i,w)],na.rm=T)}
+    if(ncol(y)>1){Ny=Ny[-w,]}else{Ny=Ny[-w]}
     Nfam=Nfam[-w]
     Ngen=Ngen[-w,]
     r = r[-w,]

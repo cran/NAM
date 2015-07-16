@@ -2,7 +2,7 @@
 using namespace Rcpp;
 
 // [[Rcpp::export]]
-void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, int Ve)
+void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, double Ve)
 {
   RNGScope scope;
   for(int i=0; i<N; i++){        

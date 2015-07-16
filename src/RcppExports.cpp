@@ -73,7 +73,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // SAMP
-void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, int Ve);
+void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, double Ve);
 RcppExport SEXP NAM_SAMP(SEXP CSEXP, SEXP gSEXP, SEXP rSEXP, SEXP NSEXP, SEXP VeSEXP) {
 BEGIN_RCPP
     {
@@ -82,8 +82,27 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP );
         Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP );
         Rcpp::traits::input_parameter< int >::type N(NSEXP );
-        Rcpp::traits::input_parameter< int >::type Ve(VeSEXP );
+        Rcpp::traits::input_parameter< double >::type Ve(VeSEXP );
         SAMP(C, g, r, N, Ve);
+    }
+    return R_NilValue;
+END_RCPP
+}
+// SAMP2
+void SAMP2(NumericMatrix X, NumericVector g, NumericVector y, NumericVector xx, NumericVector E, NumericVector L, int N, double Ve);
+RcppExport SEXP NAM_SAMP2(SEXP XSEXP, SEXP gSEXP, SEXP ySEXP, SEXP xxSEXP, SEXP ESEXP, SEXP LSEXP, SEXP NSEXP, SEXP VeSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type L(LSEXP );
+        Rcpp::traits::input_parameter< int >::type N(NSEXP );
+        Rcpp::traits::input_parameter< double >::type Ve(VeSEXP );
+        SAMP2(X, g, y, xx, E, L, N, Ve);
     }
     return R_NilValue;
 END_RCPP

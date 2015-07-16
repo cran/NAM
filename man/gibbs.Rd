@@ -9,7 +9,7 @@ Bayesian Gibbs Sampler
 Univariate mixed model solver through Gibbs Sampling.
 }
 \usage{
-gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1)
+gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE)
 }
 \arguments{
   \item{y}{
@@ -42,6 +42,9 @@ Integer. Hyperprior degrees of freedom of variance components.
   \item{S}{
 Integer or NULL. Hyperprior shape of variance components. If NULL, the hyperprior solution for the scale parameter is calculated as proposed by de los Campos et al. (2013).
 }
+  \item{GSRU}{
+Logical. If TRUE, it updates the regression coefficient using Gauss-Seidel Residual Update (Legarra and Misztal 2008). Useful for p>>n, but does not work when iK or iR are provided.
+}
 }
 \details{
 Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. 
@@ -52,6 +55,8 @@ The function gibbs returns a list with variance components distribution a poster
 \references{
 
 de los Campos, G., Hickey, J. M., Pong-Wong, R., Daetwyler, H. D., and Calus, M. P. (2013). Whole-genome regression and prediction methods applied to plant and animal breeding. Genetics, 193(2), 327-345.
+
+Legarra, A., & Misztal, I. (2008). Technical note: Computing strategies in genome-wide selection. Journal of dairy science, 91(1), 360-366.
 
 Garcia-Cortes, L. A., and Sorensen, D. (1996). On a multivariate implementation of the Gibbs sampler. Genetics Selection Evolution, 28(1), 121-126.
 

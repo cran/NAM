@@ -21,6 +21,10 @@ SAMP <- function(C, g, r, N, Ve) {
     invisible(.Call('NAM_SAMP', PACKAGE = 'NAM', C, g, r, N, Ve))
 }
 
+SAMP2 <- function(X, g, y, xx, E, L, N, Ve) {
+    invisible(.Call('NAM_SAMP2', PACKAGE = 'NAM', X, g, y, xx, E, L, N, Ve))
+}
+
 timesMatrix <- function(ma1, h, ma2, rows, cols) {
     .Call('NAM_timesMatrix', PACKAGE = 'NAM', ma1, h, ma2, rows, cols)
 }

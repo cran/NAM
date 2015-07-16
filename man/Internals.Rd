@@ -7,6 +7,7 @@
 \alias{timesMatrix}
 \alias{timesVec}
 \alias{SAMP}
+\alias{SAMP2}
 \alias{.Random.seed}
 \title{
   Internal functions

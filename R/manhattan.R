@@ -39,5 +39,5 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL){
   
   medians=rep(NA,length(chr))
   for(i in 1:length(chr)) medians[i] = median(which(gwas$MAP[,1]==i))
-  axis(1, at=round(medians), labels=1:length(medians),...)
+  axis(1, at=round(medians), labels=1:length(medians))
 }

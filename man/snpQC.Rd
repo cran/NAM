@@ -1,6 +1,5 @@
 \name{SNP QC}
 \alias{snpQC}
-\alias{cleanREP}
 \title{
 SNP Quality Control
 }
@@ -25,7 +24,7 @@ Minor Allele Frequency. Default is 0.05. Useful to inform or remove markers belo
 Remove SNPs that are redundant or pursue low MAF: TRUE/FALSE.
 }
   \item{impute}{
-If TRUE, impute missing values using Random Forest implemented in the package missForest. Methods are described in Rutkoski et al (2013).
+If TRUE, impute missing values using Random Forest adapted from the package missForest (Stekhoven and Buhlmann 2012) as suggested by Rutkoski et al (2013).
 }
 }
 \value{
@@ -33,6 +32,8 @@ Returns the genomic matrix without missing, redundant or low MAF markers.
 }
 \references{
 Rutkoski, J. E., Poland, J., Jannink, J. L., & Sorrells, M. E. (2013). Imputation of unordered markers and the impact on genomic selection accuracy. G3: Genes| Genomes| Genetics, 3(3), 427-439.
+
+Stekhoven, D. J. and Buhlmann, P. 2012. MissForest - nonparametric missing value imputation for mixed-type data. Bioinformatics, 28(1), 112-118.
 }
 \author{
 Alencar Xavier, Katy Rainey and William Muir

@@ -1,5 +1,5 @@
 
-gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1){
+gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE){
   anyNA = function(x) any(is.na(x))  
   # Default for X; changing X to matrix if it is a formulas
   if(is.null(X)) X=matrix(1,length(y),1)
@@ -25,20 +25,21 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
     rm(ZZ,Randoms)
   }
 
-  
-  # Defaults for null and incomplete iK
-  if(is.null(iK)){
-    iK=list()
-    Randoms=length(Z)
-    for(var in 1:Randoms) iK[[var]]=diag(ncol(Z[[var]]))
-  }
-  if(class(iK)=="matrix") iK=list(iK)
-  if(length(Z)!=length(iK)){
-    a=length(Z)
-    b=length(iK)
-    if(a>b) for(K in 1:(a-b)) iK[[(K+b)]]=diag(ncol(Z[[K]]))
-    if(b>a) for(K in 1:(b-a)) Z[[(K+a)]]=diag(ncol(iK[[K]]))
-    rm(a,b)
+  if(!GSRU){
+    # Defaults for null and incomplete iK
+    if(is.null(iK)){
+      iK=list()
+      Randoms=length(Z)
+      for(var in 1:Randoms) iK[[var]]=diag(ncol(Z[[var]]))
+    }
+    if(class(iK)=="matrix") iK=list(iK)
+    if(length(Z)!=length(iK)){
+      a=length(Z)
+      b=length(iK)
+      if(a>b) for(K in 1:(a-b)) iK[[(K+b)]]=diag(ncol(Z[[K]]))
+      if(b>a) for(K in 1:(b-a)) Z[[(K+a)]]=diag(ncol(iK[[K]]))
+      rm(a,b)
+    } 
   }
   
   # Predictiors should not have missing values
@@ -86,6 +87,8 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
   }
   n = length(y)
   # Keeping on
+  # GSRU does not deal with WW or iK
+  if(!GSRU){
   if(is.null(iR)){
     r = crossprod(W,y)
     WW = (crossprod(W))
@@ -98,6 +101,11 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
   for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
   # Matching WW and Sigma
   C = WW+Sigma
+  }else{
+    L = rep(0,ncol(W))
+    for(i in 1:Randoms) L[Qs1[i+1]:Qs2[i+1]] = lambda[i]
+    xx = colSums(W^2)
+  }
   g = rep(0,N)
   # Saving space for the posterior
   include = 0
@@ -108,13 +116,18 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
   df0 = DF
   
   if(is.null(S)){
-  
     S0=rep(0,Randoms) # S0 has analystical solution (De los Campos et al 2013)
+    if(!GSRU){
     for(i in 1:Randoms) 
       S0[i]=(var(y,na.rm=T)*0.5)/mean(
         (t((t(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]])-
               colMeans(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]]))))^2 )
-  
+    }else{
+      for(i in 1:Randoms) 
+        S0[i]=(var(y,na.rm=T)*0.5)/
+        mean( (t((t(W[,Qs1[i+1]:Qs2[i+1]])-colMeans(W[,Qs1[i+1]:Qs2[i+1]]))))^2 )
+    }
+    
   }else{S0=rep(S,Randoms)}
     
   # Saving memory for some vectors
@@ -135,11 +148,16 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
     dfe = n + df0b
     
     # Random variance
-    for(i in 1:Randoms)
+    for(i in 1:Randoms){
       # (ZiAZ+S0v0)/x2(v)
+      if(!GSRU){
       Va[i] = (sum(crossprod(g[Qs1[i+1]:Qs2[i+1]],iK[[i]])*(g[Qs1[i+1]:Qs2[i+1]]))+  
                  S0a[i]*df0a[i])/rchisq(1,df=dfu[i])
-    
+      }else{
+        Va[i] = (sum(crossprod(g[Qs1[i+1]:Qs2[i+1]]))+S0a[i]*df0a[i])/rchisq(1,df=dfu[i])
+      }
+    }
+      
     # Residual variance
     e = y - W%*%g
     Ve = (crossprod(e)+S0b*df0b) / rchisq(1,df=dfe)
@@ -148,13 +166,18 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
     lambda = Ve/Va
     
     # Updating C
-    for(i in 1:Randoms)
-      Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
+    if(!GSRU){
+    for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
     C = WW+Sigma
+    }
     
-
-    SAMP(C,g,r,N,Ve) # the C++ SAMP updates "g" and doesn't return anything
-    
+    # the C++ SAMP updates "g" and doesn't return anything
+    if(!GSRU){
+      SAMP(C,g,r,N,Ve)
+    } else {
+      SAMP2(W,g,y,xx,e,L,N,Ve) 
+    }
+        
     if(is.element(iteration,THIN)){
       include = include + 1;
       POSTg[,include] = g;
