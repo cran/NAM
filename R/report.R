@@ -41,11 +41,11 @@ if(!is.null(fam)){u = unique(fam);f = length(u)
     w = which(fam==u[i])
     eff = t(cov(y[w],gen[w,])/Vx)
     r1 = cbind(r1,eff)
-names(r1)[8+i] = paste("Eff.Pop.",u[i],sep='')}}
+names(r1)[9+i] = paste("Eff.Pop.",u[i],sep='')}}
 
 if(exp){
   write.csv(r1,"Report.GWAS.csv",row.names=F)
-  leg = paste("(h2 = ",h2,")",sep='')
+  leg = paste("(h2 = ",round(h2,3),")",sep='')
   png("Report.GWAS.png",width = 800, height = 500)
   plot(ID,main="Genome-wide Association Studies")
   legend("topleft",leg,bty = "n")

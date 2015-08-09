@@ -34,6 +34,8 @@ This function was dedicated to provide simple output containing SNP scores and e
 }
 \value{
 It exports a CSV file with the report file and a PNG file with a Manhattan plot. In R environment, it returns a list with three objects. 1) An association study (GWAS), output of the gwas function. 2) Fitted mixed model (MixMod), output of gibbs (or reml) function, used to estimate variance components and joint effect of markers. 3) A data frame with SNP score and additive effect (Report).
+
+The exported report file (Report.GWAS.csv) comprises SNP id (*ID.SNPs*), which are column names of the genotypic matrix; chromosome number (*chr*), the number of the marker into the chromosome (*bin*), the LOD score (*LOD*), the -log(P-value) that is the common unit in association studies (*P.value*), the coefficient of determination (*R2*) that indicates the proportion of the variance predicted from each marker as a continuous variable, the variance explained by each marker in haplotype terms (*Var.Exp.by.SNP*), the marginal effect of each marker computes as the OLS solution (*Marg.Effect*), the joint effect (*Joint.Effect*) that assumes that the marker was fit into an additive model given all other markers were in the model, and the marginal effect of each marker in each subpopulation (*Eff.Pop.x*).
 }
 \author{
 Alencar Xavier
