@@ -224,7 +224,7 @@ mixed<-function(x,y,kk){
 
 # Shizhong's BLUP function
 blup<-function(gen,map,fam,x,y,kk,beta,lambda,cc){
-  qq<-eigen(as.matrix(kk))
+  qq<-eigen(as.matrix(kk),symmetric=T)
   delta<-qq[[1]]
   uu<-qq[[2]]
   yu<-t(uu)%*%y
@@ -337,7 +337,24 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
     lam_k<-xi
     tau_k<-lam_k*sigma2
     lrt<-2*(fn0-fn1)
-    par<-data.frame(conv,fn1,fn0,lrt,beta,sigma2,lam_k,tau_k)
+    if(lrt<0){
+      lrt = 0
+      lod = 0
+      pval = 0
+    }else{
+      lod = lrt/4.61
+      pval = round(-log(dchisq(lrt,0.5)),2)
+      if(pval<0) pval = 0
+    }
+    
+    names(gamma) = paste("allele.eff.",1:r,sep="")
+    gamma = t(data.frame(gamma))
+    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
+    stderr = t(data.frame(stderr))
+    sigma2g = sigma2*(lambda+lam_k)
+    h2 = sigma2g / (sigma2g+sigma2)
+    par<-data.frame(conv,fn1,fn0,lod,pval,lrt,sigma2g,sigma2,h2,lam_k,"var.snp"=tau_k,"intercept"=beta,gamma,stderr)
+    
     blup<-c(gamma,stderr)
     parr<-rbind(parr,par)
     blupp<-rbind(blupp,blup)
@@ -462,7 +479,24 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     parm<-optim(par=theta,fn=loglike,hessian = TRUE,method="L-BFGS-B",lower=-5,upper=5)
     fn0<-parm$value
     lrt<-2*(fn0-fn1)
-    par<-data.frame(conv,fn1,fn0,lrt,beta,sigma2,lam_k,tau_k)
+    if(lrt<0){
+      lrt = 0
+      lod = 0
+      pval = 0
+    }else{
+      lod = lrt/4.61
+      pval = round(-log(dchisq(lrt,0.5)),2)
+      if(pval<0) pval = 0
+    }
+    
+    names(gamma) = paste("allele.eff.",1:r,sep="")
+    gamma = t(data.frame(gamma))
+    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
+    stderr = t(data.frame(stderr))
+    sigma2g = sigma2*(lambda+lam_k)
+    h2 = sigma2g / (sigma2g+sigma2)
+    par<-data.frame(conv,fn1,fn0,lod,pval,lrt,sigma2g,sigma2,h2,lam_k,"var.snp"=tau_k,"intercept"=beta,gamma,stderr)
+    
     blup<-c(gamma,stderr)
     parr<-rbind(parr,par)
     blupp<-rbind(blupp,blup)
@@ -497,7 +531,7 @@ FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
   lambda<-parm$lambda
   beta<-parm$beta
   cat("Starting Eigendecomposition",'\n')
-  qq<-eigen(as.matrix(kk),symmetric=T,EISPACK=T)
+  qq<-eigen(as.matrix(kk),symmetric=T)
   delta<-qq[[1]]
   uu<-qq[[2]]
   h<-1/(delta*lambda+1)
@@ -518,8 +552,8 @@ FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
     zx = timesMatrix(xu,h,zu,q,r)
     zy = timesVec(yu,h,zu,r)
     zz = timesMatrix(zu,h,zu,r,r)
-    zzi<-solve(zz+diag(.0001,ncol(zz)))
-    b<-solve(zz+diag(.0001,ncol(zz)),zy)
+    zzi<-solve(zz+diag(.000001,ncol(zz)))
+    b<-solve(zz+diag(.000001,ncol(zz)),zy)
     s2<-(yy-t(zy)%*%zzi%*%zy)/(n-r-q);
     v<-zzi*drop(s2);
     g<-b-mean(b)
@@ -527,7 +561,11 @@ FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
     wald<-t(g)%*%solve(v)%*%g
     stderr<-sqrt(diag(v))
     sigma2<-s2
-    par<-data.frame(wald,beta,sigma2)
+    rownames(gamma) = paste("gamma",1:r,sep="")
+    gamma = t(data.frame(gamma))
+    names(stderr) = paste("sd.gamma",1:r,sep="")
+    stderr = t(data.frame(stderr))
+    par<-data.frame(wald,beta,sigma2,gamma,stderr)
     blup<-c(gamma,stderr)
     parr<-rbind(parr,par)
     blupp<-rbind(blupp,blup)

@@ -1,7 +1,6 @@
 \name{GWAS}
 \alias{gwas}
 \alias{gwas2}
-\alias{plot.NAM}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
@@ -10,6 +9,7 @@ The gwas function calculates the likelihood ratio for each marker under the empi
 }
 \usage{
 gwas(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE)
+gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL)
 }
 \arguments{
   \item{y}{
@@ -31,22 +31,28 @@ Numeric. If specified, genetic distance between markers is used for moving windo
   \item{fixed}{
 Logical. If TRUE, markers are treated as fixed effect and hence, evaluated through Wald statistics. If markers are specief as fixed, the argument 'window' is not applicable.
 }
+  \item{EIG}{
+Output of the R function 'eigen'. It is used for user-defined kinship matrix.
+}
 }
 \details{
+
 Special incidence matrix is recreated to optimize the information provided by the subpopulations. Each locus is recoded as a vector with length \eqn{f} equal to number of subpopulations, or NAM families, as the interaction locus by family. For example, a locus heterozigous from an individual from subpopulation 2 is coded as [ 1, 0, 1 , ... ,\eqn{f} ], a locus homozigous for the reference allele from any subpopulation is coded as [ 2, 0, 0, ... , \eqn{f} ] and a locus homozigous for the founder allele from an individual from subpopulation 1 is coded as [ 0, 2, 0, ... ,\eqn{f} ].
 
 The base model for genome scanning includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). 
 
-The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities.
+The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015).
 
-In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2".
+In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2". This function also allows used-defined kindship through the argument EIG.
 }
 \value{
-The function gwas returns a list containing the method deployed (\eqn{Method}), predicted parameters and statistical test (\eqn{PolyTest}), genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).
+The function gwas returns a list containing the method deployed (\eqn{Method}), a summary of predicted parameters and statistical tests (\eqn{PolyTest}), estimated genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).
 }
 \references{
 
 Wang, Q. An Empirical Bayes Method for Genome-Wide Association Studies. W799/Statistical Genomics. PAG XXXII. 2015.
+
+Xavier, A., Xu, S., Muir, W. M., & Rainey, K. M. (2015). NAM: Association Studies in Multiple Populations. Bioinformatics, btv448.
 
 Zhang et al. 2010. Mixed linear model approach adapted for genome-wide association studies. Nat. Genet. 42:355-360.
 
@@ -58,7 +64,6 @@ Alencar Xavier, Tiago Pimenta, Qishan Wang and Shizhong Xu
 \examples{
 data(tpod)
 test=gwas(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
-
 par(mfrow=c(3,1))
 
 # Example Manhattan 1

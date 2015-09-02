@@ -1,5 +1,7 @@
 \name{SNP QC}
 \alias{snpQC}
+\alias{markov}
+\alias{LD}
 \title{
 SNP Quality Control
 }

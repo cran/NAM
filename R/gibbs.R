@@ -2,6 +2,7 @@
 gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE){
   anyNA = function(x) any(is.na(x))  
   # Default for X; changing X to matrix if it is a formulas
+  VY = var(y,na.rm=T)
   if(is.null(X)) X=matrix(1,length(y),1)
   if(class(X)=="formula"){
     X=model.frame(X)
@@ -143,8 +144,8 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
     S0a = runif(Randoms,S0*0.5,S0*1.5)
     df0a = runif(Randoms,df0*0.5,df0*1.5)
     dfu = q + df0a
-    if(is.null(S)){ S0b = runif(1,0.001,5) }else{ S0b = runif(1,S*0.5,S*1.5) }
-    df0b = runif(1,df0*0.5,df0*1.5)
+    if(is.null(S)){ S0b = runif(1,0.0001,5) }else{ S0b = runif(1,S*0.5,S*1.5) }
+    df0b = runif(1,min(2,df0)*0.5,min(2,df0)*1.5)
     dfe = n + df0b
     
     # Random variance

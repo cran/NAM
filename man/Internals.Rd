@@ -8,6 +8,7 @@
 \alias{timesVec}
 \alias{SAMP}
 \alias{SAMP2}
+\alias{KM}
 \alias{.Random.seed}
 \title{
   Internal functions

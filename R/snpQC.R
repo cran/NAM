@@ -114,3 +114,114 @@ cleanREP = function(y,fam,gen,thr=0.95){
   }
   return(list(y=Ny,gen=Ngen,fam=Nfam))
 }
+
+# Some sort of Hidden Markov model for imputation
+markov=function(gen,chr){
+  # vector chr
+  CHR=NULL;for(i in 1:length(chr)){CHR=c(CHR,rep(i,chr[i]))}
+  # Expectation and Transition Probability
+  tr = function(v1,v2){ 
+    tp=rep(NA,9) # Transition Probability
+    tp[1]=mean(v1==0&v2==0,na.rm=T);tp[2]=mean(v1==0&v2==1,na.rm=T);tp[3]=mean(v1==0&v2==2,na.rm=T)
+    tp[4]=mean(v1==1&v2==0,na.rm=T);tp[5]=mean(v1==1&v2==1,na.rm=T);tp[6]=mean(v1==1&v2==2,na.rm=T)
+    tp[7]=mean(v1==2&v2==0,na.rm=T);tp[8]=mean(v1==2&v2==1,na.rm=T);tp[9]=mean(v1==2&v2==2,na.rm=T)
+    tp[tp==0]=1e-5;tp[1:3]=tp[1:3]/sum(tp[1:3]);tp[4:6]=tp[4:6]/sum(tp[4:6]);tp[7:9]=tp[7:9]/sum(tp[7:9])
+    return(tp)}
+  # Transition matrix
+  TM = function(gen){M = ncol(gen); N = nrow(gen)
+                     step1 = rbind(gen[,-M],gen[,-1])
+                     step2 = function(snps) tr(snps[1:N],snps[-c(1:N)])
+                     step3 = apply(step1,2,step2); rm(step1)
+                     rownames(step3) = paste(gl(3,3,9,0:2),0:2,sep='to')
+                     return(step3)}
+  # Calculate log-prob of transitions
+  mis = gen;  tm=log(TM(gen))
+  # Imputation with Expectation
+  IE = function(v1,v2,tp){
+    exp=rep(NA,3);exp[1]=which.max(tp[1:3])-1;exp[2]=which.max(tp[4:6])-1;exp[3]=which.max(tp[7:9])-1
+    w=which(is.na(v2));r=v1[w]+1;v=exp[r];v2[w]=v;return(v2)}
+  # Imputing first row (starting point)
+  gen[,1] = IE(IE(IE(gen[,4],gen[,3],tm[,3]),gen[,2],tm[,2]),gen[,1],tm[,1])
+  if(anyNA(gen[,1]))gen[,1][is.na(gen[,1])]=as.numeric(names(which.max(table(gen[,1],exclude=NA))))
+  # Imputing the rest
+  for(i in 2:ncol(gen)) gen[,i]=IE(gen[,i-1],gen[,i],tm[,i-1])
+  # THE END
+  return(gen)
+}
+
+# LD matrix function
+LD = function(gen){
+  
+  # Phasing via EM
+  EM=function(A,B,n=12){
+    Z=suppressWarnings(matrix(c(table(paste(A,B,sep=""))),3,3))
+    # Initial guess
+    COUP = 0.5 ; REPU = 0.5
+    # Function to estimate haplotypes
+    HapProb=function(Z,Co,Re){
+      AB = 2*Z[1,1] + Z[2,1] + Z[1,2] + Co*Z[2,2]
+      Ab = 2*Z[3,1] + Z[2,1] + Z[3,2] + Re*Z[2,2]
+      aB = 2*Z[1,3] + Z[1,2] + Z[2,3] + Re*Z[2,2]
+      ab = 2*Z[3,3] + Z[3,2] + Z[2,3] + Co*Z[2,2]
+      props = data.frame(AB,Ab,aB,ab)
+      haps=(data.matrix(props)/2)/sum(Z)
+      rownames(haps)="Hap"
+      return(haps)}
+    HHH=c()
+    # Loop
+    for(i in 1:n){
+      H=HapProb(Z,COUP,REPU) 
+      # cat(cbind(H,COUP,REPU),'\n')
+      H2=matrix(H,2,2); dia=H2[1,1]*H2[2,2];
+      off=H2[2,1]*H2[1,2]; tt=dia+off;
+      oC = COUP; oR = REPU #for while loop
+      COUP = dia/tt; REPU = off/tt
+      HHH=rbind(HHH,rbind(cbind(H,COUP,REPU)))
+      diff= abs(COUP-oC)+abs(REPU-oR) #for while loop
+    }
+    rownames(HHH)=1:n
+    EM=round(tail(HHH,1)[1:4],4)
+    names(EM)=colnames(HHH)[1:4]
+    return(EM)
+  }
+  
+  # LD values
+  EM_LD = function(A,B){
+    phase=EM(A,B)
+    if(det(matrix(phase,2,2))<0) phase=phase[c(2,1,4,3)]
+    X = matrix(phase,2,2)
+    D=X[1,1]-sum(X[,1])*sum(X[1,])
+    if(D<0){
+      Dp=min((sum(X[,1])*sum(X[1,])),sum(X[,2])*sum(X[2,]))
+    }else{
+      Dp=min((sum(X[,1])*sum(X[2,])),sum(X[,2])*sum(X[1,]))
+    }
+    r=sqrt(prod(X))
+    r2=r**2
+    ld = as.vector(data.frame(D,Dp,r,r2))
+    ld = as.numeric(ld)
+    names(ld) = c("D","Dp","r","r2")
+    return(ld)
+  }
+  
+  # LD matrix
+  LDmat = function(gen){
+    n = ncol(gen)
+    snps = colnames(gen)
+    mat = matrix(NA,n,n)
+    dimnames(mat) = list(snps,snps)
+    LD1=LD2=LD3=LD4=mat
+    rm(mat)
+    for(i in 1:n){for(j in 1:n){if(j>i){
+      ld = as.numeric(EM_LD(gen[,i],gen[,j]))
+      LD1[i,j]=LD1[j,i]=ld[1]
+      LD2[i,j]=LD2[j,i]=ld[2]
+      LD3[i,j]=LD3[j,i]=ld[3]
+      LD4[i,j]=LD4[j,i]=ld[4]
+    }}}
+    LD = list("D"=LD1,"Dp"=LD2,"r"=LD3,"r2"=LD4)
+    return(LD)}
+  
+  MATRIX = LDmat(gen)
+  return(MATRIX)
+}

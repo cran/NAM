@@ -9,82 +9,64 @@ using namespace Rcpp;
 int calcSize(NumericVector col, NumericVector fam);
 RcppExport SEXP NAM_calcSize(SEXP colSEXP, SEXP famSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type fam(famSEXP );
-        int __result = calcSize(col, fam);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type fam(famSEXP);
+    __result = Rcpp::wrap(calcSize(col, fam));
+    return __result;
 END_RCPP
 }
 // funI
 NumericVector funI(NumericVector col, int fam, int finsiz, int f);
 RcppExport SEXP NAM_funI(SEXP colSEXP, SEXP famSEXP, SEXP finsizSEXP, SEXP fSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP );
-        Rcpp::traits::input_parameter< int >::type fam(famSEXP );
-        Rcpp::traits::input_parameter< int >::type finsiz(finsizSEXP );
-        Rcpp::traits::input_parameter< int >::type f(fSEXP );
-        NumericVector __result = funI(col, fam, finsiz, f);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
+    Rcpp::traits::input_parameter< int >::type fam(famSEXP);
+    Rcpp::traits::input_parameter< int >::type finsiz(finsizSEXP);
+    Rcpp::traits::input_parameter< int >::type f(fSEXP);
+    __result = Rcpp::wrap(funI(col, fam, finsiz, f));
+    return __result;
 END_RCPP
 }
 // funX
 NumericVector funX(NumericVector col, int finsiz);
 RcppExport SEXP NAM_funX(SEXP colSEXP, SEXP finsizSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP );
-        Rcpp::traits::input_parameter< int >::type finsiz(finsizSEXP );
-        NumericVector __result = funX(col, finsiz);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
+    Rcpp::traits::input_parameter< int >::type finsiz(finsizSEXP);
+    __result = Rcpp::wrap(funX(col, finsiz));
+    return __result;
 END_RCPP
 }
 // inputRow
 NumericVector inputRow(NumericVector x, int exp, int n);
 RcppExport SEXP NAM_inputRow(SEXP xSEXP, SEXP expSEXP, SEXP nSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP );
-        Rcpp::traits::input_parameter< int >::type exp(expSEXP );
-        Rcpp::traits::input_parameter< int >::type n(nSEXP );
-        NumericVector __result = inputRow(x, exp, n);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type exp(expSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    __result = Rcpp::wrap(inputRow(x, exp, n));
+    return __result;
 END_RCPP
 }
 // SAMP
 void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, double Ve);
 RcppExport SEXP NAM_SAMP(SEXP CSEXP, SEXP gSEXP, SEXP rSEXP, SEXP NSEXP, SEXP VeSEXP) {
 BEGIN_RCPP
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericMatrix >::type C(CSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP );
-        Rcpp::traits::input_parameter< int >::type N(NSEXP );
-        Rcpp::traits::input_parameter< double >::type Ve(VeSEXP );
-        SAMP(C, g, r, N, Ve);
-    }
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type C(CSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< double >::type Ve(VeSEXP);
+    SAMP(C, g, r, N, Ve);
     return R_NilValue;
 END_RCPP
 }
@@ -92,18 +74,16 @@ END_RCPP
 void SAMP2(NumericMatrix X, NumericVector g, NumericVector y, NumericVector xx, NumericVector E, NumericVector L, int N, double Ve);
 RcppExport SEXP NAM_SAMP2(SEXP XSEXP, SEXP gSEXP, SEXP ySEXP, SEXP xxSEXP, SEXP ESEXP, SEXP LSEXP, SEXP NSEXP, SEXP VeSEXP) {
 BEGIN_RCPP
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type L(LSEXP );
-        Rcpp::traits::input_parameter< int >::type N(NSEXP );
-        Rcpp::traits::input_parameter< double >::type Ve(VeSEXP );
-        SAMP2(X, g, y, xx, E, L, N, Ve);
-    }
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< double >::type Ve(VeSEXP);
+    SAMP2(X, g, y, xx, E, L, N, Ve);
     return R_NilValue;
 END_RCPP
 }
@@ -111,36 +91,28 @@ END_RCPP
 NumericMatrix timesMatrix(NumericMatrix ma1, NumericVector h, NumericMatrix ma2, int rows, int cols);
 RcppExport SEXP NAM_timesMatrix(SEXP ma1SEXP, SEXP hSEXP, SEXP ma2SEXP, SEXP rowsSEXP, SEXP colsSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericMatrix >::type ma1(ma1SEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type h(hSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type ma2(ma2SEXP );
-        Rcpp::traits::input_parameter< int >::type rows(rowsSEXP );
-        Rcpp::traits::input_parameter< int >::type cols(colsSEXP );
-        NumericMatrix __result = timesMatrix(ma1, h, ma2, rows, cols);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type ma1(ma1SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type h(hSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type ma2(ma2SEXP);
+    Rcpp::traits::input_parameter< int >::type rows(rowsSEXP);
+    Rcpp::traits::input_parameter< int >::type cols(colsSEXP);
+    __result = Rcpp::wrap(timesMatrix(ma1, h, ma2, rows, cols));
+    return __result;
 END_RCPP
 }
 // timesVec
 NumericMatrix timesVec(NumericVector aa, NumericVector h, NumericMatrix bb, int q);
 RcppExport SEXP NAM_timesVec(SEXP aaSEXP, SEXP hSEXP, SEXP bbSEXP, SEXP qSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type aa(aaSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type h(hSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type bb(bbSEXP );
-        Rcpp::traits::input_parameter< int >::type q(qSEXP );
-        NumericMatrix __result = timesVec(aa, h, bb, q);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type aa(aaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type h(hSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type bb(bbSEXP);
+    Rcpp::traits::input_parameter< int >::type q(qSEXP);
+    __result = Rcpp::wrap(timesVec(aa, h, bb, q));
+    return __result;
 END_RCPP
 }

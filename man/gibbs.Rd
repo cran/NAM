@@ -61,7 +61,6 @@ Legarra, A., & Misztal, I. (2008). Technical note: Computing strategies in genom
 Garcia-Cortes, L. A., and Sorensen, D. (1996). On a multivariate implementation of the Gibbs sampler. Genetics Selection Evolution, 28(1), 121-126.
 
 Sorensen, D., & Gianola, D. (2002). Likelihood, Bayesian, and MCMC methods in quantitative genetics. Springer Science & Business Media.
-
 }
 \author{
 Alencar Xavier
@@ -81,6 +80,15 @@ iK = chol2inv(K)
 test2=gibbs(y,iK=iK)
 plot(test2)
 
+# Fitting RKHS
+E = dist(gen)
+G = exp(-E^2/mean(E^2))
+EIG = eigen(G,symmetric = TRUE)
+ev = 20
+U = EIG$vectors[,1:ev]
+iV = diag(1/EIG$values[1:ev])
+test3=gibbs(y,Z=U,iK=iV,S=NULL)
+plot(test3)
 }
 \keyword{ BLUP }
 \keyword{ BGS }
