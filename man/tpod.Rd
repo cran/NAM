@@ -4,7 +4,6 @@
 \alias{chr}
 \alias{fam}
 \alias{y}
-\alias{phys}
 \title{
   Tetra-seed Pods
 }

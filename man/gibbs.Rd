@@ -1,7 +1,6 @@
 \name{BGS}
 \alias{gibbs}
 \alias{plot.gibbs}
-\alias{covar}
 \title{
 Bayesian Gibbs Sampler
 }

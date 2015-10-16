@@ -56,6 +56,24 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// KMUP
+SEXP KMUP(NumericMatrix X, NumericVector b, NumericVector xx, NumericVector E, NumericVector L, int p, double Ve, double pi);
+RcppExport SEXP NAM_KMUP(SEXP XSEXP, SEXP bSEXP, SEXP xxSEXP, SEXP ESEXP, SEXP LSEXP, SEXP pSEXP, SEXP VeSEXP, SEXP piSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type L(LSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type Ve(VeSEXP);
+    Rcpp::traits::input_parameter< double >::type pi(piSEXP);
+    __result = Rcpp::wrap(KMUP(X, b, xx, E, L, p, Ve, pi));
+    return __result;
+END_RCPP
+}
 // SAMP
 void SAMP(NumericMatrix C, NumericVector g, NumericVector r, int N, double Ve);
 RcppExport SEXP NAM_SAMP(SEXP CSEXP, SEXP gSEXP, SEXP rSEXP, SEXP NSEXP, SEXP VeSEXP) {

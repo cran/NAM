@@ -12,14 +12,14 @@ Designed for association studies in nested association mapping (NAM) panels, als
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.4 \cr
-Date: \tab 2015-09-01\cr
+Version: \tab 1.4.1 \cr
+Date: \tab 2015-10-15\cr
 License: \tab GPL-3 \cr
 }
 
 }
 \author{
-Alencar Xavier, William Muir, Katy Rainey, Tiago Pimenta, Shizhong Xu
+Alencar Xavier, William Muir, Katy Rainey, Shizhong Xu.
 
 Maintainer: Alencar Xavier <xaviera@purdue.edu>
 }

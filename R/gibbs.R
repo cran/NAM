@@ -265,3 +265,29 @@ covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
   } 
   if(obs!=49) return(quad)
 }
+
+PedMat=function(ped=NULL){
+  if(is.null(ped)){
+    id = 1:11
+    dam = c(0,1,1,1,1,2,0,4,6,8,9)
+    sire = c(0,0,0,0,0,3,3,5,7,3,10)
+    example = cbind(id,dam,sire)
+    cat('Example of pedigree\n')
+    print(example)
+    cat('- It must follow chronological order\n')
+    cat('- Zeros are used for unknown\n')
+  }else{
+    n = nrow(ped)
+    A=diag(0,n)
+    for(i in 1:n){
+      for(j in 1:n){
+        if(i>j){A[i,j]=A[j,i]}else{
+          d = ped[j,2]
+          s = ped[j,3]
+          if(d==0){Aid=0}else{Aid=A[i,d]}
+          if(s==0){Ais=0}else{Ais=A[i,s]}
+          if(d==0|s==0){Asd=0}else{Asd=A[d,s]}
+          if(i==j){Aij=1+0.5*Asd}
+          if(i!=j){Aij=0.5*(Aid+Ais)}
+          A[i,j]=Aij}}}
+    return(A)}}

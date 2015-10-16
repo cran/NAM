@@ -9,6 +9,7 @@ Univariate REML estimators and variance components for a single random variable 
 }
 \usage{
 reml(y,X=NULL,Z=NULL,K=NULL)
+MCreml(y,K,X=NULL,MC=300,samp=300)
 }
 \arguments{
   \item{y}{
@@ -23,9 +24,15 @@ Formula or numeric matrix (\eqn{n} by \eqn{p}) that corresponds to the incidence
   \item{K}{
 Numeric matrix (\eqn{p} by \eqn{p}). Kinship matrix for random effect with \eqn{p} parameters. \code{NA} is not allowed.
 }
+  \item{MC}{
+Number of sampling procedures to estimate variance components using MCreml.
+}
+  \item{samp}{
+Sample size of the sampling procedure to estimate variance components using MCreml.
+}
 }
 \details{
-Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). If y is a matrix with multiple traits, the fuctions solves the mixed model via an ECM algorithm adapted from the EMMREML package (Akdemir and Godfrey 2014). A sample strategy for large datasets is also available as MCreml.
+Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). If y is a matrix with multiple traits, the fuctions solves the mixed model via an ECM algorithm adapted from the EMMREML package (Akdemir and Godfrey 2014). MCreml is a resampling strategy to find variance components for large datasets.
 }
 \value{
 The function reml returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 

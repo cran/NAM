@@ -42,15 +42,29 @@ plot.fst = function(x,..., p=NULL,chr=NULL){
   anyNA = function(x) any(is.na(x))
   class(x)=NULL; FST=x$fst
   C = 1 - 0.1 * (4 + 6 * abs(FST)/max(abs(FST)))
-  plot(FST,...,main="Fixation Index",pch=20,xlab="Genome",col=(rgb(C,C,C)))
-  K = ksmooth(1:length(FST),FST,"normal",bandwidth = 10)
-  lines(K,type="l",lwd=3,col=rgb(0,0,1,0.6))
-  if(is.null(chr)!=T) abline(v=cumsum(chr[-length(chr)])+0.5,lty=3)
+  
+  if(is.null(chr)!=T){
+    plot(FST,...,xaxt = "n",main="Fixation Index",pch=20,xlab="Genome",col=(rgb(C,C,C)))
+  }else{
+    plot(FST,...,main="Fixation Index",pch=20,xlab="Genome",col=(rgb(C,C,C)))
+  }
+  K = smooth(smooth(FST))
+  lines(K,type="l",lwd=1,col=rgb(0,0,1,0.6))
+  if(is.null(chr)!=T){
+    # Adding Chromosome in X axis
+    medians=rep(NA,length(chr))
+    CHR=c(); for(i in 1:length(chr)) CHR=c(CHR,rep(i,chr[i]))
+    for(i in 1:length(chr)) medians[i] = median(which(CHR==i))
+    axis(1, at=round(medians), labels=1:length(medians))
+    abline(v=cumsum(chr[-length(chr)])+0.5,lty=3)
+  } 
+
+  
   # P-value  
   if(is.null(p)!=TRUE){
     par(ask=TRUE); CDF = ecdf(FST);
     Pval = -log(1-CDF(FST)) ; THR = -log(p/length(FST))
-    plot(Pval,ylab="Empirical -log(p-value)",
+    plot(Pval,ylab="Empirical -log probatility",
          xlab="Genome",main="P-values",pch=20,col=1+1*(Pval>THR))
     if(is.null(chr)!=T) abline(v=cumsum(chr[-length(chr)])+0.5,lty=3)
     abline(h=THR,col=rgb(1,0,0,0.4),lty=2);par(ask=FALSE)

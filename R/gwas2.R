@@ -31,7 +31,7 @@ organ=function(fam,y,covariate,Z){
 f=organ(fam,y,covariate,gen);fam=f[[1]];y=f[[2]];covariate=f[[3]];gen=f[[4]];rm(f);
 covariate=matrix(covariate,ncol=1)
 
-# IMPUTATION OF MISSING Y's  
+# IMPUTATION OF MISSING Y's - OBSOLETE
   Ymc=function(y,fam){
     MC=function(y){
       x=mean(y,na.rm=T)
@@ -112,14 +112,16 @@ INPUT=function(gen,fam,chr){
     nF=dim(array((summary(factor(Fam)))))
     # Functions
     GD=function(snpA,snpB){ # genetic distance
+      kosambi = function(r) min(.25*log((1+2*r)/(1-2*r)),.5)
       a0=which(snpA==0)
       a2=which(snpA==2)
       b0=which(snpB==0)
       b2=which(snpB==2)
       NR=length(intersect(a0,b0))+length(intersect(a2,b2))
       RE=length(intersect(a0,b2))+length(intersect(a2,b0))
-      if(RE<NR){r=RE/(NR+RE)}else{r=NR/(NR+RE)};
-      return(r)}
+      if(RE<NR){r=RE/(NR+RE)}else{r=NR/(NR+RE)}
+      d = kosambi(r)
+      return(d)}
     AR=function(SNP){ # able to recombine
       ar=function(snp){
         uni=unique(snp)
@@ -320,16 +322,13 @@ RANDOMsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
     result<-list(gamma,stderr,beta,sigma2)
     return(result)}
   parr<-numeric()
-  blupp<-numeric()
   cat("Starting Marker Analysis",'\n')
   pb=txtProgressBar(style=3)
   if(max(fam)==1) r=1
   for(k in 1:m){
-    
-    if(max(fam)==1){
+    if(r==2){
       genk<-t(gen[,k])
     }else{genk<-GGG(gen[,k],fam)}
-    
     zu<-t(uu)%*%t(genk)
     yy<-sum(yu*h*yu)
     zu=as.matrix(zu)
@@ -358,24 +357,24 @@ RANDOMsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
       pval = 0
     }else{
       lod = lrt/4.61
-      pval = round(-log(dchisq(lrt,0.5)),2)
+      pval = round(-log(dchisq(lrt,0.5),base = 10),2)
       if(pval<0) pval = 0
     }
-    
-    names(gamma) = paste("allele.eff.",1:r,sep="")
+    if(r>2){
+      names(gamma) = c("allele.eff.standard",paste("allele.eff.founder.",1:(r-1),sep=""))  
+      names(stderr) = c("sd.allele.eff.standard",paste("sd.allele.eff.founder.",1:(r-1),sep=""))
+    }
     gamma = t(data.frame(gamma))
-    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
     stderr = t(data.frame(stderr))
     sigma2g = sigma2*(lambda+lam_k)
     h2 = sigma2g / (sigma2g+sigma2)
     par<-data.frame(conv,fn1,fn0,lod,pval,lrt,sigma2g,sigma2,h2,lam_k,"var.snp"=tau_k,"intercept"=beta,gamma,stderr)
-
-    blup<-c(gamma,stderr)
     parr<-rbind(parr,par)
-    blupp<-rbind(blupp,blup)
     setTxtProgressBar(pb,k/m)
   };close(pb)
   cat("Calculations were performed successfully",'\n')
+  if(max(fam)==1){names(parr)[13:14] = c("allele.eff","sd.allele.eff")}
+  rownames(parr) = paste('SNP',1:m,sep='')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes","MAP"=MAP,"SNPs"=SNPnames))}
 
 FIXEDsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
@@ -415,17 +414,14 @@ FIXEDsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
   xx = timesMatrix(xu,h,xu,q,q)
   beta<-solve(xx,yx)
   parr<-numeric()
-  blupp<-numeric()
   cat("Starting Single Marker Analysis",'\n')
   pb=txtProgressBar(style=3)
   if(max(fam)==1) r=1
   for(k in 1:m){
-    
-    if(max(fam)==1){
+   if(r==1){
       genk<-t(gen[,k])
     }else{genk<-GGG(gen[,k],fam)}
-    
-    zu<-t(uu)%*%t(genk)
+   zu<-t(uu)%*%t(genk)
     zu = as.matrix(zu)
     zx = timesMatrix(xu,h,zu,q,r)
     zy = timesVec(yu,h,zu,r)
@@ -434,26 +430,28 @@ FIXEDsma = function (GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
     b<-solve(zz+diag(.000001,ncol(zz)),zy)
     s2<-(yy-t(zy)%*%zzi%*%zy)/(n-r-q)
     v<-zzi*drop(s2);
-    if(max(fam)==1){
+   if(r==1){
+      g<-b-mean(b); gamma<-g
       wald<-t(b)%*%solve(v)%*%b
     }else{
       g<-b-mean(b); gamma<-g
       wald<-t(g)%*%solve(v)%*%g}
     stderr<-sqrt(diag(v))
     sigma2<-s2
-    rownames(gamma) = paste("allele.eff.",1:r,sep="")
-    gamma = t(data.frame(gamma))
-    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
-    stderr = t(data.frame(stderr))
-    par<-data.frame(wald,beta,sigma2,gamma,stderr)
-    blup<-c(gamma,stderr)
+   if(r>1){
+      rownames(gamma) = paste("allele.eff.",1:r,sep="")
+      names(stderr) = paste("sd.allele.eff.",1:r,sep="")
+      gamma = t(data.frame(gamma))
+      stderr = t(data.frame(stderr))
+   }   
+   par<-data.frame(wald,sigma2,gamma,stderr)
     parr<-rbind(parr,par)
-    blupp<-rbind(blupp,blup)
     setTxtProgressBar(pb,k/m)
   };close(pb)
+  if(r==1) names(parr)[3:4] = c("allele.eff","sd.allele.eff")
   cat("Calculations were performed successfully",'\n')
+  rownames(parr) = paste('SNP',1:m,sep='')
   return(list("PolyTest"=parr,"Method"="P3D","MAP"=MAP,"SNPs"=SNPnames))}
-
 
 #########
 ## RUN ##
@@ -466,7 +464,8 @@ if(fx==1){
   }else{
   
     fit=RANDOMsma(GEN=gen,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs)
-  moda=function(x){
+  
+    moda=function(x){
   it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
     y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
     diffs=sup-inf; i=min(which(diffs==min(diffs)))

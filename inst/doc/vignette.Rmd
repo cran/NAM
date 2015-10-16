@@ -1,0 +1,363 @@
+---
+title: "Introduction to NAM"
+author: "Alencar Xavier (xaviera@purdue.edu)"
+date: "November 1, 2015"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{'Introduction to NAM'}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# 1. Installing the NAM package
+
+To install the package in R, you just have to open R and type:
+\begin{verbatim}
+install.packages("NAM")
+\end{verbatim}
+
+NAM can be installed in R 3.0.0 or more recent versions. Check the version typing `R.version`. To load the package, you have to type in R
+\begin{verbatim}
+library(NAM)
+\end{verbatim}
+
+Some quick demostrations of what the package can do are available through the R function `example`. Check it out!
+\begin{verbatim}
+example(gwas)
+example(Fst)
+example(snpH2)
+\end{verbatim}
+
+
+# 2. Loading and formatting data
+
+Our package does not require a specific input file, just objects in standard R classes, such as numeric matrices and vectors. In this vignette we are going to show some codes that would allow users to load and manipulate datasets in R. For example, `read` commands are commonly used to load data into R. It is possible to check how they work by typing `?` before the command. For example:
+\begin{verbatim}
+?read.table
+?read.csv
+\end{verbatim}
+
+Let the file "genotypes.csv" be a spreadsheet with the genotypic data, where the first row contains the marker names and each column represents a genotype, where first column contains the genotype identification. An example of loading genotypic data:
+\begin{verbatim}
+gen = read.csv( "~/Desktop/genotypes.csv", header = TRUE )
+\end{verbatim}
+
+It is impotant to keep the statement `header = TRUE` when the first row contains the name of the markers. Data is imported as a `data.frame` object. To convert to a numeric object you can try
+\begin{verbatim}
+gen = data.matrix(gen)
+\end{verbatim}
+
+And then check if it is numeric
+\begin{verbatim}
+is.numeric(gen)
+\end{verbatim}
+
+This step is not necessary if you are importing the phenotypes or other information. In this case, you can obtain your numeric vectors directly from the `data.frame`. Let the file "data.csv" be a spreadsheet with three columns called Phenotype1, Phenotype2 and Family, and we want to generate three R objects named $Phe1$, $Phe2$ and $Fam$. To get numeric vectors, you can try
+\begin{verbatim}
+data = read.csv("~/Desktop/data.csv")
+Phe1 = as.numeric( data$Phenotype1 )
+Phe2 = as.numeric( data$Phenotype2 )
+Fam = as.numeric( data$Family )
+\end{verbatim}
+
+Notice that in R, `NA` is used to represent missing values.
+
+To import GBS data (CGTA text format), the following chunk of code can be used
+\begin{verbatim}
+G = read.delim("~/GBSdata.txt")          # Reading data into R
+rownames(G)=G[,1]; G=G[,-1]
+G[G!="A"&G!="C"&G!="G"&G!="T"]=NA
+Recode = function(aa){
+  t = table(aa);  t[t==0]=NA
+  A = which.max(t); a = which.min(t)
+  A1 = names(t)[A]; A2 = names(t)[a]
+  W1 = which(aa==A1); W2 = which(aa==A2)
+  aa = as.numeric(aa)
+  aa[W1] = 0; aa[W2] = 2
+  return(aa)}
+gen = apply(G,2,Recode)
+dimnames(gen)=dimnames(G)
+gen = data.matrix(gen)                   # 'gen' matrix ready to use
+\end{verbatim}
+
+And to import hapmap data, the following chunk of code can be used to provide two important inputs in the NAM format: genotype (`gen`) and chromosome(`chr`). Let hapmap.txt be a hapmap file.
+\begin{verbatim}
+G = read.delim("~/hapmap.txt", header=T)          # Reading data into R
+AA = as.character(G[,2]); AA = gsub('/','',AA)
+Gen = t(G[,-c(1:11)]); n=nrow(Gen); m=ncol(Gen)
+gen = matrix(NA,n,m)
+for(i in 1:m){
+A1 = strsplit(AA[i],'')[[1]][1]
+A2 = strsplit(AA[i],'')[[1]][2]
+BB = paste(A1,A1,sep='')
+Bb = paste(A1,A2,sep='')
+bb = paste(A2,A2,sep='')
+M = as.character(Gen[,i])
+gen[M==BB,i]=2; gen[M==Bb,i]=1;gen[M==bb,i]=0} 
+colnames(gen)=paste(G[,3],G[,4],G[,2],sep='.')  # 'gen' matrix ready to use
+chr = NULL
+for(i in 1:max(G[,3])) chr=c(chr,sum(G[,3]==i))
+rm(AA,A1,A2,BB,Bb,bb,m,n,Gen)                   # 'chr' vector ready to use
+\end{verbatim}
+
+Some package, such as the function BLUP of the SoyNAM package, have datasets already compatible with the require inputs of NAM package for association analysis. It is also possible to load an example dataset that comes with the NAM package to see data format. Try:
+\begin{verbatim}
+data(tpod)
+head(y)
+gen[1:4,1:4]
+head(fam)
+head(chr)
+\end{verbatim}
+
+Analyses performed by the NAM package require inputs in numeric format. To check if the objects required for genome-wide association studies are numeric, use the logical command `is.numeric`.
+\begin{verbatim}
+is.numeric(phenotype)
+is.numeric(genotypes)
+is.numeric(population)
+is.numeric(chromosomes)
+\end{verbatim}
+
+To verify if the input is correct regarding the class of object, you may want to try:
+\begin{verbatim}
+is.vector(phenotype)
+is.matrix(genotypes)
+is.vector(population)
+is.vector(chromosomes)
+\end{verbatim}
+
+You can force an object to be numeric. Example:
+\begin{verbatim}
+phenotype = as.numeric(phenotype)
+\end{verbatim}
+
+It is recommended to check that the object is in the expected format after forcing it into a specific class.
+
+# 3. Genome-wide association studies
+
+To perform genome-wide association studies, at least two objects are required: A numeric matrix containing the *genotypic information* where columns represent markers and rows represent the genotypes, and a numeric vector containing the *phenotypes*. In addition, two other objects can be used for association mapping: a *stratification* term, a numeric vector with the same length as the phenotypes used to indicate the population that each individual comes from, and a numeric vector equal to the number of *chromosomes* that indicates how many markers belong to each chromosome. The sum of this object must be equal to number of columns of the genotypic matrix.
+
+The genotypic matrix must be coded using 0-1-2 (aa, aA, AA), and we strongly recommend to keep the column names with the marker names. If the stratification parameter is provided, we strongly recommend to use zeros to indicate alleles with minor frequency. The package provides a function called *reference* that does that (type `?reference` for more details). If stratification is provided, the algorithm used to compute associations will allow minor alleles to have different effect, increasing the power of associations by allowing different populations be in different linkage phases between the marker being evaluated and the causative mutation.
+
+To run the association analysis, use the function `gwas`. The arguments `y` (phenotypes) and `gen` (genotypes) are necessary for the associations, the arguments `fam` (stratification) and `chr` (number of markers per chromosome) are complimentary. Thus:
+
+\begin{verbatim}
+my_gwas = gwas (y = phenotype, gen = genotypes)
+my_gwas = gwas (y = phenotype, gen = genotypes, fam = population, chr = chromosomes)
+\end{verbatim}
+
+For large datasets, the computer memory may become a limitation. A second function was designed to overcome this issue by not keeping the haplotype-based design matrix in the computer memory. Try:
+\begin{verbatim}
+my_gwas = gwas2 ( y = phenotype, gen = genotypes )
+my_gwas = gwas2 ( y = phenotype, gen = genotypes, fam = population, chr = chromosomes )
+\end{verbatim}
+
+To visualize the Manhattan plots can use the `plot` command on the output of the function `gwas`.
+\begin{verbatim}
+plot( my_gwas )
+\end{verbatim}
+
+To check other designs for your Manhattan plot, check the examples provided by the package (see `?gwas`). To figure out which SNP(s) represent the picks of the analysis, we design the argument `find`. With this argument, you can click in the plot to find out which markers correspond to the peaks. For example, you want to find out the markers responsible for two picks, try:
+\begin{verbatim}
+plot( my_gwas, find = 2 )
+\end{verbatim}
+
+To adjust significance threshold for multiple testing, you can use the Bonferroni correction by lowering the value of alpha, which is 0.05 by default. For example, if you are analyzing 150 markers, you can obtain the *Bonferroni threshold* by:
+\begin{verbatim}
+number_of_markers = 150
+plot( my_gwas, alpha = 0.05/number_of_markers )
+\end{verbatim}
+
+To plot the Manhattan plot using an acceptable false discovery rate (FDR) by chromosome or Bonferroni threshold by chromosome, try:
+\begin{verbatim}
+# False discovery rate of 25%
+plot( my_gwas, FDR = 0.25)
+
+# Bonferroni threshold by chromosome
+plot( my_gwas, FDR = 0)
+\end{verbatim}
+
+If you want to disregard the markers that provide null LRT when building the FDR threshold as previously showed, you can use the 'greater-than-zero' (gtz) command. It works as follows:
+\begin{verbatim}
+# False discovery rate of 25%
+plot( my_gwas, FDR = 0.25, gtz=TRUE)
+
+# Bonferroni threshold by chromosome
+plot( my_gwas, FDR = 0, gtz=TRUE)
+\end{verbatim}
+
+Most output statistcs are available in the *PolyTest* object inside the list output from the *gwas* function. These output includes -log(*P-values*), LOD scores, variance attributed to markers, heritability of the full model, marker effect by family and its standard deviation. For example, to get the LRT score of each SNP, you can type
+\begin{verbatim}
+SCORE = my_gwas$PolyTest$lrt
+\end{verbatim}
+
+These scores are LRT (*likelihood ratio test statistics*), they represent the improvement that each SNP provides to a mixed model. To obtain the $-log(P-value)$ 'by-hand', the common unit of association studies, type 
+\begin{verbatim}
+PVal = -log(dchisq(SCORE,0.5),base=10)
+PVal[PVal<0] = 0
+\end{verbatim}
+
+The object **PVal** contains all the -log(p-values). The code above transforms LRT into p-value using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.
+
+To find out the amount of variance explained by each marker, type
+\begin{verbatim}
+Genetic_Var_each_SNP = my_gwas$PolyTest$var.snp
+Var_Explained_by_SNP = Genetic_Var_each_SNP / var(phenotype)
+\end{verbatim}
+
+To export as CSV file with all SNP statistics:
+\begin{verbatim}
+write.csv( my_gwas$PolyTest, "my_file_with_snp_scores.csv" )
+\end{verbatim}
+
+To find out which markers are above a given significance threshold, use the following code
+\begin{verbatim}
+THR =  0.05/number_of_markers
+w = which(PVal > THR)
+w # SIGNIFICANT MARKERS  
+\end{verbatim}
+
+To find out the Bonferroni threshold in LRT scale, try
+\begin{verbatim}
+optim(1,fn=function(x)abs(-log(dchisq(x,df=0.5),base=10)+log(0.05/number_of_markers)),method="CG")$par
+\end{verbatim}
+
+The output of the  GWAS function provides the allele effect into the GWAS of multiple populations context, testing one marker at a time. To find out the effect of each marker conditional to the genome (i.e. given all the other makers are in the model). This technique is known as whole-genome regression (WGR) method.
+\begin{verbatim}
+WGR = wgr( y = phenotype, gen = genotypes)
+Allele_effect = WGR$g
+plot(abs(Allele_effect)) # Have a look
+\end{verbatim}
+
+The above example characterizes the BLUP method, also known as snpBLUP and ridge regression blup (RR-BLUP). Since the example above was solved in Bayesian framework, it is also referred as Bayesian ridge regression (BRR) coefficient.
+
+# 4. Marker quality control
+
+Two functions are dedicated to quality control of the markers used in genome-wide studies: `snpQC` and `snpH2`. The latter function evaluates the Mendelian behavior and ability of each marker to carry a gene by computing the marker heritability as the index of gene content.
+
+The function `snpQC` is used to remove repeated markers and markers that have minor allele frequency below a given threshold. This function is also used to impute missing values by semi-parametric procedures (random forest).
+
+Repeated markers are two markers side-by-side with identical information (i.e. full linkage disequilibrium), where the threshold that defines "identical" can be specified by the user through the argument `psy` (default is 1). The argument `MAF` controls the threshold of minor allele frequency (default is 0.05). The logical argument `remove` asks if the used want to remove repeated markers and markers below the MAF threshold (`remove = TRUE`) or just to be notified about it (`remove = FALSE`), by default it removes the low quality markers. The logical argument `impute` asks if the user wants to impute the missing values, the default is `impute = FALSE`.
+
+An example of how to use the function `snpQC` to impute missing loci and remove markers with MAF lower than 10% is:
+\begin{verbatim}
+adjusted_genotypes = snpQC ( gen = genotypes, MAF = 0.10, impute = TRUE )
+\end{verbatim}
+
+Then, you can try to verify the gene content by:
+\begin{verbatim}
+forneris_index = snpH2 ( adjusted_genotypes )
+plot ( forneris_index )
+\end{verbatim}
+
+To speed up imputations, it is recommend to impute one chromosome at a time. For example, to impute the first a hundred markers and then the following hundred, you can try:
+\begin{verbatim}
+genotypes[,001:100] = snpQC ( gen = genotypes[,001:100], impute = TRUE, remove = FALSE )
+genotypes[,101:200] = snpQC ( gen = genotypes[,101:200], impute = TRUE, remove = FALSE )
+\end{verbatim}
+
+An additional QC that can be performed is the removal of repeat genotypes. The NAM package provides a function for this task. The arguments are: a matrix of phenotypes (`y`), a family vector (`fam`) and the genotypic matrix (`gen`). If you are using a version >1.3.2, an additional argument can be specified, `thr`, the threshold above which genotypes are considered identical. In the NAM version 1.3.2 it is pre-specified as 0.95, which is also the default setting of newer versions.
+\begin{verbatim}
+cleanREP( y, fam, gen)
+\end{verbatim}
+
+It returns a list with the inputs (y, fam and gen) without the redundant genotypes. Thus, it is possible to clean phenotype matrix, genotypic matrix and family vector, all at once. An example with two phenotypes (phe1 and phe2) would look like:
+\begin{verbatim}
+PHENOS = cbind(phe1,phe2)
+CLEAN = cleanREP( y = PHENOS, fam = Family, gen = Genotypes)
+phe1_new = CLEAN$y[,1]
+phe2_new = CLEAN$y[,2]
+Family_new = CLEAN$fam
+Genotypes_new = CLEAN$gen
+\end{verbatim}
+
+# 5. Signatures of selection
+
+It may be of interest to evaluate which genomic regions are responsible for the stratification of populations and to check if there is further structure among and within populations through the `Fst` function. F-statistics are used to calculate the variation distributed among sub populations (Fst), the heterozygousity of individuals compared to its populations (Fit) and the mean reduction in heterozygosity due to non-random mating (Fis). The `Fst` function implemented in NAM calculates Fst, Fit and Fis.
+
+Two arguments are necessary for this function: the genotypic matrix (`gen`) and a stratification factor (`fam`).
+
+\begin{verbatim}
+my_FST = Fst ( gen = genotypes, fam = stratification )
+plot(my_FST)
+\end{verbatim}
+
+# 6. BLUPs
+
+Considering that phenotypes are often replaced by BLUP values for mapping and selection, the NAM package has two functions that allow users to solve mixed models to compute BLUPs and variance components: `reml` and `gibbs`.
+
+To obtain BLUPs using REML the user needs an object for each term of the model: numeric vector for each covariate and for the response variable, and a factors for categorical variables such as environment and genotype.
+
+To check if a given `object` (eg. matrix, vector or factor) belongs to the correct class you expect, you can use the commands `is.vector(object)`, `is.numeric(object)`, `is.matrix(object)` and `is.factor(object)`. To force an object to change class, you can try `object = as.factor(object)` or `object = as.vector(object)`.
+
+Let `trait` be a numeric vector representing your response variable, `env` be a factor representing a different environments, `block` be a factor that indicates some experimental constrain, and `lines` be a factor that represent your lines. To fit a model, try:  
+\begin{verbatim}
+# Fit the model
+FIT = reml ( y = trait, X = ~ block + env, Z = ~ lines )
+
+# Variance components
+FIT$VC
+
+# BLUP values (genetic values)
+FIT$EBV
+\end{verbatim}
+
+Another possibility is to fit a GBLUP, useful to obtain breeding values using molecular data. Let `gen` be the genotypic matrix, `env` be a factor representing a different environments, and `lines` be a factor that represent your lines. The GBLUP model would be fitted as:
+\begin{verbatim}
+# Genomic relationship matrix
+G = tcrossprod(gen)
+G = G/mean(diag(G))
+
+# Fit the model
+FIT = reml ( y = trait, X = ~ env, Z = ~ lines, K = G )
+
+# GBLUP values (breeding values)
+FIT$EBV
+\end{verbatim}
+
+The function `gibbs` is also unbiased and works with arguments similar to `reml`, with few important differences: (1) the `gibbs` function enable users to fit models with multiple random variables; (2) the kinship argument requires the inverse kernel to save computation time; (3) aside from the point estimates, `gibbs` also provides the posterior distribution for Bayesian inferences.
+
+Now, lets see how to fit a GBLUP with the environment factor set as random effect. Let `gen` be the genotypic matrix, `env` be a factor representing a different environments, and `lines` be a factor that represent your lines. The GBLUP model would be fitted as:
+\begin{verbatim}
+# Genomic relationship matrix
+G = tcrossprod(gen); G = G/mean(diag(G))
+iG = chol2inv(G)
+
+# Fit the model
+FIT = gibbs ( y = trait, Z = ~ lines + env, K = iG )
+
+# GBLUP values (breeding values)
+rowMeans(FIT$Posterior.Coef$Random1)
+\end{verbatim}
+
+Similarly, it is possible to fit other models for genomic selections, such as Bayesian ridge regression (BRR) and BayesA using one of these function two mixed model functions. To fit a simple model with environment as fixed effect:
+\begin{verbatim}
+# Fit BRR
+FIT_BRR = gibbs ( y = trait, X = ~ env , Z = gen, S=NULL)
+\end{verbatim}
+
+Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When multiple random effects are used in `gibbs`, the argument `Z` accepts formula or a list of matrices and the argument `iK` accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the `gibbs` function, `iR` allows users to include residual covariance structure.
+
+Although it is possible to use `reml` and `gibbs` to generate breeding values, the function `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function are: BRR, BayesA, BayesB and BayesC. To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
+\begin{verbatim}
+# BLUP
+BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)
+
+# BayesA
+BA = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0)
+
+# BayesB
+BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=.5)
+
+# BayesC
+BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=.5)
+\end{verbatim}
+
+# 7. Finding substructures
+
+If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let `gen` be the genotypic matrix and suppose that you want to split the population into two groups. Thus:
+\begin{verbatim}
+Clusters = hclust(dist(gen))
+plot( Clusters )
+Stratification1 = cutree(Clusters, k = 2)
+Stratification2 = kmeans(gen, 2, iter.max = 20)$cluster
+\end{verbatim}

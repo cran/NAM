@@ -30,7 +30,7 @@ organ=function(fam,y,covariate,Z){
 f=organ(fam,y,covariate,gen);fam=f[[1]];y=f[[2]];covariate=f[[3]];gen=f[[4]];rm(f);
 covariate=matrix(covariate,ncol=1)
 
-# IMPUTATION OF MISSING Y's  
+# IMPUTATION OF MISSING Y's - OBSOLETE
   Ymc=function(y,fam){
     MC=function(y){
       x=mean(y,na.rm=T)
@@ -102,14 +102,16 @@ INPUT=function(gen,fam,chr){
     nF=dim(array((summary(factor(Fam)))))
     # Functions
     GD=function(snpA,snpB){ # genetic distance
+      kosambi = function(r) min(.25*log((1+2*r)/(1-2*r)),.5)
       a0=which(snpA==0)
       a2=which(snpA==2)
       b0=which(snpB==0)
       b2=which(snpB==2)
       NR=length(intersect(a0,b0))+length(intersect(a2,b2))
       RE=length(intersect(a0,b2))+length(intersect(a2,b0))
-      if(RE<NR){r=RE/(NR+RE)}else{r=NR/(NR+RE)};
-      return(r)}
+      if(RE<NR){r=RE/(NR+RE)}else{r=NR/(NR+RE)}
+      k = kosambi(r)
+      return(k)}
     AR=function(SNP){ # able to recombine
       ar=function(snp){
         uni=unique(snp)
@@ -343,13 +345,17 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
       pval = 0
     }else{
       lod = lrt/4.61
-      pval = round(-log(dchisq(lrt,0.5)),2)
+      pval = round(-log(dchisq(lrt,0.5),base = 10),2)
       if(pval<0) pval = 0
     }
-    
-    names(gamma) = paste("allele.eff.",1:r,sep="")
+    if(r==2){
+      names(gamma) = c("allele.eff.A","allele.eff.a")  
+      names(stderr) = c("sd.allele.eff.A","sd.allele.eff.a")
+    }else{
+      names(gamma) = c("allele.eff.standard",paste("allele.eff.founder.",1:(r-1),sep=""))  
+      names(stderr) = c("sd.allele.eff.standard",paste("sd.allele.eff.founder.",1:(r-1),sep=""))
+    }
     gamma = t(data.frame(gamma))
-    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
     stderr = t(data.frame(stderr))
     sigma2g = sigma2*(lambda+lam_k)
     h2 = sigma2g / (sigma2g+sigma2)
@@ -362,6 +368,7 @@ RANDOMsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames
     #cat(paste("LRT is",round((k/m)*100,2),"% completed",'\n'))
   };close(pb)
   cat("Calculations were performed successfully",'\n')
+  rownames(parr) = paste('SNP',1:m,sep='')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes","MAP"=MAP,"SNPs"=SNPnames))}
 
 RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=window,SNPnames=SNPs){
@@ -485,18 +492,21 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
       pval = 0
     }else{
       lod = lrt/4.61
-      pval = round(-log(dchisq(lrt,0.5)),2)
+      pval = round(-log(dchisq(lrt,0.5),base = 10),2)
       if(pval<0) pval = 0
+    }    
+    if(r==2){
+      names(gamma) = c("allele.eff.A","allele.eff.a")  
+      names(stderr) = c("sd.allele.eff.A","sd.allele.eff.a")
+    }else{
+      names(gamma) = c("allele.eff.standard",paste("allele.eff.founder.",1:(r-1),sep=""))  
+      names(stderr) = c("sd.allele.eff.standard",paste("sd.allele.eff.founder.",1:(r-1),sep=""))
     }
-    
-    names(gamma) = paste("allele.eff.",1:r,sep="")
     gamma = t(data.frame(gamma))
-    names(stderr) = paste("sd.allele.eff.",1:r,sep="")
     stderr = t(data.frame(stderr))
     sigma2g = sigma2*(lambda+lam_k)
     h2 = sigma2g / (sigma2g+sigma2)
     par<-data.frame(conv,fn1,fn0,lod,pval,lrt,sigma2g,sigma2,h2,lam_k,"var.snp"=tau_k,"intercept"=beta,gamma,stderr)
-    
     blup<-c(gamma,stderr)
     parr<-rbind(parr,par)
     blupp<-rbind(blupp,blup)
@@ -504,6 +514,7 @@ RandomCIM = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,WIN=wind
     #cat("LRT",round((k/m)*100,2),"% completed",'\n')
   };close(pb)
   cat("Calculations were performed successfully",'\n')
+  rownames(parr) = paste('SNP',1:m,sep='')
   return(list("PolyTest"=parr,"Method"="Empirical Bayes with moving-window strategy","MAP"=MAP,"SNPs"=SNPnames))}
 
 FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=SNPs){
@@ -561,16 +572,20 @@ FIXEDsma = function (GEN=GEN,MAP=MAP,fam=fam,chr=chr,y=y,COV=covariate,SNPnames=
     wald<-t(g)%*%solve(v)%*%g
     stderr<-sqrt(diag(v))
     sigma2<-s2
-    rownames(gamma) = paste("gamma",1:r,sep="")
+    if(r==2){
+      rownames(gamma) = c("allele.eff.A","allele.eff.a")  
+      names(stderr) = c("sd.allele.eff.A","sd.allele.eff.a")
+    }else{
+      rownames(gamma) = c("allele.eff.standard",paste("allele.eff.founder.",1:(r-1),sep=""))  
+      names(stderr) = c("sd.allele.eff.standard",paste("sd.allele.eff.founder.",1:(r-1),sep=""))
+    }
     gamma = t(data.frame(gamma))
-    names(stderr) = paste("sd.gamma",1:r,sep="")
     stderr = t(data.frame(stderr))
-    par<-data.frame(wald,beta,sigma2,gamma,stderr)
-    blup<-c(gamma,stderr)
+    par<-data.frame(wald,sigma2,gamma,stderr)
     parr<-rbind(parr,par)
-    blupp<-rbind(blupp,blup)
     setTxtProgressBar(pb,k/m)
   };close(pb)
+  rownames(parr) = paste('SNP',1:m,sep='')
   cat("Calculations were performed successfully",'\n')
   return(list("PolyTest"=parr,"Method"="P3D","MAP"=MAP,"SNPs"=SNPnames))}
 

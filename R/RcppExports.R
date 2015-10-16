@@ -17,6 +17,10 @@ inputRow <- function(x, exp, n) {
     .Call('NAM_inputRow', PACKAGE = 'NAM', x, exp, n)
 }
 
+KMUP <- function(X, b, xx, E, L, p, Ve, pi) {
+    .Call('NAM_KMUP', PACKAGE = 'NAM', X, b, xx, E, L, p, Ve, pi)
+}
+
 SAMP <- function(C, g, r, N, Ve) {
     invisible(.Call('NAM_SAMP', PACKAGE = 'NAM', C, g, r, N, Ve))
 }

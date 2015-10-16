@@ -41,7 +41,7 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
       if(is.null(FDR)){
         A = 1-alpha
         LRmax = qchisq(A,0.5)
-        lim = -log(dchisq(LRmax, 0.5))
+        lim = -log(dchisq(LRmax, 0.5),base = 10)
         abline(h=lim,col=1,lty=2) 
       }else{
         
@@ -67,7 +67,7 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
         for(i in 1:(NumChr)){
           A = 1-alpha/(MT[i]*(1-FDR))
           LRmax = qchisq(A,0.5)
-          lim = -log(dchisq(LRmax, 0.5))
+          lim = -log(dchisq(LRmax, 0.5),base = 10)
           lines(x = c(Ch0[i],Ch1[i]),y = c(lim,lim))
         }
         

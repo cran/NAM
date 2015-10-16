@@ -4,7 +4,7 @@
 Changing the Reference Genotype
 }
 \description{
-Function changes the reference genotype. For NAM populations, this function must be used when genotypes are coded according to the reference genome intead of the standard parent.
+Function changes the reference genotype. For NAM populations, this function must be used when genotypes are coded according to the reference genome instead of the standard parent.
 }
 \usage{
 reference(gen, ref = NULL)
