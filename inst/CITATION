@@ -7,7 +7,6 @@ citEntry(entry = "Article",
   publisher    = "Oxford University Press",
   year         = "2015",
   pages        = "btv448",
-  url          = "http://dx.doi.org/10.1093/bioinformatics/btv448",
 
   textVersion  =
   paste("Xavier A, et al. (2015).",

@@ -110,6 +110,7 @@ INPUT=function(gen,fam,chr){
       NR=length(intersect(a0,b0))+length(intersect(a2,b2))
       RE=length(intersect(a0,b2))+length(intersect(a2,b0))
       if(RE<NR){r=RE/(NR+RE)}else{r=NR/(NR+RE)}
+      r = r/(2*(1-r)) # relation r=f(R) in RILs
       k = kosambi(r)
       return(k)}
     AR=function(SNP){ # able to recombine

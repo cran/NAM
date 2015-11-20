@@ -22,7 +22,7 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=TRUE,iv=FALSE,pi=0,df=5,R2=0.5
     mis = which(is.na(y))
     y = y[-mis]
     gen = gen[-mis,]
-    if(!is.null(eigK)) U = U[,-mis]
+    if(!is.null(eigK)) U = U[-mis,]
   }
   
   # MCMC settings
@@ -67,7 +67,7 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=TRUE,iv=FALSE,pi=0,df=5,R2=0.5
     # Update polygenic term and regression coefficients
     if(!is.null(eigK)){
       
-      Lk = V*Ve/Vk
+      Lk = Ve/(V*Vk)
       if(bag!=1){ update = KMUP(U[Use,],h,xxK,e[Use],Lk,pk,Ve,0)
       }else{ update = KMUP(U,h,xxK,e,Lk,pk,Ve,0)}
       h = update[[1]]
