@@ -1,4 +1,4 @@
-plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE){
+plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,phys=NULL){
   anyNA = function(x) any(is.na(x))
   if(!is.null(FDR)){if(FDR>=1|FDR<0)stop("FRD must be between 0 and 1")}
   gwas=x
@@ -9,7 +9,8 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
     FGWASplot=function(Fgwas,chr,AA,BB,...){
       col=c();for(i in 1:length(chr)){if((i%%2)==0){b=AA}else{b=BB};a=rep(b,chr[i]);col=c(col,a)}
       W = Fgwas$PolyTest$wald
-      plot(1:length(W),W,col=col,xlab="Chromosome",ylab="Wald Statistics",xaxt = "n",...)
+      if(is.null(phys)){ Xaxis = 1:length(W) }else{ Xaxis = cumsum(phys) }
+      plot(Xaxis,W,col=col,xlab="Chromosome",ylab="Wald Statistics",xaxt = "n",...)
       return(W)}
     
     # Plot
@@ -25,7 +26,8 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
       col=c();for(i in 1:length(chr)){if((i%%2)==0){b=AA}else{b=BB};a=rep(b,chr[i]); col=c(col,a)}
       # Statistics
       S = Rgwas$PolyTest$pval
-      plot(1:length(S),S,col=col,xlab="Chromosome",ylab="-log(p-value)",xaxt = "n",...)
+      if(is.null(phys)){ Xaxis = 1:length(S) }else{ Xaxis = cumsum(phys) }
+      plot(Xaxis,S,col=col,xlab="Chromosome",ylab="-log(p-value)",xaxt = "n",...)
       return(S)
     }
     
@@ -82,6 +84,16 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
   
   # Adding Chromosome in X axis
   medians=rep(NA,length(chr))
-  for(i in 1:length(chr)) medians[i] = median(which(gwas$MAP[,1]==i))
-  axis(1, at=round(medians), labels=1:length(medians))
+  
+  if(is.null(phys)){
+    for(i in 1:length(chr)) medians[i] = median(which(gwas$MAP[,1]==i))
+    axis(1, at=round(medians), labels=1:length(medians))
+  }else{
+    Xaxis = cumsum(phys)
+    #for(i in 1:length(chr)) medians[i] = median(Xaxis[gwas$MAP[,1]==i])
+    for(i in 1:length(chr)) medians[i] = mean(range(Xaxis[gwas$MAP[,1]==i]))
+    axis(1, at=round(medians), labels=1:length(medians))
+  }
+  
+  
 }

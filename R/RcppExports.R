@@ -13,6 +13,10 @@ funX <- function(col, finsiz) {
     .Call('NAM_funX', PACKAGE = 'NAM', col, finsiz)
 }
 
+gs <- function(C, g, r, N) {
+    invisible(.Call('NAM_gs', PACKAGE = 'NAM', C, g, r, N))
+}
+
 inputRow <- function(x, exp, n) {
     .Call('NAM_inputRow', PACKAGE = 'NAM', x, exp, n)
 }

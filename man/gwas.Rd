@@ -1,6 +1,7 @@
 \name{GWAS}
 \alias{gwas}
 \alias{gwas2}
+\alias{gwasGE}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
@@ -9,7 +10,8 @@ The gwas function calculates the likelihood ratio for each marker under the empi
 }
 \usage{
 gwas(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE)
-gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL)
+gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL)
+gwasGE(Phe,gen,fam,chr=NULL,cov=NULL)
 }
 \arguments{
   \item{y}{
@@ -20,7 +22,7 @@ Numeric matrix containing the genotypic data. A matrix with \eqn{n}
 rows of observations and (\eqn{m}) columns of molecular markers. SNPs must be coded as \code{0, 1, 2}, for founder homozygous, heterozygous and reference homozigous. \code{NA} is allowed.
 }
   \item{fam}{
-Numeric vector of length (\eqn{n}) indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
+Numeric vector of length \eqn{n} indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
 }
   \item{chr}{
 Numeric vector indicating the number of markers in each chromosome. The sum of \eqn{chr} must be equal to the number of columns in \eqn{gen}. Default assumes that all markers are from the same chromosome.
@@ -34,16 +36,22 @@ Logical. If TRUE, markers are treated as fixed effect and hence, evaluated throu
   \item{EIG}{
 Output of the R function 'eigen'. It is used for user-defined kinship matrix.
 }
+  \item{cov}{
+Numeric vector of length \eqn{n} to be used as covariate in the association analysis.
+}
+  \item{Phe}{
+Numeric matrix of observations (\eqn{n*e}) where rows represent genotypes and columns represent environments. \code{NA} is allowed.
+}
 }
 \details{
 
 Special incidence matrix is recreated to optimize the information provided by the subpopulations. Each locus is recoded as a vector with length \eqn{f} equal to number of subpopulations, or NAM families, as the interaction locus by family. For example, a locus heterozigous from an individual from subpopulation 2 is coded as [ 1, 0, 1 , ... ,\eqn{f} ], a locus homozigous for the reference allele from any subpopulation is coded as [ 2, 0, 0, ... , \eqn{f} ] and a locus homozigous for the founder allele from an individual from subpopulation 1 is coded as [ 0, 2, 0, ... ,\eqn{f} ].
 
-The base model for genome scanning includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). 
+The base model for genome scanning includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). The genetic distance between markers is computed using Kosambi map function, where the recombination rate is estimated under the assuption that genotypes are recombinant inbred lines.
 
 The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015).
 
-In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2". This function also allows used-defined kindship through the argument EIG.
+In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2". This function also allows used-defined kindship through the argument EIG, and the use of a numeric covariate vector through the argument cov.
 }
 \value{
 The function gwas returns a list containing the method deployed (\eqn{Method}), a summary of predicted parameters and statistical tests (\eqn{PolyTest}), estimated genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).
@@ -64,12 +72,9 @@ Alencar Xavier, Tiago Pimenta, Qishan Wang and Shizhong Xu
 \examples{
 data(tpod)
 test=gwas(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
-par(mfrow=c(3,1))
+par(mfrow=c(2,1))
 
 # Example Manhattan 1
-plot(x=test,colA=2,colB=3,alpha=0.05,type="h",lwd=2,main="Example 1")
-
-# Example Manhattan 2
 SIGNIF = 1+(2*test$PolyTest$lrt>4.9)
 plot(x=test,pch=SIGNIF+3,lwd=SIGNIF,main="Example 2")
 

@@ -1,14 +1,16 @@
-\name{BGS}
+\name{BMM}
 \alias{gibbs}
+\alias{ml}
 \alias{plot.gibbs}
 \title{
-Bayesian Gibbs Sampler
+Bayesian Mixed Model
 }
 \description{
-Univariate mixed model solver through Gibbs Sampling.
+Univariate mixed model solver through Bayesian Gibbs Sampling or iterative solution.
 }
 \usage{
 gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE)
+ml(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0)
 }
 \arguments{
   \item{y}{
@@ -46,7 +48,7 @@ Logical. If TRUE, it updates the regression coefficient using Gauss-Seidel Resid
 }
 }
 \details{
-Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. 
+Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. The alternative, ml, finds the solution iteratively using the full-conditional expectation.
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 

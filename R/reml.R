@@ -3,26 +3,32 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
   if(!is.matrix(y)){
     
     N = length(y)
+    
     # Dealing with fixed effect matrix
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")
       }else{if(class(X)=="formula"){X=model.matrix(X)}}}
+    
     # Dealing with random effect
     if(is.null(K)&is.null(Z))stop("Either Z or K must be specified")
     if(is.null(K)){
       if(class(Z)=="formula"){Z=model.matrix(Z)-1}
       V=tcrossprod(Z)}
-    if(is.null(Z)){V=K}
+    if(is.null(Z)){V=K;Z=diag(ncol(K))}
     if(is.null(Z)!=T&&is.null(K)!=T){
       if(class(Z)=="formula"){Z=model.matrix(Z)-1}
       V=crossprod(t(Z),K);V=tcrossprod(V,Z)}
     K=V
+    
     # Function starts here
     m = which(is.na(y)) # missing values
     if(any(is.na(y))){
       y=y[-m];x=X[-m,]
       k=K[m,-m];K=K[-m,-m]
-    }else{x=X}
+      z=Z[-m,]
+    }else{
+      x=X;k=K;z=Z
+      }
     x=as.matrix(x)
     # Defining log-REML
     loglike=function(theta){
@@ -68,7 +74,13 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
     iG = timesMatrix(uu,1/(lambda*delta+1),uu,n,n)
     U = iG%*%re
     if(length(m)>0){
-      C=k%*%iG%*%U; hat = rep(0,N); hat[m] = C; hat[-m] = U; U = hat}
+      C=k%*%iG%*%U
+      hat = rep(0,N)
+      hat[m] = C
+      hat[-m] = U
+      U = hat
+      }
+    U = crossprod(U,Z)
     REML = list("VC"=VC,"Fixed"=B,"EBV"=U)
     
   }else{

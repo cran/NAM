@@ -12,8 +12,8 @@ Designed for association studies in nested association mapping (NAM) panels, als
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.4.2 \cr
-Date: \tab 2015-10-15\cr
+Version: \tab 1.4.3 \cr
+Date: \tab 2016-01-28\cr
 License: \tab GPL-3 \cr
 }
 
@@ -30,5 +30,5 @@ Maintainer: Alencar Xavier <xaviera@purdue.edu>
 \keyword{ REML }
 \keyword{ BGS }
 \seealso{
-Functions: gibbs, reml, Fst, gwas/gwas2, reference, snpQC, snpH2, cleanREP
+Functions: gibbs, reml, Fst, gwas/gwas2, reference, snpQC, snpH2, cleanREP, wgr
 }

@@ -58,15 +58,14 @@ To import GBS data (CGTA text format), the following chunk of code can be used
 GENOTYPE: 'gen' matrix
 
 + `G = read.delim("~/GBSdata.txt")`   *# Reading data into R*
-+ `rownames(G)=G[,1]; G=G[,-1]; G[G!="A"&G!="C"&G!="G"&G!="T"]=NA; Recode = function(aa){t = table(aa); t[t==0]=NA; A = which.max(t); a = which.min(t);A1 = names(t)[A]; A2 = names(t)[a]; W1 = which(aa==A1); W2 = which(aa==A2); aa = as.numeric(aa); aa[W1] = 0; aa[W2] = 2; return(aa)}; gen = apply(G,2,Recode); dimnames(gen)=dimnames(G); gen = data.matrix(gen)`
++ `rownames(G)=G[,1];G=G[,-1];G[G!="A"&G!="C"&G!="G"&G!="T"]=NA;Recode=function(aa){t=table(aa);t[t==0]=NA;A=which.max(t);a=which.min(t);A1=names(t)[A];A2=names(t)[a];W1=which(aa==A1);W2=which(aa==A2);aa=as.numeric(aa);aa[W1]=0;aa[W2]=2;return(aa)};gen=apply(G,2,Recode);dimnames(gen)=dimnames(G);gen=data.matrix(gen)`
 
 And to import hapmap data, the following chunk of code can be used to provide two important inputs in the NAM format: genotype (`gen`) and chromosome(`chr`). Let hapmap.txt be a hapmap file.
 
 GENOTYPE: *'gen'* matrix
 
 + `G = read.delim("~/hapmap.txt", header=T)`  *# Reading data into R*
-+ `AA = as.character(G[,2]); AA = gsub('/','',AA); Gen = t(G[,-c(1:11)]); n=nrow(Gen); m=ncol(Gen); gen = matrix(NA,n,m); for(i in 1:m){ A1 = strsplit(AA[i],'')[[1]][1]; A2 = strsplit(AA[i],'')[[1]][2]; BB = paste(A1,A1,sep='')
-Bb = paste(A1,A2,sep=''); bb = paste(A2,A2,sep=''); M = as.character(Gen[,i]); gen[M==BB,i]=2; gen[M==Bb,i]=1;gen[M==bb,i]=0}; colnames(gen)=paste(G[,3],G[,4],G[,2],sep='.')`
++ `AA=as.character(G[,2]);AA=gsub('/','',AA);Gen=t(G[,-c(1:11)]);n=nrow(Gen);m=ncol(Gen);gen=matrix(NA,n,m);for(i in 1:m){A1=strsplit(AA[i],'')[[1]][1];A2=strsplit(AA[i],'')[[1]][2];BB=paste(A1,A1,sep='');Bb=paste(A1,A2,sep='');bb=paste(A2,A2,sep='');M=as.character(Gen[,i]);gen[M==BB,i]=2;gen[M==Bb,i]=1;gen[M==bb,i]=0};colnames(gen)=paste(G[,3],G[,4],G[,2],sep='.')`
 
 CHROMOSOME: *'chr'* vector
 
@@ -109,12 +108,18 @@ The genotypic matrix must be coded using 0-1-2 (aa, aA, AA), and we strongly rec
 To run the association analysis, use the function `gwas`. The arguments `y` (phenotypes) and `gen` (genotypes) are necessary for the associations, the arguments `fam` (stratification) and `chr` (number of markers per chromosome) are complimentary. Thus:
 
 + `my_gwas = gwas (y = phenotype, gen = genotypes)`
-+ `my_gwas = gwas (y = phenotype, gen = genotypes, fam = + population, chr = chromosomes)`
++ `my_gwas = gwas (y = phenotype, gen = genotypes, fam = population, chr = chromosomes)`
 
 For large datasets, the computer memory may become a limitation. A second function was designed to overcome this issue by not keeping the haplotype-based design matrix in the computer memory. Try:
 
 + `my_gwas = gwas2 ( y = phenotype, gen = genotypes )`
 + `my_gwas = gwas2 ( y = phenotype, gen = genotypes, fam = population, chr = chromosomes )`
+
+When multiple traits will be analyzed, there exist the possibility avoiding the Eigendecomposition of the kinship matrix for every GWAS you run using a same population. The function `eigX` generates and decomposes the kinship, and the output is suitable for the argument `EIG` in the `gwas2` function.
+
++ `eigNAM = eigX(gen=genotypes, fam=population)`
++ `trait_1 = gwas2( y=phenotype1, gen=genotypes, fam=population, chr=chromosomes, EIG=eigNAM )`
++ `trait_2 = gwas2( y=phenotype2, gen=genotypes, fam=population, chr=chromosomes, EIG=eigNAM )`
 
 To visualize the Manhattan plots can use the `plot` command on the output of the function `gwas`.
 
@@ -283,7 +288,7 @@ Now, lets see how to fit a GBLUP with the environment factor set as random effec
 
 ## GBLUP values (breeding values)
 
-+ rowMeans(FIT$Posterior.Coef$Random1)
++ `rowMeans(FIT$Posterior.Coef$Random1)`
 
 Similarly, it is possible to fit other models for genomic selections, such as Bayesian ridge regression (BRR) and BayesA using one of these function two mixed model functions. To fit a simple model with environment as fixed effect:
 

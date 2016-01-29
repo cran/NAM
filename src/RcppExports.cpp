@@ -43,6 +43,19 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// gs
+void gs(NumericMatrix C, NumericVector g, NumericVector r, int N);
+RcppExport SEXP NAM_gs(SEXP CSEXP, SEXP gSEXP, SEXP rSEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type C(CSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    gs(C, g, r, N);
+    return R_NilValue;
+END_RCPP
+}
 // inputRow
 NumericVector inputRow(NumericVector x, int exp, int n);
 RcppExport SEXP NAM_inputRow(SEXP xSEXP, SEXP expSEXP, SEXP nSEXP) {

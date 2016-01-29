@@ -8,9 +8,11 @@
 \alias{timesVec}
 \alias{SAMP}
 \alias{SAMP2}
+\alias{gs}
 \alias{KMUP}
 \alias{Gdist}
 \alias{markov}
+\alias{eigX}
 \alias{covar}
 \alias{PedMat}
 \alias{LD}
@@ -42,4 +44,8 @@ covar()
 
 # Genetic distance
 round(Gdist(gen[1:10,],method=1),2)
+
+# PCs of a NAM kinship
+eG = eigX(gen,fam)
+plot(eG[[2]],col=fam)
 }

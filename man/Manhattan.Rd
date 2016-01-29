@@ -7,7 +7,7 @@ Manhattan plot for Association Studies
 Generates a graphical visualization for the output of the function gwas/gwas2. 
 }
 \usage{
-\method{plot}{NAM}(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE)
+\method{plot}{NAM}(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,phys=NULL)
 }
 \arguments{
    \item{x}{
@@ -33,6 +33,9 @@ Null or numeric between zero and one. If provided, it will display the Manhattan
 }
   \item{gtz}{
 Logical. If TRUE, the argument FDR will just take into account markers with p-value Greater Than Zero (GTZ).
+}
+  \item{phys}{
+Numeric vector with length equal to the number of markers. If provided, the Manhattan plot is generated using the physical distance in the x axis.
 }
 }
 \author{

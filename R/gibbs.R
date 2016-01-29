@@ -230,6 +230,160 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
   
 }
 
+ml = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0){
+  
+  anyNA = function(x) any(is.na(x))
+  
+  # Default for X; changing X to matrix if it is a formulas
+  VY = var(y,na.rm=T)
+  if(is.null(X)) X=matrix(1,length(y),1)
+  if(class(X)=="formula"){
+    X=model.frame(X)
+    Fixes=ncol(X)
+    XX=matrix(1,length(y),1)
+    for(var in 1:Fixes) XX=cbind(XX,model.matrix(~X[,var]-1))
+    X=XX
+    rm(XX,Fixes)
+  }
+  
+  # Defaults of Z: making "NULL","formula" and "matrix" as "list"
+  if(is.null(Z)&is.null(iK)) stop("Either Z or iK must be specified")
+  if(is.null(Z)) Z=list(diag(length(y)))
+  if(class(Z)=="matrix") Z = list(Z)
+  if(class(Z)=="formula"){
+    Z=model.frame(Z)
+    Randoms=ncol(Z)
+    ZZ=list()
+    for(var in 1:Randoms) ZZ[[var]]=model.matrix(~Z[,var]-1)
+    Z=ZZ
+    rm(ZZ,Randoms)
+  }
+  
+  # Defaults for null and incomplete iK
+  if(is.null(iK)){
+    iK=list()
+    Randoms=length(Z)
+    for(var in 1:Randoms) iK[[var]]=diag(ncol(Z[[var]]))
+  }
+  if(class(iK)=="matrix") iK=list(iK)
+  if(length(Z)!=length(iK)){
+    a=length(Z)
+    b=length(iK)
+    if(a>b) for(K in 1:(a-b)) iK[[(K+b)]]=diag(ncol(Z[[K]]))
+    if(b>a) for(K in 1:(b-a)) Z[[(K+a)]]=diag(ncol(iK[[K]]))
+    rm(a,b)
+  }
+  
+  # Predictiors should not have missing values
+  if(any(is.na(X))|any(is.na(unlist(Z)))) stop("Predictors with missing values not allowed")
+  
+  # Some parameters with notation from the book
+  nx = ncol(X)
+  Randoms = length(Z) # number of random variables
+  q = rep(0,Randoms); for(i in 1:Randoms) q[i]=ncol(Z[[i]])  
+  N = nx+sum(q)
+  
+  # Qs1 and Qs2 regard where each random variable starts and ends, respectively
+  Qs0 = c(nx,q)
+  Variables = length(Qs0)
+  Qs1 = Qs2 = rep(0,Variables)
+  for(i in 1:Variables){
+    Qs1[i]=max(Qs2)+1
+    Qs2[i]=Qs1[i]+Qs0[i]-1
+  }
+  
+  # Starting values for the variance components
+  Ve = 1
+  Va = lambda = rep(1,Randoms)
+  
+  # Linear system described as: WW+Sigma = Cg = r
+  W = X
+  for(i in 1:Randoms) W=cbind(W,Z[[i]])
+  
+  # MISSING
+  W1=W
+  if(any(is.na(y))){
+    MIS = which(is.na(y))
+    W=W[-MIS,]
+    y=y[-MIS]
+    if(!is.null(iR)) iR=iR[-MIS,-MIS]
+  }
+  n = length(y)
+  
+  if(is.null(iR)){
+    r = crossprod(W,y)
+    WW = (crossprod(W))
+  }else{
+    r = crossprod(W,iR)%*%y
+    WW = (crossprod(W,iR))%*%W
+  }
+  
+  # Covariance Matrix
+  Sigma = matrix(0,N,N)
+  for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
+  # Matching WW and Sigma
+  C = WW+Sigma
+  
+  g = rep(0,N)
+  
+  # Variance components
+  dfu = q+DF
+  dfe = n+DF
+  
+  # Saving memory for some vectors
+  e = rep(0,N)
+  
+  # convergence factor
+  VC = c(Va,Ve)
+  cf = 1
+  
+  # LOOP
+  while(cf>1e-8){
+    
+    # Ve/Va
+    lambda = Ve/Va
+    
+    # Updating C
+    for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
+    C = WW+Sigma
+    
+    # Residual variance
+    e = y - tcrossprod(g,W)
+    Ve = (tcrossprod(e)+S*DF)/dfe
+    
+    # the C++ SAMP updates "g" and doesn't return anything
+    gs(C,g,r,N)
+    
+    # Random variance
+    for(i in 1:Randoms){
+      SS = S*DF+(sum(crossprod(g[Qs1[i+1]:Qs2[i+1]],iK[[i]])*(g[Qs1[i+1]:Qs2[i+1]])))
+      SS = max(SS,1e-8)
+      Va[i] = SS/dfu[i]
+    }
+    
+    # convergence
+    cf = sum((c(Va,Ve)-VC)^2)
+    VC = c(Va,Ve)
+    
+  }
+  
+  names(g) = paste("b",0:(N-1),sep="")
+  for(i in 1:Randoms) names(g)[Qs1[i+1]:Qs2[i+1]] = paste("u",i,".",1:Qs0[i+1],sep="")
+  names(VC) = c(paste("Va",1:Randoms,sep=""),"Ve")
+  
+  # List of Coefficients
+  
+  RESULTS = list(
+    "Coef" = g,
+    "VC" = VC,
+    "Fit" = W1%*%g
+  )
+  
+  # Return
+  return( RESULTS )
+  
+}
+
 plot.gibbs = function(x,...){
   anyNA = function(x) any(is.na(x))
   par(ask=TRUE)
