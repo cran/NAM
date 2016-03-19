@@ -170,27 +170,13 @@ hr {
 
 <h2>Genome-wide association</h2>
 
-<p>Let the dataset have \(n\) observations, \(f\) subpopulations, \(m\) markers and \(e\) environments. The method starts from the genome-wide association analysis in the \(j^{th}\) environment, following the alternative model</p>
-
-<p>\begin{center}
-\(y_j = \mu_j + Z\hat{\gamma}_i + \xi_j + \epsilon_j\)
-\end{center}</p>
-
-<p>Where \(y\) is the vector corresponding to the response variable, \(\mu\) is the intercept, \(Z\) is a \(n\times f\) incidence matrix indicating the haplotype of the maker under evaluation, \(\hat{\gamma}_i\) is a vector of the allele effects of the \(i^{th}\) marker of \(f\) subpopulations, \(\xi\) is a vector of length \(n\) corresponding to the polygenic term and \(\epsilon\) is a vector of residuals with length \(n\).</p>
+<p>Let the dataset have \(n\) observations, \(f\) subpopulations, \(m\) markers and \(e\) environments. The method starts from the genome-wide association analysis in the \(j^{th}\) environment, following the alternative model \(y_j = \mu_j + Z\hat{\gamma}_i + \xi_j + \epsilon_j\). Where \(y\) is the vector corresponding to the response variable, \(\mu\) is the intercept, \(Z\) is a \(n\times f\) incidence matrix indicating the haplotype of the maker under evaluation, \(\hat{\gamma}_i\) is a vector of the allele effects of the \(i^{th}\) marker of \(f\) subpopulations, \(\xi\) is a vector of length \(n\) corresponding to the polygenic term and \(\epsilon\) is a vector of residuals with length \(n\).</p>
 
 <h2>Meta-analysis</h2>
 
 <p>For each \(i\) marker, the meta-analysis is based upon the concept of sufficient statistics, assuming that environments are independent and all information in each environment can be expressed by the allele effects \(\hat{\gamma}_i\) and the observed residual matrix \(R_i\) obtained from the association analysis.</p>
 
-<p>The meta-analysis attempt to verify whether the genetic (\(G\)) and environmental (\(E\)) components of \(\gamma\) differ from zero and, in addition, to verify the existance of \(G\times E\) component. In this step, the set of \(\hat{\gamma}\) from the association analyses becomes the response variable, a vector with length \(e\times f\). For the \(i^{th}\) marker, variance components are obtained from the following random model:</p>
-
-<p>\begin{center}
-\(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + H\delta_i + R\)
-\end{center}</p>
-
-<p>Where \(\mu_i\) is the intercept, \(Z\) is a \(ef\times f\) incidence matrix indicating the allele source, \(\alpha_i\) is the genetic effect associated to the marker, \(W\) is a \(ef\times e\) incidence matrix indicating the environmental factor, \(\beta_i\) is the coefficient associated to each environment, \(H\) is the incidence matrix of genotype by environment interaction, \(\delta_i\) is the coefficient associated to the \(G\times E\) term, and \(R\) is the known residual covariance matrix, a block diagonal matrix \(ef\times ef\).</p>
-
-<p>\newpage</p>
+<p>The meta-analysis attempt to verify whether the genetic (\(G\)) and environmental (\(E\)) components of \(\gamma\) differ from zero and, in addition, to verify the existance of \(G\times E\) component. In this step, the set of \(\hat{\gamma}\) from the association analyses becomes the response variable, a vector with length \(e\times f\). For the \(i^{th}\) marker, variance components are obtained from the following random model: \(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + H\delta_i + R\). Where \(\mu_i\) is the intercept, \(Z\) is a \(ef\times f\) incidence matrix indicating the allele source, \(\alpha_i\) is the genetic effect associated to the marker, \(W\) is a \(ef\times e\) incidence matrix indicating the environmental factor, \(\beta_i\) is the coefficient associated to each environment, \(H\) is the incidence matrix of genotype by environment interaction, \(\delta_i\) is the coefficient associated to the \(G\times E\) term, and \(R\) is the known residual covariance matrix, a block diagonal matrix \(ef\times ef\).</p>
 
 <h2>AMMI term</h2>
 
@@ -244,11 +230,7 @@ hr {
 </tr>
 </tbody></table>
 
-<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is as follows:</p>
-
-<p>\begin{center}
-\(E = UDV\)
-\end{center}</p>
+<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is \(E = UDV\).</p>
 
 <p>Where, \(U\) is a \(e\times e\) matrix, \(D\) is a \(e\times f\) retangular diagonal matrix, and \(V\) is a \(f\times f\) matrix. In analogy to the Eigendecomposition, \(U\) and \(V\) represent Eigenvectors while \(D\) are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs \(E\) using the first \(p=2\) principal components:</p>
 
@@ -298,51 +280,19 @@ hr {
 </tr>
 </tbody></table>
 
-<p>The matrix above can be rearranged as a vector, and be included into the model of meta-analysis replacing the current \(G\times E\) term, thus:</p>
-
-<p>\begin{center}
-\(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + Q\tau_i + R\)
-\end{center}</p>
-
-<p>\newpage</p>
+<p>The matrix above can be rearranged as a vector, and be included into the model of meta-analysis replacing the current \(G\times E\) term, thus: \(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + Q\tau_i + R\).</p>
 
 <h2>Hypothesis testing</h2>
 
-<p>The log-likelihood of the model is, therefore,</p>
-
-<p>\begin{center}
-\(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\)
-\end{center}</p>
-
-<p>where the variance is expressed as</p>
-
-<p>\begin{center}
-\(\sigma^2_y = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\)
-\end{center}</p>
-
-<p>and the log-likelihood of the model above is tested agaist \(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\), providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus</p>
-
-<p>\begin{center}
-\(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\).
-\end{center}</p>
+<p>The log-likelihood of the model is, therefore, \(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\), where the variance is expressed as \(\sigma^2_y = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\) and the log-likelihood of the model above is tested agaist \(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\), providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, \(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\).</p>
 
 <p>And the second interesting hypothesis to be tested is the importance of the \(G\times E\) term alone. Where the likelihood of \(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau)\) is tested against \(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,0)\).</p>
 
 <h2>Woodbury&#39;s matrix identities</h2>
 
-<p>The computational burden associated to the analysis above is originated from the determinant and inversion of the covariance matrix \(V\), a square matrix with \(ef\) rows and columns. Let \(X=[Z\sigma_\alpha || W\sigma_\beta || Q\sigma_\tau]\), such that \(V = XX^T+R\). Using the Woodbury&#39;s matrix identities, we have</p>
+<p>The computational burden associated to the analysis above is originated from the determinant and inversion of the covariance matrix \(V\), a square matrix with \(ef\) rows and columns. Let \(X=[Z\sigma_\alpha || W\sigma_\beta || Q\sigma_\tau]\), such that \(V = XX^T+R\). Using the Woodbury&#39;s matrix identities, we have \(V^{-1} = R^{-1}-R^{-1}X(X^TR^{-1}X+I)^{-1}X^TR^{-1}\) and \(|V| = |X^TR^{-1}X+I||R|\), where the square matrix to be inverted has dimension \(e+f+p\).</p>
 
-<p>\begin{center}
-\(V^{-1} = R^{-1}-R^{-1}X(X^TR^{-1}X+I)^{-1}X^TR^{-1}\)
-\end{center}</p>
-
-<p>and</p>
-
-<p>\begin{center}
-\(|V| = |X^TR^{-1}X+I||R|\)
-\end{center}</p>
-
-<p>where the square matrix to be inverted has dimension \(e+f+p\). For the example, in the analysis of a dataset with \(e=18\) environments, \(f=41\) subpopulations and using \(p=2\) principal components for the \(G\times E\) term, we invert a square matrix with dimension \(18+41+2=61\) rows and columns intead of a matrix with \(18\times 41=738\) rows and columns.</p>
+<p>For the example, in the analysis of a dataset with \(e=18\) environments, \(f=41\) subpopulations and using \(p=2\) principal components for the \(G\times E\) term, we invert a square matrix with dimension \(18+41+2=61\) rows and columns intead of a matrix with \(18\times 41=738\) rows and columns.</p>
 
 </body>
 

@@ -30,6 +30,7 @@ gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL){
     y = y[W]
     covariate = covariate[W]
     gen = gen[W,]
+    if(!is.null(EIG)){EIG$vectors = EIG$vectors[W,]}
   }
   covariate=matrix(covariate,ncol=1)  
   
@@ -321,9 +322,6 @@ gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL){
     delta<-qq[[1]]
     uu<-qq[[2]]
     h<-1/(delta*lambda+1)
-    x<-matrix(1,n,1)
-    #yu<-t(uu)%*%y
-    #xu<-t(uu)%*%x
     yu<-crossprod(uu,y)
     xu<-crossprod(uu,x)
     xx<-matrix(0,s,s)

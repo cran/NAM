@@ -2,6 +2,7 @@
 \alias{gwas}
 \alias{gwas2}
 \alias{gwasGE}
+\alias{gwasPAR3}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
@@ -11,7 +12,7 @@ The gwas function calculates the likelihood ratio for each marker under the empi
 \usage{
 gwas(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE)
 gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL)
-gwasGE(Phe,gen,fam,chr=NULL,cov=NULL)
+gwasGE(Phe,gen,fam,chr=NULL,cov=NULL,ge=TRUE)
 }
 \arguments{
   \item{y}{
@@ -42,6 +43,9 @@ Numeric vector of length \eqn{n} to be used as covariate in the association anal
   \item{Phe}{
 Numeric matrix of observations (\eqn{n*e}) where rows represent genotypes and columns represent environments. \code{NA} is allowed.
 }
+  \item{ge}{
+Logical. If TRUE, meta-analysis (function gwasGE) will be done for a single random interaction term. If FALSE, variance components will be computed for three terms: genotype, environment and interaction.
+}
 }
 \details{
 
@@ -49,7 +53,7 @@ Special incidence matrix is recreated to optimize the information provided by th
 
 The base model for genome scanning includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). The genetic distance between markers is computed using Kosambi map function, where the recombination rate is estimated under the assuption that genotypes are recombinant inbred lines.
 
-The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015).
+The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015) and Wei and Xu (2016).
 
 In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2". This function also allows used-defined kindship through the argument EIG, and the use of a numeric covariate vector through the argument cov.
 }
@@ -59,6 +63,8 @@ The function gwas returns a list containing the method deployed (\eqn{Method}), 
 \references{
 
 Wang, Q. An Empirical Bayes Method for Genome-Wide Association Studies. W799/Statistical Genomics. PAG XXXII. 2015.
+
+Wei, J., & Xu, S. (2016). A Random Model Approach to QTL Mapping in Multi-parent Advanced Generation Inter-cross (MAGIC) Populations. Genetics, genetics-115.
 
 Xavier, A., Xu, S., Muir, W. M., & Rainey, K. M. (2015). NAM: Association Studies in Multiple Populations. Bioinformatics, btv448.
 

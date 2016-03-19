@@ -1,16 +1,18 @@
 \name{BMM}
 \alias{gibbs}
 \alias{ml}
+\alias{gibbs2}
 \alias{plot.gibbs}
 \title{
 Bayesian Mixed Model
 }
 \description{
-Univariate mixed model solver through Bayesian Gibbs Sampling or iterative solution.
+Mixed model solver through Bayesian Gibbs Sampling or iterative solution.
 }
 \usage{
 gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE)
 ml(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0)
+gibbs2(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=3,DF=5,S=1)
 }
 \arguments{
   \item{y}{
@@ -46,9 +48,12 @@ Integer or NULL. Hyperprior shape of variance components. If NULL, the hyperprio
   \item{GSRU}{
 Logical. If TRUE, it updates the regression coefficient using Gauss-Seidel Residual Update (Legarra and Misztal 2008). Useful for p>>n, but does not work when iK or iR are provided.
 }
+  \item{Y}{
+Numeric matrix of observations for multivariate mixed models. Each column represents a trait. \code{NA} is allowed.
+}
 }
 \details{
-Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. The alternative, ml, finds the solution iteratively using the full-conditional expectation.
+Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. The alternative, ml, finds the solution iteratively using the full-conditional expectation. The function gibbs2 can be used for the multivariate case.
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 

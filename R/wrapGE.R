@@ -1,5 +1,5 @@
 
-gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
+gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL,ge=TRUE){
   
   if(is.matrix(Phe)!=TRUE) stop("Phenotypes: 'Phe' must be a matrix")
   if(nrow(Phe)<2) stop("matrix Phe must have at least 2 columns (environments)")
@@ -20,6 +20,7 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
     if(any(is.na(y))){
       wMIS=which(is.na(y))
       y=y[-wMIS];gen=gen[-wMIS,];fam=fam[-wMIS];cov=cov[-wMIS]
+      #if(!is.null(EIG)){EIG$vectors = EIG$vectors[-wMIS,]}
     }else{wMIS=NULL}
     
     method="RH"
@@ -35,7 +36,8 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
     
     cat("Ordering Data",'\n')
     organ=function(fam,y,covariate,Z){
-      a=cbind(fam,y,covariate,Z);a=a[order(a[,1]),]
+      a=cbind(fam,y,covariate,Z)
+      a=a[order(a[,1]),]
       b=array(summary(factor(fam)))
       c=c();for(i in 1:length(b)){d=rep(i,b[i]);c=c(c,d)}
       y=a[,2];fam=c;covariate=a[,3];Z=a[,-c(1:3)];return(list(fam,y,covariate,Z))}
@@ -225,8 +227,6 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
       q<-ncol(x)
       n<-ncol(kk)
       vp<-var(y)
-      #yu<-t(uu)%*%y
-      #xu<-t(uu)%*%x
       yu<-crossprod(uu,y)
       xu<-crossprod(uu,x)
       
@@ -263,8 +263,6 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
       }else{qq<-eigen(as.matrix(kk),symmetric=T)}
       delta<-qq[[1]]
       uu<-qq[[2]]
-      #yu<-t(uu)%*%y
-      #xu<-t(uu)%*%x
       yu<-crossprod(uu,y)
       xu<-crossprod(uu,x)
       
@@ -317,7 +315,6 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
       delta<-qq[[1]]
       uu<-qq[[2]]
       h<-1/(delta*lambda+1)
-      x<-matrix(1,n,1)
       yu<-crossprod(uu,y)
       xu<-crossprod(uu,x)
       xx<-matrix(0,s,s)
@@ -474,7 +471,7 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
   
   cat('\n Performing mata-analysis\n')
   
-  META = function(ByEnv,PLOT=FALSE){
+  META = function(ByEnv,Phe,fam,GEonly = TRUE,PLOT=FALSE){
     
     ML = function(par){ # Woodbury solution
       vg = par[1]; ve = par[2];  vi = par[3]
@@ -529,7 +526,60 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
       return(c(mu,vb))
     }
     
-    m = ncol(gen)
+    ### TESTING MODELS
+    
+    ML_MM = function(vi){ # Woodbury solution
+      U = u*sqrt(vi)
+      v = zw*vi+kk
+      RU = crossprod(ikk,U)
+      Capacitance = crossprod(U,RU)
+      diag(Capacitance) = diag(Capacitance)+1
+      detCAP = determinant.matrix(Capacitance)$modulus[1]
+      detK = determinant.matrix(kk)$modulus[1]
+      d = detCAP+detK # logDet
+      Capacitance = chol2inv(Capacitance)
+      vv = ikk - tcrossprod(RU,Capacitance)%*%crossprod(U,ikk)
+      xpx = sum(vv)
+      xpy = sum(crossprod(vv,y))
+      mu = xpy/xpx
+      r = y-mu
+      like = -0.5*( d + sum(crossprod(vv,r)*r) )
+      return(-like)
+    }
+    
+    MLtest_MM = function(par){ # Woodbury solution
+      vi = par[1]; mu = par[2];
+      U = u*sqrt(vi)
+      v = zw*vi+kk
+      RU = crossprod(ikk,U)
+      Capacitance = crossprod(U,RU)
+      diag(Capacitance) = diag(Capacitance)+1
+      detCAP = determinant.matrix(Capacitance)$modulus[1]
+      detK = determinant.matrix(kk)$modulus[1]
+      d = detCAP+detK # logDet
+      Capacitance = chol2inv(Capacitance)
+      vv = ikk - tcrossprod(RU,Capacitance)%*%crossprod(U,ikk)
+      r = y-mu
+      like = -0.5*( d + sum(crossprod(vv,r)*r) )
+      return(-like)
+    }
+    
+    fixed_MM = function(vi){
+      U = u*vi
+      v = zw*(vi^2)+kk
+      RU = crossprod(ikk,U)
+      Capacitance = crossprod(U,RU)
+      diag(Capacitance) = diag(Capacitance)+1
+      Capacitance = chol2inv(Capacitance)
+      vv = ikk - tcrossprod(RU,Capacitance)%*%crossprod(U,ikk)
+      xpx = sum(vv)
+      xpy = sum(crossprod(vv,y))
+      mu = xpy/xpx
+      vb<-1/xpx
+      return(c(mu,vb))
+    }
+    
+    m = length(ByEnv[[1]]$SNPs)
     E = length(ByEnv)
     
     # Dealing with environments with not all families
@@ -550,26 +600,23 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
     e = c(); for(j in 1:E) e = c(e,rep(j,Vi[j]))
     e = factor(e)
     y = rep(NA,length(p))
-    
-    output = matrix(NA,m,6)
-    colnames(output) = c('mu','vb','l1','l0','lrt','pval')
-    
-    z=model.matrix(~p-1)
-    w=model.matrix(~e-1)
-    zz=tcrossprod(z)
-    ww=tcrossprod(w)
-    x=matrix(1,dimK,1)
+    z = model.matrix(~p-1)
+    w = model.matrix(~e-1)
+    zz= tcrossprod(z)
+    ww= tcrossprod(w)
+    x = matrix(1,dimK,1)
+    u = model.matrix(~p:e-1)
+    zw= tcrossprod(u)
     
     # Starting GxE gwas
     ee = as.numeric(e)
     pp = as.numeric(p)
     maxP = length(levels(p))
     
-    ammi2 = function(y,pc=2){
+    ammi2 = function(y,pc=min(maxP,3)){
       yy = lm(y~p+e)$residuals
-      ge = matrix(NA,maxP,E)
+      ge = matrix(0,maxP,E)
       for(k in 1:length(y)) ge[pp[k],ee[k]] = yy[k]
-      ge[is.na(ge)] = 0
       S = svd(ge,pc,pc)
       SVD = matrix(0,length(y),pc)
       for(o in 1:pc){
@@ -578,34 +625,95 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
       }
       return(SVD)}
     
-    pb=txtProgressBar(style=3)
-    for(i in 1:m){
+    ammi3 = function(y,pc=min(maxP,3)){
+      yy = y
+      ge = matrix(0,maxP,E)
+      for(k in 1:length(y)) ge[pp[k],ee[k]] = yy[k]
+      S = svd(ge,pc,pc)
+      SVD = matrix(0,length(y),pc)
+      for(o in 1:pc){
+        SS = tcrossprod(S$u[,o],S$v[,o])
+        for(k in 1:length(y)) SVD[k,o] = SS[pp[k],ee[k]]
+      }
+      return(SVD)}
+    
+    ################
+    ###   LOOP   ###  
+    ################
+    
+    if(GEonly){
       
-      # generate known residual covariance matrix
-      for(j in 1:E){
-        kk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=ByEnv[[j]]$VAR[,,i]
-        ikk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=chol2inv(ByEnv[[j]]$VAR[,,i])
-      } 
-      # collect the regression coefficient of marker effect
-      for(j in 1:E) y[(cVi[j]+1):cVi[j+1]] = ByEnv[[j]]$PolyTest[i,-c(1:12)]
-      y = as.matrix(as.numeric(y),ncol=1)
-      u = ammi2(y)
-      zw = tcrossprod(u)
-      # output functions (ie. Shizhong's lrt file)
-      l0 = -MLtest(rep(0,4))
-      fit = optim(par=rep(.1,3),fn=ML,method="L-BFGS-B",lower=1e-8)#,control=list(maxit=15,factr=1e6,pgtol=1e-6))
-      beta = fixed(fit$par)
-      mu = beta[1]
-      vb = beta[2]
-      l1 = -MLtest(c(fit$par,mu))
-      lrt = 2*(l1-l0)
-      pval = -log10(dchisq(lrt,df=4))
-      pval = ifelse(pval>=0,pval,0)
-      output[i,]=c(mu,vb,l1,l0,lrt,pval)
-      setTxtProgressBar(pb,i/m)
+      output = matrix(NA,m,7)
+      colnames(output) = c('mu','vb','vi','l1','l0','lrt','pval')
+      
+      pb=txtProgressBar(style=3)
+      for(i in 1:m){
+        # generate known residual covariance matrix
+        for(j in 1:E){
+          k1 = ByEnv[[j]]$VAR[,,i]
+          k2 = chol2inv(k1)
+          kk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=k1
+          ikk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=k2
+        }
+        # collect the regression coefficient of marker effect
+        for(j in 1:E) y[(cVi[j]+1):cVi[j+1]] = ByEnv[[j]]$PolyTest[i,-c(1:12)]
+        y = as.matrix(as.numeric(y),ncol=1)
+        u = ammi3(y)
+        zw = tcrossprod(u)
+        # output functions (ie. Shizhong's lrt file)
+        l0 = -MLtest_MM(rep(0,2))
+        #fit = optim(par=1,fn=ML_MM,method="CG",control=list(maxit=5,factr=1e6,pgtol=1e-6))
+        fit = optim(par=1,fn=ML_MM,method="L-BFGS-B",lower=1e-8,upper=1e8)
+        beta = fixed_MM(fit$par)
+        mu = beta[1]
+        vb = beta[2]
+        l1 = -MLtest_MM(c(fit$par,mu))
+        lrt = 2*(l1-l0)
+        pval = -log10(dchisq(lrt,df=2))
+        pval = ifelse(pval>=0,pval,0)
+        #cat('\n',round(c(fit$par,lrt,pval),4))
+        output[i,]=c(mu,vb,fit$par,l1,l0,lrt,pval)
+        setTxtProgressBar(pb,i/m)
+      }
+      close(pb)
+      
+    }else{
+      
+      output = matrix(NA,m,9)
+      colnames(output) = c('mu','vb','vg','ve','vi','l1','l0','lrt','pval')
+      
+      pb=txtProgressBar(style=3)
+      for(i in 1:m){
+        # generate known residual covariance matrix
+        for(j in 1:E){
+          k1 = ByEnv[[j]]$VAR[,,i]
+          k2 = chol2inv(k1)
+          kk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=k1
+          ikk[(cVi[j]+1):cVi[j+1],(cVi[j]+1):cVi[j+1]]=k2
+        } 
+        # collect the regression coefficient of marker effect
+        for(j in 1:E) y[(cVi[j]+1):cVi[j+1]] = ByEnv[[j]]$PolyTest[i,-c(1:12)]
+        y = as.matrix(as.numeric(y),ncol=1)
+        u = ammi2(y)
+        zw = tcrossprod(u)
+        # output functions (ie. Shizhong's lrt file)
+        l0 = -MLtest(rep(0,4))
+        fit = optim(par=rep(.01,3),fn=ML,method="L-BFGS-B",lower=1e-8)#,control=list(maxit=15,factr=1e6,pgtol=1e-6))
+        beta = fixed(fit$par)
+        mu = beta[1]
+        vb = beta[2]
+        l1 = -MLtest(c(fit$par,mu))
+        lrt = 2*(l1-l0)
+        pval = -log10(dchisq(lrt,df=4))
+        pval = ifelse(pval>=0,pval,0)
+        #cat(round(c(fit$par,lrt,pval),4),'\n')
+        output[i,]=c(mu,vb,fit$par,l1,l0,lrt,pval)
+        setTxtProgressBar(pb,i/m)
+      }
+      close(pb)
       
     }
-    close(pb)
+    
     
     if(PLOT){
       plot(ByEnv[[1]],pch=20,ylim=c(0,20),alpha=0.05/m)
@@ -618,7 +726,8 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL){
     return(output)
   }
   
-  output = META(ByEnv)
+  
+  output = META(ByEnv=ByEnv,Phe=Phe,fam=fam,GEonly=ge)
   
   FINAL_OUTPUT = list('PolyTest'=data.frame(output),
                       'GwasByEnv'=ByEnv,

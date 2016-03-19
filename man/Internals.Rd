@@ -15,6 +15,7 @@
 \alias{eigX}
 \alias{covar}
 \alias{PedMat}
+\alias{PedMat2}
 \alias{LD}
 \alias{.Random.seed}
 \title{
