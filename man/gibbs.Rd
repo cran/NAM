@@ -10,9 +10,10 @@ Bayesian Mixed Model
 Mixed model solver through Bayesian Gibbs Sampling or iterative solution.
 }
 \usage{
-gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE)
-ml(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0)
-gibbs2(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=3,DF=5,S=1)
+gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,
+      Thin=2,DF=5,S=0.5,nor=TRUE,GSRU=FALSE)
+ml(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=5,S=0.5,nor=TRUE)
+gibbs2(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=1,DF=5,S=0.5,nor=TRUE)
 }
 \arguments{
   \item{y}{
@@ -45,6 +46,9 @@ Integer. Hyperprior degrees of freedom of variance components.
   \item{S}{
 Integer or NULL. Hyperprior shape of variance components. If NULL, the hyperprior solution for the scale parameter is calculated as proposed by de los Campos et al. (2013).
 }
+  \item{nor}{
+Logical. If TRUE, it normilizes the response variable(s).
+}
   \item{GSRU}{
 Logical. If TRUE, it updates the regression coefficient using Gauss-Seidel Residual Update (Legarra and Misztal 2008). Useful for p>>n, but does not work when iK or iR are provided.
 }
@@ -53,7 +57,8 @@ Numeric matrix of observations for multivariate mixed models. Each column repres
 }
 }
 \details{
-Solve Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola, D. (2002) with conjugated priors. The alternative, ml, finds the solution iteratively using the full-conditional expectation. The function gibbs2 can be used for the multivariate case.
+The general model is \eqn{y=Xb+Zu+e}, where \eqn{u~N(0,A\sigma2a)} and \eqn{e~N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case.
+
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 

@@ -19,6 +19,7 @@ SEXP KMUP(NumericMatrix X, NumericVector b,
       g[i] = R::rnorm(
       (sum(X(_,i)*E) + xx(i)*G)/(xx(i)+L(i)),
       sqrt(Ve/(xx(i)+L(i))));
+      
     if(pi>0){
       e = E - X(_,i) * (g[i]-G);
       ee = sum(e*e);
@@ -27,9 +28,11 @@ SEXP KMUP(NumericMatrix X, NumericVector b,
       exclude = pi * exp(-EE/(2*Ve));
       d[i] = R::rbinom(1,include/(include+exclude));
       E = e;
+    
     }else{
       d[i] = 1;
       E = E - X(_,i) * (g[i]-G);
+    
     }
   }
    return List::create(Named("b") = g,

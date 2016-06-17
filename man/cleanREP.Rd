@@ -11,7 +11,7 @@ cleanREP(y,fam,gen,thr=0.95)
 }
 \arguments{
   \item{y}{
-Numeric vector (\eqn{n}) or numeric matrix (\eqn{n x t}) of observations describing the trait to be analyzed. \code{NA} is allowed.
+Numeric vector (\eqn{n}) or numeric matrix (\eqn{n} x \eqn{t}) of observations describing the trait to be analyzed. \code{NA} is allowed.
 }
   \item{fam}{
 Numeric vector of length (\eqn{n}) indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.

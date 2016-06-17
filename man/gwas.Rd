@@ -2,17 +2,16 @@
 \alias{gwas}
 \alias{gwas2}
 \alias{gwasGE}
-\alias{gwasPAR3}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
 \description{
-The gwas function calculates the likelihood ratio for each marker under the empirical Bayesian framework. The method also works with multiple populations. 
+The gwas function calculates the likelihood ratio for each marker under the empirical Bayesian framework. The method also works with multiple populations.
 }
 \usage{
 gwas(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE)
 gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL)
-gwasGE(Phe,gen,fam,chr=NULL,cov=NULL,ge=TRUE)
+gwasGE(Phe,gen,fam,chr=NULL,cov=NULL,ge=FALSE)
 }
 \arguments{
   \item{y}{
@@ -23,7 +22,7 @@ Numeric matrix containing the genotypic data. A matrix with \eqn{n}
 rows of observations and (\eqn{m}) columns of molecular markers. SNPs must be coded as \code{0, 1, 2}, for founder homozygous, heterozygous and reference homozigous. \code{NA} is allowed.
 }
   \item{fam}{
-Numeric vector of length \eqn{n} indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
+Numeric vector of length \eqn{n} indicating a stratification factor or which subpopulation (\eqn{e.g.} family) that each observation comes from. Default assumes that all observations are from the same populations.
 }
   \item{chr}{
 Numeric vector indicating the number of markers in each chromosome. The sum of \eqn{chr} must be equal to the number of columns in \eqn{gen}. Default assumes that all markers are from the same chromosome.
@@ -44,7 +43,7 @@ Numeric vector of length \eqn{n} to be used as covariate in the association anal
 Numeric matrix of observations (\eqn{n*e}) where rows represent genotypes and columns represent environments. \code{NA} is allowed.
 }
   \item{ge}{
-Logical. If TRUE, meta-analysis (function gwasGE) will be done for a single random interaction term. If FALSE, variance components will be computed for three terms: genotype, environment and interaction.
+Logical. If TRUE, meta-analysis (function gwasGE) will be done for the GE interaction term only. If FALSE, variance components will be computed for three terms: genotype, environment and interaction.
 }
 }
 \details{
@@ -56,6 +55,10 @@ The base model for genome scanning includes the fixed effect (\eqn{Xb}), the mar
 The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015) and Wei and Xu (2016).
 
 In order to analyze large dateset, one can avoid memory issues by using the function "gwas2", but that the argument 'window' is not implemented for "gwas2". This function also allows used-defined kindship through the argument EIG, and the use of a numeric covariate vector through the argument cov.
+
+When multi-environmental trials are the target of mapping, one may use the function \eqn{gwasGE} to perform analysis by environment, followed by "meta-analysis" used to combine the results. This strategy provides an idea of the variation on QTL effect due to environment, genetic background (provided by the stratification factor) and the interaction between environment and genetics.
+
+An alternative to this method is the "mega-analysis", where one can provide the stratification factor as a combination of subpopulation and environment. In this case, the same genotype will appear more than once in the phenotypic and genotypic data.
 }
 \value{
 The function gwas returns a list containing the method deployed (\eqn{Method}), a summary of predicted parameters and statistical tests (\eqn{PolyTest}), estimated genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).

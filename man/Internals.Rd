@@ -30,15 +30,14 @@
 \examples{
 # Forward gen imputation
 data(tpod)
-fast.impute.gen = markov(gen,chr)
+fast.impute = markov(gen,chr)
 
 # A matrix
 PedMat()
 
 # Pairwise LD
-ld = LD(gen[,1:3])
 ld = LD(gen[,1:10])
-heatmap(ld$r2)
+heatmap(ld)
 
 # Spatial correlation kernel
 covar()

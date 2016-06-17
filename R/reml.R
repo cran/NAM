@@ -1,14 +1,11 @@
 reml=function(y,X=NULL,Z=NULL,K=NULL){
   anyNA = function(x) any(is.na(x))
   if(!is.matrix(y)){
-    
     N = length(y)
-    
     # Dealing with fixed effect matrix
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")
       }else{if(class(X)=="formula"){X=model.matrix(X)}}}
-    
     # Dealing with random effect
     if(is.null(K)&is.null(Z))stop("Either Z or K must be specified")
     if(is.null(K)){
@@ -19,7 +16,6 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
       if(class(Z)=="formula"){Z=model.matrix(Z)-1}
       V=crossprod(t(Z),K);V=tcrossprod(V,Z)}
     K=V
-    
     # Function starts here
     m = which(is.na(y)) # missing values
     if(any(is.na(y))){
@@ -80,17 +76,17 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
       hat[-m] = U
       U = hat
       }
-    U = crossprod(U,Z)
+    
+    if(nrow(Z)>ncol(uu)) U = crossprod(U,Z)/colSums(Z)
+    
     REML = list("VC"=VC,"Fixed"=B,"EBV"=U)
     
   }else{
     
     N = nrow(y)
-    # Dealing with fixed effect matrix
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")
       }else{if(class(X)=="formula"){X=model.matrix(X)}}}
-    # Dealing with random effect
     if(is.null(K)&is.null(Z))stop("Either Z or K must be specified")
     if(is.null(K)){
       if(class(Z)=="formula"){Z=model.matrix(Z)-1}
@@ -100,7 +96,23 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
       if(class(Z)=="formula"){Z=model.matrix(Z)-1}
       V=crossprod(t(Z),K);V=tcrossprod(V,Z)};
     Z=diag(N); K=V
-    
+    if(any(is.na(Y))){
+      impY = function(Y){
+        t = ncol(Y)
+        NAs = which(is.na(Y))
+        impX = function(x){x[is.na(x)]=mean(x,na.rm=TRUE);return(x)}
+        Y2 = apply(Y,2,impX)
+        rM=rowMeans(Y2,na.rm=TRUE)
+        cM=colMeans(Y2,na.rm=TRUE)
+        eM=tcrossprod(rM,cM)
+        Y2 = Y; Y2[NAs]=eM[NAs]
+        U = svd(x = Y2); Y3=Y
+        for(i in 1:t){
+          a = lm(Y[,i]~U$u)
+          b = predict(a,data.frame(U$u))
+          Y3[,i] = b}
+        return(Y3)}
+      Y = impY(Y)}
    ECM=function(Y,X,Z,K){Y=t(Y);X=t(X)
    ECM1=function(ytl, xtl, Vgt,Vet,Bt, deltal){Vlt=deltal*Vgt+Vet; invVlt=solve(Vlt+diag(1e-06,d))
    return(list(Vlt=Vlt, gtl=deltal*Vgt%*%invVlt%*%(ytl-Bt%*%xtl), Sigmalt=deltal*Vgt-deltal*Vgt%*%invVlt%*%(deltal*Vgt)))}
@@ -136,3 +148,31 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
 
  class(REML) = "reml"
 return(REML)}
+
+MCreml = function(y,K,X=NULL,MC=300,samp=300){
+  anyNA = function(x) any(is.na(x))
+  if(samp>=length(y)){stop("Sample size has to be smaller than sample space")}
+  if(nrow(K)!=length(y)){stop("Kinship and response variable have incompatible dimensions")}
+  if(ncol(K)!=length(y)){stop("Kinship and response variable have incompatible dimensions")}
+  n = MC; t = samp
+  moda=function (x){
+    it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
+      y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
+      diffs=sup-inf; i=min(which(diffs==min(diffs)))
+      M=median(y[i:(i+k)]); it=it-1}; return(M)}
+  h2 = c(); Vg = c(); Ve = c()
+  for(i in 1:n){
+    R = sample(1:length(y),t)
+    if(any(is.na(y[R]))){mis = which(is.na(y[R])); R=R[-mis] }
+    fit = reml(y[R],X=X,K=K[R,R])
+    Vg = c( fit$VC[1], Vg )
+    Ve = c( fit$VC[2], Ve )
+    h2 = c( fit$VC[3], h2 )
+  }
+  H = unlist(h2); G = unlist(Vg); E = unlist(Ve)
+  samples = cbind(G,E,H); rownames(samples) = 1:MC
+  mode.Vg = moda(G); mode.Ve = moda(E); mode.h2 = moda(H)
+  VC = c(mode.Vg,mode.Ve,mode.h2); names(VC) = c("Vg","Ve","h2")
+  result = list("samples"=samples,"modes"=VC)
+  return(result)
+}

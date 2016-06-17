@@ -115,7 +115,7 @@ For large datasets, the computer memory may become a limitation. A second functi
 + `my_gwas = gwas2 ( y = phenotype, gen = genotypes )`
 + `my_gwas = gwas2 ( y = phenotype, gen = genotypes, fam = population, chr = chromosomes )`
 
-When multiple traits will be analyzed, there exist the possibility avoiding the Eigendecomposition of the kinship matrix for every GWAS you run using a same population. The function `eigX` generates and decomposes the kinship, and the output is suitable for the argument `EIG` in the `gwas2` function.
+When multiple independent traits will be analyzed, there exist the possibility avoiding the Eigendecomposition of the kinship matrix for every GWAS you run using a same population. The function `eigX` generates and decomposes the kinship, and the output is suitable for the argument `EIG` in the `gwas2` function.
 
 + `eigNAM = eigX(gen=genotypes, fam=population)`
 + `trait_1 = gwas2( y=phenotype1, gen=genotypes, fam=population, chr=chromosomes, EIG=eigNAM )`
@@ -160,7 +160,7 @@ Most output statistcs are available in the *PolyTest* object inside the list out
 
 These scores are LRT (*likelihood ratio test statistics*), they represent the improvement that each SNP provides to a mixed model. To obtain the $-log(P-value)$ 'by-hand', the common unit of association studies, type 
 
-+ `PVal = -log(dchisq(SCORE,0.5),base=10)`
++ `PVal = -log10(dchisq(SCORE,0.5))`
 + `PVal[PVal<0] = 0`
 
 The object **PVal** contains all the -log(p-values). The code above transforms LRT into p-value using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.
@@ -202,7 +202,7 @@ Repeated markers are two markers side-by-side with identical information (i.e. f
 
 An example of how to use the function `snpQC` to impute missing loci and remove markers with MAF lower than 10% is:
 
-+ `adjusted_genotypes = snpQC(gen=genotypes, MAF=0.10, impute=TRUE )`
++ `adjusted_genotypes = snpQC( gen=genotypes, MAF=0.10, impute=TRUE )`
 
 Then, you can try to verify the gene content by:
 
@@ -246,30 +246,30 @@ To check if a given `object` (eg. matrix, vector or factor) belongs to the corre
 
 Let `trait` be a numeric vector representing your response variable, `env` be a factor representing a different environments, `block` be a factor that indicates some experimental constrain, and `lines` be a factor that represent your lines. To fit a model, try:  
 
-## Fit the model
+Fit the model
 
 + `FIT = reml ( y = trait, X = ~ block +  env, Z = ~ lines )`
 
-## Variance components
+Variance components
 
 + `FIT$VC`
 
-## BLUP values (genetic values)
+BLUP values (genetic values)
 
 + `FIT$EBV`
 
 Another possibility is to fit a GBLUP, useful to obtain breeding values using molecular data. Let `gen` be the genotypic matrix, `env` be a factor representing a different environments, and `lines` be a factor that represent your lines. The GBLUP model would be fitted as:
 
-## Genomic relationship matrix
+Genomic relationship matrix
 
 + `G = tcrossprod(gen)`
 + `G = G/mean(diag(G))`
 
-## Fit the model
+Fit the model
 
 + `FIT = reml ( y = trait, X = ~ env, Z = ~ lines, K = G )`
 
-## GBLUP values (breeding values)
+GBLUP values (breeding values)
 
 + `FIT$EBV`
 
@@ -277,22 +277,22 @@ The function `gibbs` is also unbiased and works with arguments similar to `reml`
 
 Now, lets see how to fit a GBLUP with the environment factor set as random effect. Let `gen` be the genotypic matrix, `env` be a factor representing a different environments, and `lines` be a factor that represent your lines. The GBLUP model would be fitted as:
 
-## Genomic relationship matrix
+Genomic relationship matrix
 
 + `G = tcrossprod(gen); G = G/mean(diag(G))`
 + `iG = chol2inv(G)`
 
-## Fit the model
+Fit the model
 
 + `FIT = gibbs ( y = trait, Z = ~ lines +  env, K = iG )`
 
-## GBLUP values (breeding values)
+GBLUP values (breeding values)
 
 + `rowMeans(FIT$Posterior.Coef$Random1)`
 
 Similarly, it is possible to fit other models for genomic selections, such as Bayesian ridge regression (BRR) and BayesA using one of these function two mixed model functions. To fit a simple model with environment as fixed effect:
 
-## Fit BRR
+Fit BRR using the gibbs function
 
 +  `FIT_BRR = gibbs ( y = trait, X = ~ env , Z = gen, S=NULL)`
 
@@ -300,21 +300,21 @@ Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When m
 
 Although it is possible to use `reml` and `gibbs` to generate breeding values, the function `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function are: BRR, BayesA, BayesB and BayesC. To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
 
-## BLUP
+BLUP
 
 + `BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)`
 
-## BayesA
+BayesA
 
 + `BA = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0)`
 
-## BayesB
+BayesB
 
-+ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=.5)`
++ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=.1)`
 
-## BayesC
+BayesC
 
-+ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=.5)`
++ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=.1)`
 
 # 7. Finding substructures
 

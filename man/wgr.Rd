@@ -1,5 +1,6 @@
 \name{WGR}
 \alias{wgr}
+\alias{ben}
 \title{
 Whole-genome Regression
 }
@@ -9,6 +10,7 @@ Univariate model to find breeding values through regression with optional resamp
 \usage{
 wgr(y,gen,it=1500,bi=500,th=1,bag=1,rp=TRUE,iv=FALSE,
     pi=0,df=5,R2=0.5,eigK=NULL,rankK=0.25,verb=FALSE)
+ben(y,gen,it=750,bi=250,bag=0.5,alpha=0.5,wpe=10)
 }
 \arguments{
   \item{y}{
@@ -37,7 +39,7 @@ Logical. Use replacement (bootstrap) samples when bag is different than one.
 Logical. Assign markers independent variance. If true, turns the default model BLUP into BayesA. For this model, the shape parameter is conjugated by a gamma with hyperpriors calculated based on the R2 rule.
 }
   \item{pi}{
-Value between 0 and 1. If greater than zero it activates variable selection, where markers have expected probability pi of having null effect. The model conjugates variable selection from a Beta-Binomial distribution.
+Value between 0 and 1. If greater than zero it activates variable selection, where markers have expected probability pi of having null effect, in other words, the lower the value of pi the more stringent the variable selection is. The model conjugates variable selection from a Beta-Binomial distribution.
 }
   \item{df}{
 Hyperprior degrees of freedom of variance components.
@@ -54,7 +56,12 @@ Numeric between 0 and 1. Indicates the proportion of Eigenpairs used to fit the 
   \item{verb}{
 Logical. If verbose is TRUE, function displays MCMC progress bar.
 }
-
+  \item{alpha}{
+Numeric between 0 and 1. Controls prior alpha for the bagging elastic net model, where 0 is ridge (L2) and 1 is lasso (L1).
+}
+  \item{wpe}{
+Weight of prediction error sum of squared for the jump function that defines alpha in the bagging elastic net model.
+}
 }
 \details{
 The model for the whole-genome regression is as follows:
@@ -63,7 +70,7 @@ The model for the whole-genome regression is as follows:
 
 where \eqn{y} is the response variable, \eqn{mu} is the intercept, \eqn{X} is the genotypic matrix, \eqn{g} is the product of two terms (\eqn{g = bg}), \eqn{b} is the effect of an allele substitution, \eqn{d} is an indicator variable that define whether or not the marker should be included into the model, \eqn{u} is the polygenic term and \eqn{e} is the residual term.
 
-Users can obtain four WGR methods out of this function: BRR (pi=0,iv=F), BayesA (pi=0,iv=T), BayesB (pi=0.8,iv=T) and BayesC (pi=0.8,iv=F). The full theoretical basis of each model is described by de los Campos et al. (2013).
+Users can obtain four WGR methods out of this function: BRR (pi=0,iv=F), BayesA (pi=0,iv=T), BayesB (pi=0.2,iv=T) and BayesC (pi=0.2,iv=F). The full theoretical basis of each model is described by de los Campos et al. (2013).
 
 Gibbs sampler that updates regression coefficients is adapted from GSRU algorithm (Legarra and Misztal 2008). The variable selection works through the unconditional prior algorithm proposed by Kuo and Mallick (1998). The polygenic term is solved by Bayesian algorithm of reproducing kernel Hilbert Spaces proposed by de los Campos et al. (2010).
 }
@@ -100,10 +107,10 @@ BA = wgr(y,gen,iv=TRUE,pi=0,bag=0.5,rp=TRUE,it=400,bi=50)
 cor(y,BA$hat)
 
 # BayesB
-BB = wgr(y,gen,iv=TRUE,pi=.5,bag=0.5,rp=TRUE,it=400,bi=50)
+BB = wgr(y,gen,iv=TRUE,pi=.1,bag=0.5,rp=TRUE,it=400,bi=50)
 cor(y,BB$hat)
 
 # BayesC
-BC = wgr(y,gen,iv=FALSE,pi=.5,bag=0.5,rp=TRUE,it=400,bi=50)
+BC = wgr(y,gen,iv=FALSE,pi=.1,bag=0.5,rp=TRUE,it=400,bi=50)
 cor(y,BC$hat)
 }

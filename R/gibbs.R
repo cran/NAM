@@ -1,6 +1,10 @@
 
-gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,S=1,GSRU=FALSE){
-  anyNA = function(x) any(is.na(x))  
+# Bayesian gibbs sampling
+gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,S=0.5,nor=TRUE,GSRU=FALSE){
+  
+  anyNA = function(x) any(is.na(x))
+  if(nor) y = (y-mean(y,na.rm = TRUE))/sd(y,na.rm = TRUE)
+  
   # Default for X; changing X to matrix if it is a formulas
   VY = var(y,na.rm=T)
   if(is.null(X)) X=matrix(1,length(y),1)
@@ -144,7 +148,11 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
     S0a = runif(Randoms,S0*0.5,S0*1.5)
     df0a = runif(Randoms,df0*0.5,df0*1.5)
     dfu = q + df0a
-    if(is.null(S)){ S0b = runif(1,0.0001,5) }else{ S0b = runif(1,S*0.5,S*1.5) }
+    if(is.null(S)){
+      S0b = runif(1,0.0001,2)
+    }else{
+        S0b = runif(1,S*0.5,S*1.5)
+        }
     df0b = runif(1,min(2,df0)*0.5,min(2,df0)*1.5)
     dfe = n + df0b
     
@@ -230,9 +238,11 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=4,DF=5,
   
 }
 
-ml = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0){
+# iterative solving gibbs, EM-like
+ml = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=5,S=0.5,nor=TRUE){
   
   anyNA = function(x) any(is.na(x))
+  if(nor) y = (y-mean(y,na.rm = TRUE))/sd(y,na.rm = TRUE)
   
   # Default for X; changing X to matrix if it is a formulas
   VY = var(y,na.rm=T)
@@ -338,7 +348,7 @@ ml = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0){
   cf = 1
   
   # LOOP
-  while(cf>1e-8){
+  while(cf>1e-10){
     
     # Ve/Va
     lambda = Ve/Va
@@ -384,19 +394,11 @@ ml = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=-2,S=0){
   
 }
 
-plot.gibbs = function(x,...){
-  anyNA = function(x) any(is.na(x))
-  par(ask=TRUE)
-  vc = nrow(x$Posterior.VC)-1
-  for(i in 1:vc) plot(density(x$Posterior.VC[i,],...),main=paste("Posterior: Term",i,"variance"))
-  plot(density(x$Posterior.VC[vc+1,]),main=paste("Posterior: Residual Variance"),...)
-  par(ask=FALSE)
-}
-
-
-gibbs2 = function(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=3,DF=5,S=1){
+# Multivariate gibbs
+gibbs2 = function(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=1,DF=5,S=0.5,nor=TRUE){
   
   anyNA = function(x) any(is.na(x))  
+  if(nor) Y = apply(Y,2,function(y)(y-mean(y,na.rm = TRUE))/sd(y,na.rm = TRUE))
   
   Y0 = Y
   Q = ncol(Y)
@@ -637,6 +639,17 @@ gibbs2 = function(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=3,DF=5,S=1){
   
 }
 
+# Plot gibbs
+plot.gibbs = function(x,...){
+  anyNA = function(x) any(is.na(x))
+  par(ask=TRUE)
+  vc = nrow(x$Posterior.VC)-1
+  for(i in 1:vc) plot(density(x$Posterior.VC[i,],...),main=paste("Posterior: Term",i,"variance"))
+  plot(density(x$Posterior.VC[vc+1,]),main=paste("Posterior: Residual Variance"),...)
+  par(ask=FALSE)
+}
+
+# Spatial covariance structure
 covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
   if(is.null(sp)) {
     sp = cbind(rep(1,49),rep(c(1:7),7),as.vector(matrix(rep(c(1:7),7),7,7,byrow=T)))
@@ -664,6 +677,7 @@ covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
   if(obs!=49) return(quad)
 }
 
+# Pedigree
 PedMat = function(ped=NULL){
   if(is.null(ped)){
     id = 1:11
@@ -690,6 +704,7 @@ PedMat = function(ped=NULL){
           A[i,j]=Aij}}}
     return(A)}}
 
+# Pedigree + Genomic kinship
 PedMat2 = function (ped,gen=NULL,IgnoreInbr=FALSE,PureLines=FALSE){
   
   n = nrow(ped)
