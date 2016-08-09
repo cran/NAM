@@ -32,7 +32,7 @@ Sample size of the sampling procedure to estimate variance components using MCre
 }
 }
 \details{
-Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). If y is a matrix with multiple traits, the fuctions solves the mixed model via an ECM algorithm adapted from the EMMREML package (Akdemir and Godfrey 2014). MCreml is a resampling strategy to find variance components for large datasets.
+Solve mixed models with a single random effects minizing the log restricted maximum likelihood (REML) using the EMMA algorithm (Kang et al 2008). Prediction of random coefficients are performed according to VanRaden (2008). If y is a matrix with multiple traits, the fuctions solves the mixed model via an ECM algorithm adapted from the EMMREML package (Akdemir and Godfrey 2014). MCreml is uses subsampling, a Monte Carlo strategy to reduce the computational burden to estimate variance components in large datasets.
 }
 \value{
 The function reml returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 

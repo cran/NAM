@@ -164,7 +164,7 @@ plot.fst = function(x,..., p=NULL,chr=NULL){
 }
 
 # function for marker quality control
-snpQC=function(gen,psy=1,MAF=0.05,remove=TRUE,impute=FALSE){
+snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
   anyNA = function(x) any(is.na(x))
   # CHECKING REDUNDANT MARKERS
   gen2=gen; redundancy=c(0); for(i in 1:(ncol(gen)-1)){
@@ -185,11 +185,26 @@ snpQC=function(gen,psy=1,MAF=0.05,remove=TRUE,impute=FALSE){
       lowerAF=min(PA,Pa)
       LAF=c(LAF,lowerAF)}
     maf=which(LAF<MAF)
+    # REMOVE SNP WITH INSUFICIENT VARIATION (eg. singletons) # NEW!
+    vsnp = apply(gen2,2,sd)
+    noVar = which(vsnp< max(MAF,0.001))
+    # REMOVE SNP A LOT OF MISSING # NEW!
+    msnp = apply(gen2,2,sd)
+    noVal = which(msnp>misThr)
+    #
     hist(LAF,col=3,nclass=50,main="Histogram of MAF",xlab="Minor Allele Frequency")
     if(length(maf)>0){
       cat("There are",length(maf),"markers with MAF below the threshold",'\n')
-      if(remove==TRUE){gen3=gen2[,-maf]}
-    }else{cat("No marker below MAF threshold",'\n');gen3=gen2}
+      if(remove==TRUE){
+        gen3=gen2[,-maf]
+        if(any(noVar)){gen3=gen3[,-noVar]}
+        if(any(noVal)){gen3=gen3[,-noVal]}
+        }
+    }else{cat("No marker below MAF threshold",'\n');
+      gen3=gen2
+      if(any(noVar)){gen3=gen3[,-noVar]}
+      if(any(noVal)){gen3=gen3[,-noVal]}
+      }
   }else{gen3=gen2}
   if(impute){
     rf <- function(xmis){ # Author: D.Stekhoven, stekhoven@stat.math.ethz.ch
@@ -243,8 +258,9 @@ snpQC=function(gen,psy=1,MAF=0.05,remove=TRUE,impute=FALSE){
   return(gen3)}
 
 # function to remove repeated genotypes
-cleanREP = function(y,fam,gen,thr=0.95){
+cleanREP = function(y,gen,fam=NULL,thr=0.95){
   if(is.vector(y)) y=matrix(y,ncol=1)
+  if(is.null(fam)) fam = rep(1,nrow(y))
   GG=function(gen,r=1){
     a1=(gen-1)
     a1[a1==-1]=0
@@ -456,3 +472,128 @@ Gdist = function(gen,method=1){
   return(d)
 }
 
+# G2A Kernels
+G2A_Kernels = function(gen){
+  # Centralizing G2A
+  Z = apply(gen,2,function(x) x-mean(x,na.rm = T));Z[is.na(Z)]=0
+  gen[gen==2]=0
+  W = apply(gen,2,function(x) x-mean(x,na.rm = T));W[is.na(W)]=0
+  # Additive
+  ZZ = tcrossprod(Z)
+  A = ZZ/mean(diag(ZZ))
+  # Dominant
+  WW = tcrossprod(W)
+  D = WW/mean(diag(WW))
+  # Epistatic additive
+  ZZ = tcrossprod(Z)^2 - tcrossprod(Z^2)
+  AA = ZZ/mean(diag(ZZ))
+  # Epistatic dominant
+  WW = tcrossprod(W)^2 - tcrossprod(W^2)
+  DD = WW/mean(diag(WW))
+  # Epistatic add x dom
+  AD = A*D
+  AD = AD/mean(diag(AD))
+  # List
+  KS = list('A'=A,'D'=D,'AA'=AA,'DD'=DD,'AD'=AD)
+  # Return
+  return(KS)
+}
+
+# IMPORT DATA
+Import_data = function(file,type=NULL){
+  
+  if(is.null(type)) stop("'type' must be specified with one the following: 'GBS','HapMap','VCF'")
+  
+  # GBS
+  GBS = function(path){
+    G = read.delim(path)
+    rownames(G)=G[,1];G=G[,-1]
+    G[G!="A"&G!="C"&G!="G"&G!="T"]=NA
+    Recode=function(aa){
+      t=table(aa)
+      t[t==0]=NA;A=which.max(t)
+      a=which.min(t)
+      A1=names(t)[A]
+      A2=names(t)[a]
+      W1=which(aa==A1)
+      W2=which(aa==A2)
+      aa=as.numeric(aa)
+      aa[W1]=0;aa[W2]=2
+      return(aa)
+    }
+    gen=apply(G,2,Recode)
+    dimnames(gen)=dimnames(G)
+    gen=data.matrix(gen)
+    # chr
+    chr = NULL; for(i in 1:max(G[,3])) chr=c(chr,sum(G[,3]==i))
+    # return
+    final = list('gen'=gen,'chr'=chr)
+    return(final)
+  }
+  
+  if(type=='GBS'){
+    return(GBS(file))
+  }
+  
+  # HAPMAP
+  HAP = function(path){
+    G = read.delim(path, header=T)
+    AA=as.character(G[,2])
+    AA=gsub('/','',AA)
+    Gen=t(G[,-c(1:11)])
+    n=nrow(Gen)
+    m=ncol(Gen)
+    gen=matrix(NA,n,m)
+    for(i in 1:m){
+      A1=strsplit(AA[i],'')[[1]][1]
+      A2=strsplit(AA[i],'')[[1]][2]
+      BB=paste(A1,A1,sep='')
+      Bb=paste(A1,A2,sep='')
+      bb=paste(A2,A2,sep='')
+      M=as.character(Gen[,i])
+      gen[M==BB,i]=2
+      gen[M==Bb,i]=1
+      gen[M==bb,i]=0
+    }
+    colnames(gen)=paste(G[,3],G[,4],G[,2],sep='.')
+    # chr
+    chr = NULL; for(i in 1:max(G[,3])) chr=c(chr,sum(G[,3]==i))
+    rm(AA,A1,A2,BB,Bb,bb,m,n,Gen)
+    # return
+    final = list('gen'=gen,'chr'=chr)
+    return(final)
+  }
+  
+  if(type=='HapMap'){
+    return(HAP(file))
+  }
+  
+  # VCF
+  VCF = function(path){
+    G = read.table(path,header = TRUE)
+    if(any(duplicated(G$POS))) G = G[-which(duplicated(G$POS)),]
+    rownames(G) = paste(G$CHROM,G$POS,sep='_')
+    G = G[,-c(1:9)]
+    tags = dimnames(G)
+    recode = function(g){
+      g = as.character(g)
+      g[g=='1/1']=2
+      g[g=='0/1']=1
+      g[g=='1/0']=1
+      g[g=='0/0']=0
+      g = as.numeric(g)
+      return(g)
+    }
+    G = apply(G,2,recode)
+    dimnames(G) = tags
+    G = t(G)
+    chr = as.vector(table(gsub('_.+','',tags[[1]])))
+    final = list('gen'=G,'chr'=chr)
+    return(final)
+  }
+  
+  if(type=='VCF'){
+    return(VCF(file))
+  }
+  
+}

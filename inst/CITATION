@@ -5,13 +5,11 @@ citEntry(entry = "Article",
   author       = personList(as.person("Alencar Xavier"),as.person("Shizhong Xu"),as.person("William Muir"),as.person("Katy Rainey")),
   journal      = "Bioinformatics",
   publisher    = "Oxford University Press",
+  volume       = "31",
+  number       = "23",
+  pages        = "3862-3864",
   year         = "2015",
-  pages        = "btv448",
+  textVersion  = "Xavier A, Xu S, Muir WM, Rainey KM. NAM: association studies in multiple populations. Bioinformatics 31(23):3862-3864."
 
-  textVersion  =
-  paste("Xavier A, et al. (2015).",
-        "NAM: association studies in multiple populations.",
-        "Bioinformatics, btv448.",
-        "http://dx.doi.org/10.1093/bioinformatics/btv448.")
 )
 

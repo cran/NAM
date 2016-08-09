@@ -82,7 +82,6 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
     REML = list("VC"=VC,"Fixed"=B,"EBV"=U)
     
   }else{
-    
     N = nrow(y)
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")

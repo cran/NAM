@@ -1,6 +1,5 @@
 
-wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=TRUE,iv=FALSE,pi=0,df=5,R2=0.5,eigK=NULL,rankK=0.25,verb=FALSE)
-  {
+wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.5,eigK=NULL,rankK=0.25,verb=FALSE){
   
   anyNA = function(x) any(is.na(x))
   if(anyNA(gen)){stop('No missing values allowed in Z')}
@@ -63,7 +62,7 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=TRUE,iv=FALSE,pi=0,df=5,R2=0.5
     
     # Resampling
     if(bag!=1) Use = sort(sample(n,n*bag,rp))
-     
+    
     # Update polygenic term and regression coefficients
     if(!is.null(eigK)){
       

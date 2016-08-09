@@ -48,9 +48,15 @@ Logical. If TRUE, meta-analysis (function gwasGE) will be done for the GE intera
 }
 \details{
 
-Special incidence matrix is recreated to optimize the information provided by the subpopulations. Each locus is recoded as a vector with length \eqn{f} equal to number of subpopulations, or NAM families, as the interaction locus by family. For example, a locus heterozigous from an individual from subpopulation 2 is coded as [ 1, 0, 1 , ... ,\eqn{f} ], a locus homozigous for the reference allele from any subpopulation is coded as [ 2, 0, 0, ... , \eqn{f} ] and a locus homozigous for the founder allele from an individual from subpopulation 1 is coded as [ 0, 2, 0, ... ,\eqn{f} ].
+Special incidence matrix is recreated to optimize the information provided by the subpopulations. Each locus is recoded as a vector with length \eqn{f} equal to number of subpopulations, or NAM families, as the interaction locus by family. For example, a locus heterozigous from an individual from subpopulation 2 is coded as [ 1, 0, 1 , ... ,\eqn{f} ], a locus homozigous for the reference allele from any subpopulation is coded as [ 2, 0, 0, ... , \eqn{f} ] and a locus homozigous for the founder allele from an individual from subpopulation 1 is coded as [ 0, 2, 0, ... ,\eqn{f} ]. The base model for genome scanning is described by:
 
-The base model for genome scanning includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning includes three extra terms, the left side genome ( \eqn{Zu[k-1]} ), the right side genome ( \eqn{Zu[k+1]} ) and window polygene ( \eqn{-g[k]} ). The genetic distance between markers is computed using Kosambi map function, where the recombination rate is estimated under the assuption that genotypes are recombinant inbred lines.
+\deqn{y = Xb + Zu + g + e}
+
+That includes the fixed effect (\eqn{Xb}), the marker (\eqn{Zu}), the polygene (\eqn{g}) and the residuals (\eqn{e}). If the \eqn{window} term is specified, the model for genome scanning is expanded as follows:
+
+\deqn{y = Xb + Zu[k-1] + Zu + Zu[k+1] + g - g[k] + e}
+
+This model includes three extra terms: the left side genome ( \eqn{Zu[k-1]} ) and the right side genome ( \eqn{Zu[k+1]} ), also subtracting the window polygene ( \eqn{-g[k]} ). Windows are based on genetic distance, which is computed using Kosambi map function. The recombination rate is estimated under the assuption markers are ordered and that genotypes are recombinant inbred lines.
 
 The polygenic term is calculated only once (Zhang et al 2010) using eigendecomposition with a GEMMA-like algorithm (Zhou ans Stephens 2012). Efficient inversion of capacitance matrix is obtained through the Woodbury matrix identities. Models and algorithms are described with more detail by Xavier et al (2015) and Wei and Xu (2016).
 

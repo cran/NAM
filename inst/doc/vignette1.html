@@ -226,29 +226,25 @@ hr {
 
 <p>Notice that in R, <code>NA</code> is used to represent missing values.</p>
 
-<p>To import GBS data (CGTA text format), the following chunk of code can be used</p>
-
-<p>GENOTYPE: &#39;gen&#39; matrix</p>
-
-<ul>
-<li><code>G = read.delim(&quot;~/GBSdata.txt&quot;)</code>   <em># Reading data into R</em></li>
-<li><code>rownames(G)=G[,1];G=G[,-1];G[G!=&quot;A&quot;&amp;G!=&quot;C&quot;&amp;G!=&quot;G&quot;&amp;G!=&quot;T&quot;]=NA;Recode=function(aa){t=table(aa);t[t==0]=NA;A=which.max(t);a=which.min(t);A1=names(t)[A];A2=names(t)[a];W1=which(aa==A1);W2=which(aa==A2);aa=as.numeric(aa);aa[W1]=0;aa[W2]=2;return(aa)};gen=apply(G,2,Recode);dimnames(gen)=dimnames(G);gen=data.matrix(gen)</code></li>
-</ul>
-
-<p>And to import hapmap data, the following chunk of code can be used to provide two important inputs in the NAM format: genotype (<code>gen</code>) and chromosome(<code>chr</code>). Let hapmap.txt be a hapmap file.</p>
+<p>To import GBS data (CGTA text format), the following code can be used</p>
 
 <p>GENOTYPE: <em>&#39;gen&#39;</em> matrix</p>
 
 <ul>
-<li><code>G = read.delim(&quot;~/hapmap.txt&quot;, header=T)</code>  <em># Reading data into R</em></li>
-<li><code>AA=as.character(G[,2]);AA=gsub(&#39;/&#39;,&#39;&#39;,AA);Gen=t(G[,-c(1:11)]);n=nrow(Gen);m=ncol(Gen);gen=matrix(NA,n,m);for(i in 1:m){A1=strsplit(AA[i],&#39;&#39;)[[1]][1];A2=strsplit(AA[i],&#39;&#39;)[[1]][2];BB=paste(A1,A1,sep=&#39;&#39;);Bb=paste(A1,A2,sep=&#39;&#39;);bb=paste(A2,A2,sep=&#39;&#39;);M=as.character(Gen[,i]);gen[M==BB,i]=2;gen[M==Bb,i]=1;gen[M==bb,i]=0};colnames(gen)=paste(G[,3],G[,4],G[,2],sep=&#39;.&#39;)</code></li>
+<li><code>G = Import_data(&quot;GBSdata.txt&quot;,type = &quot;GBS&quot;)</code>   <em># Reading data into R</em></li>
+<li><code>gen = G$gen</code></li>
+<li><code>chr = G$chr</code></li>
 </ul>
 
-<p>CHROMOSOME: <em>&#39;chr&#39;</em> vector</p>
+<p>And to import hapmap data, the following code can be used to provide two important inputs in the NAM format: genotype (<code>gen</code>) and chromosome(<code>chr</code>). Let &ldquo;hapmap.txt&rdquo; be a hapmap file.</p>
 
 <ul>
-<li><code>chr = NULL; for(i in 1:max(G[,3])) chr=c(chr,sum(G[,3]==i)); rm(AA,A1,A2,BB,Bb,bb,m,n,Gen)</code></li>
+<li><code>G = Import_data(&quot;hapmap.txt&quot;,type = &quot;HapMap&quot;)</code>   <em># Reading data into R</em></li>
+<li><code>gen = G$gen</code></li>
+<li><code>chr = G$chr</code></li>
 </ul>
+
+<p>The function &ldquo;Import_data&rdquo; also accepts a third type of data, &ldquo;VCF&rdquo;.</p>
 
 <p>Some package, such as the function BLUP of the SoyNAM package, have datasets already compatible with the require inputs of NAM package for association analysis. It is also possible to load an example dataset that comes with the NAM package to see data format. Try:</p>
 
@@ -335,13 +331,13 @@ hr {
 
 <p>To plot the Manhattan plot using an acceptable false discovery rate (FDR) by chromosome or Bonferroni threshold by chromosome, try:</p>
 
-<h2>False discovery rate of 25%</h2>
+<p><strong>False discovery rate of 25%</strong></p>
 
 <ul>
 <li><code>plot( my_gwas, FDR = 0.25)</code></li>
 </ul>
 
-<h2>Bonferroni threshold by chromosome</h2>
+<p><strong>Bonferroni threshold by chromosome</strong></p>
 
 <ul>
 <li><code>plot( my_gwas, FDR = 0)</code></li>
@@ -349,13 +345,13 @@ hr {
 
 <p>If you want to disregard the markers that provide null LRT when building the FDR threshold as previously showed, you can use the &#39;greater-than-zero&#39; (gtz) command. It works as follows:</p>
 
-<h2>False discovery rate of 25%</h2>
+<p><strong>False discovery rate of 25%</strong></p>
 
 <ul>
 <li><code>plot( my_gwas, FDR = 0.25, gtz=TRUE)</code></li>
 </ul>
 
-<h2>Bonferroni threshold by chromosome</h2>
+<p><strong>Bonferroni threshold by chromosome</strong></p>
 
 <ul>
 <li><code>plot( my_gwas, FDR = 0, gtz=TRUE)</code></li>
@@ -367,14 +363,13 @@ hr {
 <li><code>SCORE = my_gwas$PolyTest$lrt</code></li>
 </ul>
 
-<p>These scores are LRT (<em>likelihood ratio test statistics</em>), they represent the improvement that each SNP provides to a mixed model. To obtain the \(-log(P-value)\) &#39;by-hand&#39;, the common unit of association studies, type </p>
+<p>These scores are LRT (<em>likelihood ratio test statistics</em>), they represent the improvement that each SNP provides to a mixed model. To obtain the \(-log(P-value)\):</p>
 
 <ul>
-<li><code>PVal = -log10(dchisq(SCORE,0.5))</code></li>
-<li><code>PVal[PVal&lt;0] = 0</code></li>
+<li><code>PVal = my_gwas$PolyTest$pval</code></li>
 </ul>
 
-<p>The object <strong>PVal</strong> contains all the -log(p-values). The code above transforms LRT into p-value using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.</p>
+<p>The object <strong>PVal</strong> contains all the -log(p-values). P-value are obtained from LRT using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.</p>
 
 <p>To find out the amount of variance explained by each marker, type</p>
 
@@ -551,41 +546,62 @@ hr {
 
 <p>Both functions <code>reml</code> and <code>gibbs</code> accept formulas and matrices as inputs. When multiple random effects are used in <code>gibbs</code>, the argument <code>Z</code> accepts formula or a list of matrices and the argument <code>iK</code> accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the <code>gibbs</code> function, <code>iR</code> allows users to include residual covariance structure.</p>
 
-<p>Although it is possible to use <code>reml</code> and <code>gibbs</code> to generate breeding values, the function <code>wgr</code> (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function are: BRR, BayesA, BayesB and BayesC. To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:</p>
+<p>Although it is possible to use <code>reml</code> and <code>gibbs</code> to generate breeding values, the function <code>wgr</code> (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:</p>
 
-<p>BLUP</p>
+<p><strong>a. BLUP</strong></p>
 
 <ul>
 <li><code>BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)</code></li>
 </ul>
 
-<p>BayesA</p>
+<p><strong>b. BayesA</strong></p>
 
 <ul>
 <li><code>BA = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0)</code></li>
 </ul>
 
-<p>BayesB</p>
+<p><strong>c. BayesB</strong></p>
 
 <ul>
-<li><code>BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=.1)</code></li>
+<li><code>BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.01)</code></li>
 </ul>
 
-<p>BayesC</p>
+<p><strong>d. BayesC</strong></p>
 
 <ul>
-<li><code>BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=.1)</code></li>
+<li><code>BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.01)</code></li>
+</ul>
+
+<p><strong>e. Bayesian Elastic Net</strong></p>
+
+<ul>
+<li><code>BEN = ben(y = phenotype, gen = genotype)</code></li>
 </ul>
 
 <h1>7. Finding substructures</h1>
 
-<p>If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let <code>gen</code> be the genotypic matrix and suppose that you want to split the population into two groups. Thus:</p>
+<p>If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let <code>gen</code> be the genotypic matrix and suppose that you want to split the population into two groups. Some unsupervised machine learning approaches include:</p>
+
+<p><strong>a. Using hierarchical clustering</strong></p>
 
 <ul>
 <li><code>Clusters = hclust(dist(gen,method=&quot;man&quot;),method=&quot;ward.D1&quot;)</code></li>
 <li><code>plot( Clusters )</code></li>
 <li><code>Stratification1 = cutree(Clusters, k = 2)</code></li>
+</ul>
+
+<p><strong>b. Using k-means</strong></p>
+
+<ul>
 <li><code>Stratification2 = kmeans(gen, 2, iter.max = 20)$cluster</code></li>
+</ul>
+
+<p><strong>c. Using multidimensional scaling and k-means</strong></p>
+
+<ul>
+<li><code>MDS = cmdscale(dist(gen),2)</code></li>
+<li><code>Stratification3 = kmeans(MDS, 2)$cluster</code></li>
+<li><code>plot(MDS, col = Stratification3)</code></li>
 </ul>
 
 </body>

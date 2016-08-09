@@ -53,23 +53,21 @@ This step is not necessary if you are importing the phenotypes or other informat
 
 Notice that in R, `NA` is used to represent missing values.
 
-To import GBS data (CGTA text format), the following chunk of code can be used
-
-GENOTYPE: 'gen' matrix
-
-+ `G = read.delim("~/GBSdata.txt")`   *# Reading data into R*
-+ `rownames(G)=G[,1];G=G[,-1];G[G!="A"&G!="C"&G!="G"&G!="T"]=NA;Recode=function(aa){t=table(aa);t[t==0]=NA;A=which.max(t);a=which.min(t);A1=names(t)[A];A2=names(t)[a];W1=which(aa==A1);W2=which(aa==A2);aa=as.numeric(aa);aa[W1]=0;aa[W2]=2;return(aa)};gen=apply(G,2,Recode);dimnames(gen)=dimnames(G);gen=data.matrix(gen)`
-
-And to import hapmap data, the following chunk of code can be used to provide two important inputs in the NAM format: genotype (`gen`) and chromosome(`chr`). Let hapmap.txt be a hapmap file.
+To import GBS data (CGTA text format), the following code can be used
 
 GENOTYPE: *'gen'* matrix
 
-+ `G = read.delim("~/hapmap.txt", header=T)`  *# Reading data into R*
-+ `AA=as.character(G[,2]);AA=gsub('/','',AA);Gen=t(G[,-c(1:11)]);n=nrow(Gen);m=ncol(Gen);gen=matrix(NA,n,m);for(i in 1:m){A1=strsplit(AA[i],'')[[1]][1];A2=strsplit(AA[i],'')[[1]][2];BB=paste(A1,A1,sep='');Bb=paste(A1,A2,sep='');bb=paste(A2,A2,sep='');M=as.character(Gen[,i]);gen[M==BB,i]=2;gen[M==Bb,i]=1;gen[M==bb,i]=0};colnames(gen)=paste(G[,3],G[,4],G[,2],sep='.')`
++ `G = Import_data("GBSdata.txt",type = "GBS")`   *# Reading data into R*
++ `gen = G$gen`
++ `chr = G$chr`
 
-CHROMOSOME: *'chr'* vector
+And to import hapmap data, the following code can be used to provide two important inputs in the NAM format: genotype (`gen`) and chromosome(`chr`). Let "hapmap.txt" be a hapmap file.
 
-+ `chr = NULL; for(i in 1:max(G[,3])) chr=c(chr,sum(G[,3]==i)); rm(AA,A1,A2,BB,Bb,bb,m,n,Gen)`
++ `G = Import_data("hapmap.txt",type = "HapMap")`   *# Reading data into R*
++ `gen = G$gen`
++ `chr = G$chr`
+
+The function "Import_data" also accepts a third type of data, "VCF".
 
 Some package, such as the function BLUP of the SoyNAM package, have datasets already compatible with the require inputs of NAM package for association analysis. It is also possible to load an example dataset that comes with the NAM package to see data format. Try:
 
@@ -136,21 +134,21 @@ To adjust significance threshold for multiple testing, you can use the Bonferron
 
 To plot the Manhattan plot using an acceptable false discovery rate (FDR) by chromosome or Bonferroni threshold by chromosome, try:
 
-## False discovery rate of 25%
+**False discovery rate of 25%**
 
 + `plot( my_gwas, FDR = 0.25)`
 
-## Bonferroni threshold by chromosome
+**Bonferroni threshold by chromosome**
 
 + `plot( my_gwas, FDR = 0)`
 
 If you want to disregard the markers that provide null LRT when building the FDR threshold as previously showed, you can use the 'greater-than-zero' (gtz) command. It works as follows:
 
-## False discovery rate of 25%
+**False discovery rate of 25%**
 
 + `plot( my_gwas, FDR = 0.25, gtz=TRUE)`
 
-## Bonferroni threshold by chromosome
+**Bonferroni threshold by chromosome**
 
 + `plot( my_gwas, FDR = 0, gtz=TRUE)`
 
@@ -158,12 +156,11 @@ Most output statistcs are available in the *PolyTest* object inside the list out
 
 + `SCORE = my_gwas$PolyTest$lrt`
 
-These scores are LRT (*likelihood ratio test statistics*), they represent the improvement that each SNP provides to a mixed model. To obtain the $-log(P-value)$ 'by-hand', the common unit of association studies, type 
+These scores are LRT (*likelihood ratio test statistics*), they represent the improvement that each SNP provides to a mixed model. To obtain the $-log(P-value)$:
 
-+ `PVal = -log10(dchisq(SCORE,0.5))`
-+ `PVal[PVal<0] = 0`
++ `PVal = my_gwas$PolyTest$pval`
 
-The object **PVal** contains all the -log(p-values). The code above transforms LRT into p-value using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.
+The object **PVal** contains all the -log(p-values). P-value are obtained from LRT using the Chi-squared density function with 0.5 degrees of freedom. The value 0.5 is used because random effect markers generate a mixture of Chi-squared and Bernoulli distributions once many markers have zero contribution.
 
 To find out the amount of variance explained by each marker, type
 
@@ -298,29 +295,45 @@ Fit BRR using the gibbs function
 
 Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When multiple random effects are used in `gibbs`, the argument `Z` accepts formula or a list of matrices and the argument `iK` accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the `gibbs` function, `iR` allows users to include residual covariance structure.
 
-Although it is possible to use `reml` and `gibbs` to generate breeding values, the function `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function are: BRR, BayesA, BayesB and BayesC. To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
+Although it is possible to use `reml` and `gibbs` to generate breeding values, the function `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
 
-BLUP
+**a. BLUP**
 
 + `BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)`
 
-BayesA
+**b. BayesA**
 
 + `BA = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0)`
 
-BayesB
+**c. BayesB**
 
-+ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=.1)`
++ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.01)`
 
-BayesC
+**d. BayesC**
 
-+ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=.1)`
++ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.01)`
+
+**e. Bayesian Elastic Net**
+
++ `BEN = ben(y = phenotype, gen = genotype)`
 
 # 7. Finding substructures
 
-If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let `gen` be the genotypic matrix and suppose that you want to split the population into two groups. Thus:
+If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let `gen` be the genotypic matrix and suppose that you want to split the population into two groups. Some unsupervised machine learning approaches include:
+
+**a. Using hierarchical clustering**
 
 + `Clusters = hclust(dist(gen,method="man"),method="ward.D1")`
 + `plot( Clusters )`
 + `Stratification1 = cutree(Clusters, k = 2)`
+
+**b. Using k-means**
+
 + `Stratification2 = kmeans(gen, 2, iter.max = 20)$cluster`
+
+**c. Using multidimensional scaling and k-means**
+
++ `MDS = cmdscale(dist(gen),2)`
++ `Stratification3 = kmeans(MDS, 2)$cluster`
++ `plot(MDS, col = Stratification3)`
+

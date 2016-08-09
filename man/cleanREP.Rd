@@ -1,26 +1,26 @@
 \name{Duplicates}
 \alias{cleanREP}
 \title{
-Genotype Duplicates
+Manage Duplicated Genotypes
 }
 \description{
 Identify and merge duplicate genotypes
 }
 \usage{
-cleanREP(y,fam,gen,thr=0.95)
+cleanREP(y,gen,fam=NULL,thr=0.95)
 }
 \arguments{
   \item{y}{
 Numeric vector (\eqn{n}) or numeric matrix (\eqn{n} x \eqn{t}) of observations describing the trait to be analyzed. \code{NA} is allowed.
 }
-  \item{fam}{
-Numeric vector of length (\eqn{n}) indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
-}
   \item{gen}{
 Numeric matrix containing the genotypic data. A matrix with \eqn{n} rows of observations and (\eqn{m}) columns of molecular markers. SNPs must be coded as \code{0, 1, 2}, for founder homozygous, heterozygous and reference homozigous. \code{NA} not allowed.
 }
+  \item{fam}{
+Numeric vector of length (\eqn{n}) indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
+}
   \item{thr}{
-Threshold above which genotypes are considered identical. Default is 0.95, merging genotypes >95% identical.
+Threshold above which genotypes are considered identical. Default is 0.95, merging genotypes >95 percent identical.
 }
 }
 \details{
@@ -34,7 +34,7 @@ Alencar Xavier
 }
 \examples{
 data(tpod)
-test = cleanREP(y,fam,gen)
+test = cleanREP(y,gen)
 }
 \keyword{ NAM }
 \keyword{ GWAS }

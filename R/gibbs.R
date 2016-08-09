@@ -677,6 +677,51 @@ covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
   if(obs!=49) return(quad)
 }
 
+# Map field neighbor plots
+NNsrc = function(sp=NULL,rho=1,dist=2){
+  if(is.null(sp)){
+    simulation = TRUE
+    sp = cbind(rep(1,77),rep(1:7,11),sort(rep(c(1:11),7)))
+    colnames(sp)=c("block","row","col")
+    cat("Template of input for 'sp' (field information)\n")
+    print(head(sp,10))
+  }else{simulation = FALSE}
+  # OCTREE search function 
+  NN = function(a,sp){
+    # shared environment
+    s0 = which(sp[,1]==a[1])
+    # row neighbors
+    s1 = s0[which(abs(sp[s0,2]-a[2])<(rho))]
+    s2 = s1[which(abs(sp[s1,3]-a[3])<=(rho*dist))]
+    # col neighbors
+    s3 = s0[which(abs(sp[s0,3]-a[3])<(rho*dist*0.5))]
+    s4 = s3[which(abs(sp[s3,2]-a[2])<=(rho))]
+    # Neighbors only
+    s5 = union(s2,s4)
+    wo = which(sp[s5,1]==a[1]&sp[s5,2]==a[2]&sp[s5,3]==a[3])
+    s5 = s5[-wo]
+    return(s5)}
+  # Set the data format
+  rownames(sp) = 1:nrow(sp)
+  if(is.data.frame(sp)) sp = data.matrix(sp)
+  # Search for neighbors within environment
+  Local_NN = apply(sp,1,NN,sp=sp)
+  cat('Average n# of components:',round(mean(sapply(Local_NN,length)),2),'\n')
+  # In case of demonstration
+  if(simulation){
+    U = rep(0,77)
+    U[Local_NN[[39]]] = 1
+    M=matrix(U,7,11)
+    dimnames(M) = list(abs(-3:3),abs(-5:5))
+    print(M)
+  }
+  # RETURN
+  if(!simulation) return(Local_NN)
+}
+
+# Create covariate from neighbor plots
+NNcov = function(NN,y) sapply(X = NN,FUN = function(x,y) mean(y[x],na.rm=TRUE),y = y,USE.NAMES = FALSE)
+
 # Pedigree
 PedMat = function(ped=NULL){
   if(is.null(ped)){

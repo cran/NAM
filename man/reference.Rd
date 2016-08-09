@@ -19,7 +19,7 @@ Numeric vector of length \eqn{n} with elements coded as \code{0, 1, 2}, it repre
 }
 }
 \details{
-If genotypes are coded based on the refence genome, NAM analysis are optimized by using the standard parent as reference to allele coding.
+If genotypes are coded based on the refence genome, NAM analysis are optimized by using the standard parent as reference to allele coding. If the reference is not provided, the function codes \code{2} the allele with major frequency and \code{0} the minor allele, such that the association studies can compute interaction between subpopulation and minor allele.
 }
 \value{
 Returns a recoded \eqn{gen} matrix

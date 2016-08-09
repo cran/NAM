@@ -57,7 +57,7 @@ Numeric matrix of observations for multivariate mixed models. Each column repres
 }
 }
 \details{
-The general model is \eqn{y=Xb+Zu+e}, where \eqn{u~N(0,A\sigma2a)} and \eqn{e~N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case.
+The general model is \eqn{y=Xb+Zu+e}, where \eqn{u=N(0,A\sigma2a)} and \eqn{e=N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case.
 
 }
 \value{

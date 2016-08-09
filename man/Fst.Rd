@@ -1,4 +1,4 @@
-\name{Fst}
+\name{FST}
 \alias{Fst}
 \alias{plot.fst}
 \title{
@@ -40,6 +40,6 @@ Wright, S. (1965). The interpretation of population structure by F-statistics wi
 \examples{
   data(tpod)
   Fstat = Fst(gen=gen,fam=fam)
-  plot(Fstat,p=0.05,chr=chr)
+  plot(Fstat,chr=chr)
 }
 \keyword{ Fst }

@@ -1,9 +1,15 @@
 useDynLib(NAM)
 exportPattern("^[[:alpha:]]+")
-import(stats)
-import(utils)
-import(grDevices)
-import(graphics)
+importFrom("grDevices", "rgb")
+importFrom("graphics", "abline", "axis", "hist", "identify", "lines",
+           "par", "plot", "rect")
+importFrom("stats", "as.dist", "cor", "cov", "cov2cor", "dchisq",
+           "density", "dist", "ecdf", "ksmooth", "lm", "median",
+           "model.frame", "model.matrix", "na.omit", "optim", "pchisq",
+           "predict", "qchisq", "rWishart", "rbeta", "rchisq",
+           "rgamma", "rnorm", "rpois", "runif", "sd", "smooth", "var")
+importFrom("utils", "head", "read.delim", "read.table",
+           "setTxtProgressBar", "tail", "txtProgressBar")
 importFrom(Rcpp, evalCpp)
 importFrom(randomForest, randomForest)
 S3method(plot, NAM)
