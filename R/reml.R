@@ -1,30 +1,49 @@
 reml=function(y,X=NULL,Z=NULL,K=NULL){
+  
   anyNA = function(x) any(is.na(x))
   if(!is.matrix(y)){
+    # Dealing with random effect
+    if(is.null(K)&is.null(Z))stop("Either Z or K must be specified")
     N = length(y)
+    if(!is.null(Z)&!is.null(K)){
+      model = 'Mixed'
+    }else{
+      if(is.null(Z)) model = 'Kernel'
+      if(is.null(K)) model = 'Ridge'
+    }
     # Dealing with fixed effect matrix
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")
       }else{if(class(X)=="formula"){X=model.matrix(X)}}}
-    # Dealing with random effect
-    if(is.null(K)&is.null(Z))stop("Either Z or K must be specified")
-    if(is.null(K)){
-      if(class(Z)=="formula"){Z=model.matrix(Z)-1}
-      V=tcrossprod(Z)}
-    if(is.null(Z)){V=K;Z=diag(ncol(K))}
-    if(is.null(Z)!=T&&is.null(K)!=T){
-      if(class(Z)=="formula"){Z=model.matrix(Z)-1}
-      V=crossprod(t(Z),K);V=tcrossprod(V,Z)}
-    K=V
+    if(model=='Ridge'){
+      if(class(Z)=="formula"){
+        Q = paste(Z); Q[2]=paste(Q[2],'- 1'); Z=as.formula(Q)
+        Z=model.matrix(Z)
+        }
+      K=tcrossprod(Z)
+      }
+    if(model=='Kernel'){
+      Z=diag(ncol(K))
+      K0=K
+      }
+    if(model=='Mixed'){
+      if(class(Z)=="formula"){
+        Q = paste(Z); Q[2]=paste(Q[2],'- 1'); Z=as.formula(Q)
+        Z=model.matrix(Z)
+      }
+      K0=K
+      K = crossprod(t(Z),K); K=tcrossprod(K,Z)
+      }
     # Function starts here
     m = which(is.na(y)) # missing values
-    if(any(is.na(y))){
-      y=y[-m];x=X[-m,]
-      k=K[m,-m];K=K[-m,-m]
+    if(any(m)){
+      y=y[-m]
+      x=X[-m,]
+      K=K[-m,-m]
       z=Z[-m,]
     }else{
-      x=X;k=K;z=Z
-      }
+      x=X;z=Z
+    }
     x=as.matrix(x)
     # Defining log-REML
     loglike=function(theta){
@@ -62,23 +81,42 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
     beta=parmfix[1:q]
     sd=parmfix[(q+1):(2*q)]
     B = cbind(beta,sd)
-    Ve=parmfix[2*q+1]; Vg=lambda*Ve
+    Ve=parmfix[2*q+1]
+    Vg=lambda*Ve
     h2=Vg/(Vg+Ve); VC = data.frame(Vg,Ve,h2)
     # Random effect coefficient and prediction
-    # VanRaden(2008)
-    if(is.matrix(x)){re =y-x%*%beta}else{re =(y-tcrossprod(x,beta))}
-    iG = timesMatrix(uu,1/(lambda*delta+1),uu,n,n)
-    U = iG%*%re
-    if(length(m)>0){
-      C=k%*%iG%*%U
-      hat = rep(0,N)
-      hat[m] = C
-      hat[-m] = U
-      U = hat
+    if(is.matrix(x)){re=y-x%*%beta}else{re =(y-tcrossprod(x,beta))}
+    # RKHS solution
+    if(model=='Kernel'){
+      if(any(m)){
+        qq=eigen(as.matrix(K0),symmetric=T)
+        delta=qq[[1]]; uu=qq[[2]];
+        dr = which(cumsum(delta)/sum(delta)>0.98)[1]
+        g = qr.solve(uu[-m,],re)
+        g = g/(Ve/(delta*Vg)+1)
+        U = uu%*%g
+      }else{
+        dr = which(cumsum(delta)/sum(delta)>0.98)[1]
+        uu = uu[,1:dr]
+        delta = delta[1:dr]
+        g = qr.solve(uu,re)
+        g = g/(Ve/(delta*Vg)+1)
+        U = uu%*%g
       }
-    
-    if(nrow(Z)>ncol(uu)) U = crossprod(U,Z)/colSums(Z)
-    
+    }
+    if(model=='Ridge'){
+      ZZ = crossprod(z)
+      diag(ZZ) = diag(ZZ)+(Ve/Vg)
+      Zy = crossprod(z,re)
+      U = solve(ZZ,Zy)
+    }
+    if(model=='Mixed'){
+      ZZ = crossprod(z)
+      diag(K0)=diag(K0)+1e-8
+      ZZ = ZZ + chol2inv(K0)*(Ve/Vg)
+      Zy = crossprod(z,y)
+      U = solve(ZZ,Zy)
+    }
     REML = list("VC"=VC,"Fixed"=B,"EBV"=U)
     
   }else{
@@ -96,6 +134,8 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
       V=crossprod(t(Z),K);V=tcrossprod(V,Z)};
     Z=diag(N); K=V
     if(any(is.na(Y))){
+      hh = apply(Y,1,function(x)mean(is.na(x)))
+      if(any(hh==1)){w = which(hh==1); Y = Y[-w,]; Z = Z[-w,]; X = X[-w,]}
       impY = function(Y){
         t = ncol(Y)
         NAs = which(is.na(Y))
@@ -149,25 +189,37 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
 return(REML)}
 
 MCreml = function(y,K,X=NULL,MC=300,samp=300){
+  
   anyNA = function(x) any(is.na(x))
-  if(samp>=length(y)){stop("Sample size has to be smaller than sample space")}
+  
   if(nrow(K)!=length(y)){stop("Kinship and response variable have incompatible dimensions")}
   if(ncol(K)!=length(y)){stop("Kinship and response variable have incompatible dimensions")}
   n = MC; t = samp
+  
+  m = which(is.na(y)) # missing values
+  if(any(m)){
+    y=y[-m]
+    X=X[-m,]
+    K=K[-m,-m]
+  }
+  
+  if(length(y)<t) t = round(0.5*length(y))
+  
   moda=function (x){
     it=5;ny=length(x);k=ceiling(ny/2)-1; while(it>1){
       y=sort(x); inf=y[1:(ny-k)]; sup=y[(k+1):ny]
       diffs=sup-inf; i=min(which(diffs==min(diffs)))
       M=median(y[i:(i+k)]); it=it-1}; return(M)}
+  
   h2 = c(); Vg = c(); Ve = c()
   for(i in 1:n){
     R = sample(1:length(y),t)
-    if(any(is.na(y[R]))){mis = which(is.na(y[R])); R=R[-mis] }
     fit = reml(y[R],X=X,K=K[R,R])
     Vg = c( fit$VC[1], Vg )
     Ve = c( fit$VC[2], Ve )
     h2 = c( fit$VC[3], h2 )
   }
+  
   H = unlist(h2); G = unlist(Vg); E = unlist(Ve)
   samples = cbind(G,E,H); rownames(samples) = 1:MC
   mode.Vg = moda(G); mode.Ve = moda(E); mode.h2 = moda(H)

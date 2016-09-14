@@ -1,4 +1,4 @@
-\name{Dataset}
+\name{Dataset 1}
 \alias{tpod}
 \alias{gen}
 \alias{chr}
@@ -8,7 +8,7 @@
   Tetra-seed Pods
 }
 \description{
-Two biparental crosses phenotyped for the percentage of pods containing four seeds
+Two soybean bi-parental crosses phenotyped for the percentage of pods containing four seeds
 }
 \usage{
   data(tpod)

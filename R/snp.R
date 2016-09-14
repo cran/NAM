@@ -1,17 +1,39 @@
 
 # Snp Heritability
-snpH2=function(gen){
+snpH2=function(gen,K=NULL){
+  if(!is.numeric(gen)) stop("Object gen must to be a numeric matrix")
+  if(!is.null(K)){ if(!is.numeric(K)) stop("Object K must to be a numeric matrix")  }
   anyNA = function(x) any(is.na(x))
-if(any(is.na(gen))) stop("Missing values not allowed")
-if(is.numeric(gen)!=T) stop("Object gen must to be a numeric matrix")
-
+  # Checking for missing and imputing
+  if(any(is.na(gen))){
+    IMPUT=function(X){
+      dn = dimnames(X)
+      fill = function(x){
+        if(any(is.na(x))){
+          w = which(is.na(x))
+          m = mean(x,na.rm=TRUE)
+          x[w] = m}
+        return(x)}
+      X = apply(X,2,fill)
+      dimnames(X) = dn}
+    maxNA = function(X){
+      dn = dimnames(X)
+      nas = function(x) mean(is.na(x))
+      m = apply(X,2,nas)
+      if(any(m>0.75)){
+        w = which(m>0.75)
+        X = X[,-w]}
+      return(X)}
+    gen = maxNA(gen)
+    gen = IMPUT(gen)}
+# Setup
 snps = ncol(gen)
 obs = nrow(gen)
 x = matrix(1:obs,ncol=1)
-
-K = tcrossprod(gen)
-K = K/mean(diag(K))
-  
+# If pedigree is not provided
+if(is.null(K)){
+  K = tcrossprod(gen)
+  K = K/mean(diag(K))}
 # Defining log-REML
 loglike<-function(theta){
   lambda<-exp(theta)
@@ -36,39 +58,32 @@ fixed<-function(lambda){
   var<-diag((chol2inv(xx))*sigma2)
   stderr<-sqrt(var)
   return(c(beta,stderr,sigma2))}
-
 # Eigendecomposition of K
 qq<-eigen(as.matrix(K),symmetric=T)
 delta<-qq[[1]]
 uu<-qq[[2]]
 q<-1
 n<-ncol(K)
-
 H2 = c()
-theta<-0
-
-
+# LOOP
 pb=txtProgressBar(style=3)
 for(i in 1:snps){
-  
   y = gen[,i]
   yu<-t(uu)%*%y
   xu<-t(uu)%*%x
   vp<-var(y)
   # Finding lambda through optimization
-  parm<-optim(par=theta,fn=loglike,method="L-BFGS-B",lower=0,upper=10)
+  parm<-optim(par=10,fn=loglike,method="L-BFGS-B",lower=1e-12,upper=1e12)
   lambda<-exp(parm$par)
   # Results
   parmfix<-fixed(lambda)
   Ve<-parmfix[2*q+1]
   Vg<-lambda*Ve
   h2=Vg/(Vg+Ve)
-  
   # Saving loop
   H2 = c(H2,h2)
-  setTxtProgressBar(pb,i/snps)
-};close(pb)
-
+  setTxtProgressBar(pb,i/snps)}
+close(pb)
 names(H2)=colnames(gen)
 class(H2)="H2"
 return(H2)
@@ -191,8 +206,7 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
     # REMOVE SNP A LOT OF MISSING # NEW!
     msnp = apply(gen2,2,sd)
     noVal = which(msnp>misThr)
-    #
-    hist(LAF,col=3,nclass=50,main="Histogram of MAF",xlab="Minor Allele Frequency")
+    # hist(LAF,col=3,nclass=50,main="Histogram of MAF",xlab="Minor Allele Frequency")
     if(length(maf)>0){
       cat("There are",length(maf),"markers with MAF below the threshold",'\n')
       if(remove==TRUE){
@@ -261,19 +275,28 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
 cleanREP = function(y,gen,fam=NULL,thr=0.95){
   if(is.vector(y)) y=matrix(y,ncol=1)
   if(is.null(fam)) fam = rep(1,nrow(y))
-  GG=function(gen,r=1){
-    a1=(gen-1)
-    a1[a1==-1]=0
-    A1=(tcrossprod(a1))
-    a2=-(gen-1)
-    a2[a2==-1]=0
-    A2=(tcrossprod(a2))
-    d=round(exp(-abs(gen-1)))
-    D=tcrossprod(d)
-    G=A1+A2+D;G=(G/ncol(gen))^r
-    return(G)}
-  cat('solving identity matrix\n')
-  G = GG(gen) # identity
+    
+  ibs = function(gen){
+  f1 = function(x,gen) apply(gen,1,function(y,x) mean(y==x,na.rm = T),x=x)
+  f2 = apply(gen,1,f1,gen=gen)
+  return(f2)}  
+  
+  GG = function(gen, r = 1) {
+    a1 = (gen - 1)
+    a1[a1 == -1] = 0
+    A1 = (tcrossprod(a1))
+    a2 = -(gen - 1)
+    a2[a2 == -1] = 0
+    A2 = (tcrossprod(a2))
+    d = round(exp(-abs(gen - 1)))
+    D = tcrossprod(d)
+    G = A1 + A2 + D
+    G = (G/ncol(gen))^r
+    return(G)
+  }
+  cat("solving identity matrix\n")
+  G = GG(gen)
+  
   rownames(G) = 1:nrow(G)
   lt = G*lower.tri(G) # lower triang
   r = 1* lt>thr # logical matrix: repeatitions
@@ -445,29 +468,23 @@ Gdist = function(gen,method=1){
     d = as.dist(d)}
   # Rogers
   else if (method == 4) {
-    cat("Rogers distance\n")
-    nlig = nrow(X)
-    loc.fac = colnames(gen)
-    kX = lapply(split(X, loc.fac[col(X)]), matrix, nrow = nlig)
-    dcano = function(mat) {
-      daux = tcrossprod(mat)
-      vec = diag(daux)
-      daux = -2*daux+vec[col(daux)]+vec[row(daux)]
-      diag(daux) = 0
-      daux = sqrt(0.5*daux)
-      return(daux)}
-    d = matrix(0, nlig, nlig)
-    for (i in 1:length(kX)) {
-      d = d + dcano(kX[[i]])}
-    d = d/length(kX)/sqrt(2)
-    d = as.dist(d)}
-  
+    cat("Rogers' distance\n")
+    p = ncol(gen)
+    d = dist(gen,method = 'euclidean')
+    d = d/p
+    }
+  # Provesti
   else if (method == 5){
     cat("Provesti's distance\n")
-    n = nrow(X)
-    p = ncol(X)
-    d = dist(X,method = 'manhattan')
+    p = ncol(gen)
+    d = dist(gen,method = 'manhattan')
     d = d/(2*p)}
+  # MRD
+  else if (method == 6){
+    cat("Modified Rogers' distance\n")
+    p = ncol(gen)
+    d = dist(gen,method = 'euclidean')
+    d = d/sqrt(2*p) }
   
   return(d)
 }

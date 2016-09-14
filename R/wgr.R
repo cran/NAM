@@ -1,5 +1,5 @@
 
-wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.5,eigK=NULL,rankK=0.25,verb=FALSE){
+wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.5,eigK=NULL,VarK=0.95,verb=FALSE){
   
   anyNA = function(x) any(is.na(x))
   if(anyNA(gen)){stop('No missing values allowed in Z')}
@@ -8,9 +8,10 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.
   
   # Polygenic term
   if(!is.null(eigK)){
-   pk = round(rankK*length(eigK$values))
+   V = eigK$values
+   pk = which.max(cumsum(V)/length(V)<VarK)
    U0 = U = eigK$vectors[,1:pk]
-   V = eigK$values[1:pk]
+   V = V[1:pk]
    H = h = rep(0,pk)
    Vk = rep(1,pk)
    xxK = rep(bag,pk)
@@ -49,7 +50,7 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.
   shape_prior  = 1.1
   rate_prior = (shape_prior-1)/S_prior
   S_conj = rgamma(1,p*df_prior/2+shape_prior,sum(1/Vb)/2+rate_prior)
-  if(!is.null(eigK)) Sk_prior = R2*var(y,na.rm=T)*(df_prior+2)/pk
+  if(!is.null(eigK)) Sk_prior = R2*var(y,na.rm=T)*(df_prior+2)
   
   # Storing Posterior
   B0 = VA = VE = VP = S = 0
@@ -178,14 +179,16 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.
   return(final)
 }
 
-ben = function(y,gen,it=750,bi=250,bag=0.5,alpha=0.5,wpe=10){
+ben = function(y,gen,it=750,bi=250,th=1,bag=0.80,alpha=0.5,wpe=50,MH=FALSE,verb=TRUE){
+  
   X=gen;
   rm(gen);
   
   # Function to update beta
-  upB = function(e,mu,X,b,l,a,xx,p,E2,X2,bag,pi,wpe,O){
+  upB = function(e,mu,X,b,l,a,xx,p,E2,X2,bag,pi,wpe,ve,O){
     xx = xx*bag
-    a_new = rbeta(1,10*pi,10*(1-pi))
+    pi = (0.5+a*99)/100
+    a_new = rbeta(1,200*pi,200*(1-pi))
     b1 = b2 = rep(NA,p)
     e1 = e2 = e
     L1_1 = (1-a)*l/(2*xx)
@@ -199,27 +202,39 @@ ben = function(y,gen,it=750,bi=250,bag=0.5,alpha=0.5,wpe=10){
       s1 = sign(xy1)
       beta = abs(xy1)-L1_1[j]
       ben = s1*beta*L2_1[j]
-      b1[j] = ifelse(beta>0,ben,0)
+      b1[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
       e1 = e1 - X[,j]*(b1[j]-b[j])
       # New alpha
       xy2 = (crossprod(e2,X[,j])+b[j]*xx[j])/xx[j]
       s2 = sign(xy2)
       beta = abs(xy2)-L1_2[j]
       ben = s2*beta*L2_2[j]
-      b2[j] = ifelse(beta>0,ben,0)
+      b2[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
       e2 = e2 - X[,j]*(b2[j]-b[j])
     }
     # Loss function
-    SSPE_1 = sum(as.vector(tcrossprod(b1,X2)-E2)^2)+0.00001
-    SSPE_2 = sum(as.vector(tcrossprod(b2,X2)-E2)^2)+0.00001
+    SSPE_1 = sum(as.vector(tcrossprod(b1,X2)-E2)^2)
+    SSPE_2 = sum(as.vector(tcrossprod(b2,X2)-E2)^2)
     LOSS1 = wpe*SSPE_1+crossprod(e1)+l*(0.5*crossprod(b1)*(1-a)+sum(abs(b1))*a)
     LOSS2 = wpe*SSPE_2+crossprod(e2)+l*(0.5*crossprod(b2)*(1-a_new)+sum(abs(b2))*a_new)
-    LR = LOSS2/(LOSS1+LOSS2)
-    # METROPOLIS
-    if(LR<runif(1)){
+    LR = LOSS2/LOSS1
+    if(is.na(LR)|is.nan(LR)) LR=0
+    if(LR>1){
       P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
     }else{
-      P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_2)}
+      if(MH){
+        # Metropolis-Hastings
+        if(LR>runif(1)){
+          P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
+        }else{
+          P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_2)
+        }
+      }else{
+        # Acceptance-Rejection
+        P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_2)
+      }
+    }
+    cat('LR',LR,'pi',pi,'a2',a_new,'a',P$a,'\n')
     return(P)
   }
   # Missing
@@ -236,52 +251,55 @@ ben = function(y,gen,it=750,bi=250,bag=0.5,alpha=0.5,wpe=10){
   # Data
   xx = apply(X,2,function(x)crossprod(x))
   b0 = crossprod(X,y)[,1]/xx
-  #SP = 0.5*(4+2)*var(y,na.rm=T)/sum(apply(X,2,var,na.rm=T))
   O = order(b0^2,decreasing = TRUE)
   n = nrow(X)
   p = ncol(X)
   bn = round(n*bag)
-  MC = it-bi
+  MCMC = seq(bi,it,th)
+  MC = length(MCMC)
   # Parameters
   mu = mean(y)
   e = y-mu
   b = rep(0,p)
-  a = 1
+  a = alpha
   l = 1
+  ve = 0.1
   # Store posterior
   B = rep(0,p)
   MU = A = L = SSPE = 0
+  if(verb) pb = txtProgressBar(style = 3)
   # Loop
-  pb = txtProgressBar(style = 3)
   for(i in 1:it){
     
       # Bagging
       s = sort(sample(1:n,n-bn,replace=FALSE))
       # UPDATE
       UP = upB(e[-s],mu,X[-s,],b,l,a,xx*bag,p,e[s],
-               X[s,],bag,alpha,wpe,O=O)
+               X[s,],bag,pi=a,wpe,ve,O=O)
       b = UP[[1]]
       a = UP[[2]]
       e = UP[[3]]
     
     mu = mu + mean(e)
-    S_prior = runif(1)#*SP
-    df_prior = rpois(1,4)
-    ve = crossprod(e+S_prior)/(bn+df_prior)
-    vb = crossprod(b+S_prior)/(p+df_prior)
+    df_prior = 2+rpois(1,3)
+    Se = runif(1,0,1)
+    Sb = runif(1,0,1)*df_prior
+    ve = (crossprod(e)+Se)/(n+2)
+    vb = (crossprod(b)+Sb)/(p+df_prior)
     l = ve/vb
     e = as.vector(y-(mu+tcrossprod(b,X)))
+    
     # STORE
-    if(it>bi){
+    if(i%in%MCMC){
       B = B+b
       MU = MU+mu
       A = A+a
       L = L+l
       if(bag<1) SSPE = SSPE+UP$oob/(n-bn)
     }
-    setTxtProgressBar(pb, i/it)
+    if(verb) setTxtProgressBar(pb, i/it)
   }
-  close(pb)
+  if(verb) close(pb)
   # Posterior
   Bhat = B/MC
   MUhat = MU/MC

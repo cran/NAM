@@ -644,7 +644,7 @@ plot.gibbs = function(x,...){
   anyNA = function(x) any(is.na(x))
   par(ask=TRUE)
   vc = nrow(x$Posterior.VC)-1
-  for(i in 1:vc) plot(density(x$Posterior.VC[i,],...),main=paste("Posterior: Term",i,"variance"))
+  for(i in 1:vc) plot(density(x$Posterior.VC[i,]),main=paste("Posterior: Term",i,"variance"),...)
   plot(density(x$Posterior.VC[vc+1,]),main=paste("Posterior: Residual Variance"),...)
   par(ask=FALSE)
 }
@@ -678,11 +678,11 @@ covar = function(sp=NULL,rho=3.5,type=1,dist=2.5){
 }
 
 # Map field neighbor plots
-NNsrc = function(sp=NULL,rho=1,dist=2){
+NNsrc = function(sp=NULL,rho=1,dist=3){
   if(is.null(sp)){
     simulation = TRUE
     sp = cbind(rep(1,77),rep(1:7,11),sort(rep(c(1:11),7)))
-    colnames(sp)=c("block","row","col")
+    colnames(sp)=c("Block","Row","Col")
     cat("Template of input for 'sp' (field information)\n")
     print(head(sp,10))
   }else{simulation = FALSE}
@@ -706,7 +706,11 @@ NNsrc = function(sp=NULL,rho=1,dist=2){
   if(is.data.frame(sp)) sp = data.matrix(sp)
   # Search for neighbors within environment
   Local_NN = apply(sp,1,NN,sp=sp)
-  cat('Average n# of components:',round(mean(sapply(Local_NN,length)),2),'\n')
+  if(simulation){
+    cat('\n Neighbor plots (field layout) \n')
+  }else{
+    cat('Average n# of components:',round(mean(sapply(Local_NN,length)),2),'\n')
+  }
   # In case of demonstration
   if(simulation){
     U = rep(0,77)

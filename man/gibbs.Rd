@@ -1,4 +1,4 @@
-\name{BMM}
+\name{MLM Gibbs}
 \alias{gibbs}
 \alias{ml}
 \alias{gibbs2}
@@ -61,7 +61,10 @@ The general model is \eqn{y=Xb+Zu+e}, where \eqn{u=N(0,A\sigma2a)} and \eqn{e=N(
 
 }
 \value{
-The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 
+The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients.
+
+For further statistical background: \code{system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))}
+
 }
 \references{
 
@@ -78,28 +81,38 @@ Alencar Xavier
 }
 \examples{
 
-# Fitting Mixed Model
 data(tpod)
-S = seq(1,350,50)
-test1=gibbs(y,X=~factor(fam),Z=gen[,S],S=0.5)
-plot(test1)
 
 # Fitting GBLUP
-K = tcrossprod(gen)
+K = tcrossprod(gen-1)
 K = K/mean(diag(K))
 iK = chol2inv(K)
-test2=gibbs(y,iK=iK)
-plot(test2)
+# FIT
+test1 = gibbs(y,iK=iK,S=1)
+# PLOT
+par(mfrow=c(1,3))
+plot(test1$Fit.mean,y,pch=20,lwd=2,col=3,main='GBLUP')
+plot(test1,col=4,lwd=2)
+# Heritability
+print(paste('h2 =',round(test1$VC.estimate[1]/sum(test1$VC.estimate),3)))
 
 # Fitting RKHS
-E = dist(gen)
+E = as.matrix(dist(gen))
 G = exp(-E^2/mean(E^2))
 EIG = eigen(G,symmetric = TRUE)
 ev = 20
 U = EIG$vectors[,1:ev]
 iV = diag(1/EIG$values[1:ev])
-test3=gibbs(y,Z=U,iK=iV,S=NULL)
-plot(test3)
+# FIT
+test2 = gibbs(y,Z=U,iK=iV,S=1)
+# PLOT
+par(mfrow=c(1,3))
+plot(test2$Fit.mean,y,pch=20,lwd=2,col=2,main='RKHS')
+plot(test2,col=3,lwd=2)
+# Heritability
+print(paste('h2 =',round(test2$VC.estimate[1]/sum(test2$VC.estimate),3)))
+
+
 }
 \keyword{ BLUP }
 \keyword{ BGS }

@@ -8,9 +8,9 @@ Whole-genome Regression
 Univariate model to find breeding values through regression with optional resampling techniques.
 }
 \usage{
-wgr(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,
-    pi=0,df=5,R2=0.5,eigK=NULL,rankK=0.25,verb=FALSE)
-ben(y,gen,it=750,bi=250,bag=0.5,alpha=0.5,wpe=10)
+wgr(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.5,
+    eigK=NULL,VarK=0.95,verb=FALSE)
+ben(y,gen,it=750,bi=250,th=1,bag=0.80,alpha=0.5,wpe=50,MH=FALSE,verb=TRUE)
 }
 \arguments{
   \item{y}{
@@ -50,17 +50,20 @@ Expected R2, used to calculate the prior shape as proposed by de los Campos et a
   \item{eigK}{
 Output of function 'eigen'. Spectral decomposition of the kernel used to compute the polygenic term.
 }
-  \item{rankK}{
-Numeric between 0 and 1. Indicates the proportion of Eigenpairs used to fit the polygenic term.
+  \item{VarK}{
+Numeric between 0 and 1. For reduction of dimensionality. Indicates the proportion of variance explained by Eigenpairs used to fit the polygenic term.
 }
   \item{verb}{
 Logical. If verbose is TRUE, function displays MCMC progress bar.
 }
   \item{alpha}{
-Numeric between 0 and 1. Controls prior alpha for the bagging elastic net model, where 0 is ridge (L2) and 1 is lasso (L1).
+Numeric between 0 and 1. Starting value of alpha parameter for the bagging elastic net model, where 0 is ridge (L2) and 1 is lasso (L1).
 }
   \item{wpe}{
 Weight of prediction error sum of squared for the jump function that defines alpha in the bagging elastic net model.
+}
+  \item{MH}{
+Logical. If TRUE, the search for alpha is performed via Metropolis-Hastings. If FALSE, acceptance-rejection.
 }
 }
 \details{
@@ -73,11 +76,21 @@ where \eqn{y} is the response variable, \eqn{mu} is the intercept, \eqn{X} is th
 Users can obtain four WGR methods out of this function: BRR (pi=0,iv=F), BayesA (pi=0,iv=T), BayesB (pi=0.01,iv=T) and BayesC (pi=0.01,iv=F). The full theoretical basis of each model is described by de los Campos et al. (2013).
 
 Gibbs sampler that updates regression coefficients is adapted from GSRU algorithm (Legarra and Misztal 2008). The variable selection works through the unconditional prior algorithm proposed by Kuo and Mallick (1998). The polygenic term is solved by Bayesian algorithm of reproducing kernel Hilbert Spaces proposed by de los Campos et al. (2010).
+
+The model for the bagging elastic net (ben) is as follows:
+
+\deqn{y = mu + Xb + e}
+
+Elastic net is controlled by two parameters, alpha and lambda. Lambda is analytically estimated as the ratio between residual variance and parameter variance (\eqn{\lambda = Ve/Vb}). Variance components and regression coefficients are updated as a Bayesian ridge regression. Alpha is found through random walk: A new value of alpha is proposed in each MCMC round. The acceptance of the new value depends on the algorithm (Metropolis-Hastings or Acceptance-Rejection), and the probability of a new value of alpha to be accepted is based on the Elastic-Net loss function and out-of-bag prediction error. Unfortunately, there is a computation burden associated to the fact that the regression coefficients are updated for the current and new value of alpha.
+
+For further statistical background: \code{system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))}
+
 }
 \value{
 The function wgr returns a list with expected value from the marker effect (\eqn{b}), probability of marker being in the model (\eqn{d}), regression coefficient (\eqn{g}), variance of each marker (\eqn{Vb}), the intercept (\eqn{mu}), the polygene (\eqn{u}) and polygenic variance (\eqn{Vk}), residual variance (\eqn{Ve}) and the fitted value (\eqn{hat}).
 
-variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients. 
+variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients.
+
 }
 \references{
 
@@ -115,6 +128,6 @@ BC = wgr(y,gen,iv=FALSE,pi=.01,bag=0.5,rp=TRUE,it=400,bi=50)
 cor(y,BC$hat)
 
 # Bayes Elastic Net
-BEN = ben(y,gen,it=400,bi=50)
+BEN = ben(y,gen,it=200,bi=50)
 cor(y,BEN$hat)
 }

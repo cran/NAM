@@ -3,17 +3,17 @@
 \alias{NAM}
 \docType{package}
 \title{
-Nested Association Mapping Analysis
+Nested Association Mapping
 }
 \description{
-Designed for association studies in nested association mapping (NAM) panels, also handling biparental and random panels. It includes functions for genome-wide associations mapping of multiple populations, marker quality control, population genetics analysis, solving mixed models and finding variance components through REML and Gibbs sampling.
+Designed for association studies in nested association mapping (NAM) panels, also handling experimental and random panels. It includes tools for genome-wide associations of multiple populations, marker quality control, population genetics analysis, genome-wide prediction, solving mixed models and finding variance components through likelihood and Bayesian methods.
 }
 \details{
 \tabular{ll}{
 Package: \tab NAM\cr
 Type: \tab Package\cr
-Version: \tab 1.4.6 \cr
-Date: \tab 2016-08-08\cr
+Version: \tab 1.4.7 \cr
+Date: \tab 2016-09-15\cr
 License: \tab GPL-3 \cr
 }
 
@@ -30,5 +30,5 @@ Maintainer: Alencar Xavier <alenxav@gmail.com>
 \keyword{ REML }
 \keyword{ BGS }
 \seealso{
-Functions include gibbs, reml, Fst, gwas, snpQC, snpH2, wgr and more!
+Package include functions to perform association analysis (gwas, gwas2, gwas3), meta-gwas (gwasGE, meta3), solve mixed models (gibbs, reml), genomic prediction (wgr, gmm), populations genetic analysis (Fst, Gdist, LD), data quality control (snpQC, snpH2, markov) and more.
 }

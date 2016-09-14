@@ -4,7 +4,7 @@
 Manhattan plot for Association Studies 
 }
 \description{
-Generates a graphical visualization for the output of the function gwas/gwas2. 
+Generates a graphical visualization for the output of the function gwas/gwas2/gwasGE. 
 }
 \usage{
 \method{plot}{NAM}(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,phys=NULL)
@@ -42,17 +42,20 @@ Numeric vector with length equal to the number of markers. If provided, the Manh
 Alencar Xavier and William Beavis
 }
 \examples{
-data(tpod)
-test=gwas2(y=y,gen=gen,fam=fam,chr=chr)
 
+data(tpod)
+test=gwas2(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
 par(mfrow=c(2,1))
 
 # Example Manhattan 1
-plot(x=test,colA=3,colB=1,alpha=0.05/ncol(gen),type="h",main="Example 1: Genome-Wide Bonferroni")
+SIGNIF = 1+(2*test$PolyTest$lrt>4.9)
+plot(x=test,pch=SIGNIF+3,lwd=SIGNIF,main="Example 2")
 
 # Example Manhattan 2
-Title = "Example 2: FDR 0.25 by Chromosome"
-plot(x=test,alpha=0.05,FDR=0.25,gtz=TRUE,pch=20,main=Title)
+plot(x=test,main="Example 3",pch=20,lwd=2)
+Kern = ksmooth(1:240,test$PolyTest$lrt,bandwidth=1)
+lines(Kern,type="l",lwd=2)
+
 }
 \keyword{ NAM }
 \keyword{ GWAS }

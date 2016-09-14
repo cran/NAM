@@ -1,12 +1,12 @@
 ---
-title: “Introduction to NAM”
-author: “Alencar Xavier (xaviera@purdue.edu)”
-date: “November 18, 2015”
+title: "Introduction to NAM"
+author: "Alencar Xavier (alenxav@gmail.com)"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to NAM}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 # 1. Installing the NAM package
@@ -15,13 +15,13 @@ To install the package in R, you just have to open R and type:
 
 + `install.packages("NAM")`
 
-NAM can be installed in R 3.0.0 or more recent versions. Check the version typing `R.version`. To load the package, you have to type in R
+NAM can be installed in R 3.2.0 or more recent versions. Check the version typing `R.version`. To load the package, you have to type in R
 
 + `library(NAM)`
 
 Some quick demostrations of what the package can do are available through the R function `example`. Check it out!
 
-+ `example(gwas)`
++ `example(plot.NAM)`
 + `example(Fst)`
 + `example(snpH2)`
 
@@ -99,9 +99,11 @@ It is recommended to check that the object is in the expected format after forci
 
 # 3. Genome-wide association studies
 
+The linear model upon which association analyses are performed is briefly described in the description of R function `?gwas`. More in-depth basis are provided in the supplementary file available with the following code: `system(paste('open',system.file("doc","gwa_description.pdf",package="NAM")))`
+
 To perform genome-wide association studies, at least two objects are required: A numeric matrix containing the *genotypic information* where columns represent markers and rows represent the genotypes, and a numeric vector containing the *phenotypes*. In addition, two other objects can be used for association mapping: a *stratification* term, a numeric vector with the same length as the phenotypes used to indicate the population that each individual comes from, and a numeric vector equal to the number of *chromosomes* that indicates how many markers belong to each chromosome. The sum of this object must be equal to number of columns of the genotypic matrix.
 
-The genotypic matrix must be coded using 0-1-2 (aa, aA, AA), and we strongly recommend to keep the column names with the marker names. If the stratification parameter is provided, we strongly recommend to use zeros to indicate alleles with minor frequency. The package provides a function called *reference* that does that (type `?reference` for more details). If stratification is provided, the algorithm used to compute associations will allow minor alleles to have different effect, increasing the power of associations by allowing different populations be in different linkage phases between the marker being evaluated and the causative mutation.
+The genotypic matrix must be coded using 0-1-2 (aa, aA, AA), and we strongly recommend to keep the column names with the marker names. If the stratification parameter is provided, we strongly recommend to use zeros to code alleles with minor frequency. The package provides a function called *reference* that does that (type `?reference` for more details). If stratification is provided, the algorithm used to compute associations will allow minor alleles to have different effect, increasing the power of associations by allowing different populations be in different linkage phases between the marker being evaluated and the causative mutation.
 
 To run the association analysis, use the function `gwas`. The arguments `y` (phenotypes) and `gen` (genotypes) are necessary for the associations, the arguments `fam` (stratification) and `chr` (number of markers per chromosome) are complimentary. Thus:
 
@@ -119,11 +121,18 @@ When multiple independent traits will be analyzed, there exist the possibility a
 + `trait_1 = gwas2( y=phenotype1, gen=genotypes, fam=population, chr=chromosomes, EIG=eigNAM )`
 + `trait_2 = gwas2( y=phenotype2, gen=genotypes, fam=population, chr=chromosomes, EIG=eigNAM )`
 
-To visualize the Manhattan plots can use the `plot` command on the output of the function `gwas`.
+For large number of SNPs, assocation analysis may present a heavy computation burden, which can be overcome through the computation SNPs in parallel. For parallel computing, we recently added an extension of `gwas2` that works along with the R package snow. The functions `gwasPAR` is accessible through the following command: `source(system.file("add","gwasPAR.R",package="NAM"))`. There are four simple steps to get a parallel computation of your association studies: 1) load the `gwasPAR` function; 2) open a cluster using the snow package; 2) run gwas with `gwasPAR`; 3) close the cluster. The exmple code follows:
+
++ `source(system.file("add","gwasPAR.R",package="NAM")) # Step 1`
++ `CLUSTER = makeSOCKcluster(3) # Number of CPUs in the clusters # Step 2`
++ `my_gwas = gwasPAR(y=phenotype,gen=genotypes,fam=population,chr=chromosomes,cl=CLUSTER) # Step 3`
++ `stopCluster(CLUSTER) # Step 4`
+
+Once the assocition analysis was performed, to visualize the Manhattan plots can use the `plot` command on the output of the function `gwas`.
 
 + `plot( my_gwas )`
 
-To check other designs for your Manhattan plot, check the examples provided by the package (see `?gwas`). To figure out which SNP(s) represent the picks of the analysis, we design the argument `find`. With this argument, you can click in the plot to find out which markers correspond to the peaks. For example, you want to find out the markers responsible for two picks, try:
+To check other designs for your Manhattan plot, check the examples provided by the package (see `?plot.NAM`). To figure out which SNP(s) represent the picks of the analysis, we design the argument `find`. With this argument, you can click in the plot to find out which markers correspond to the peaks. For example, you want to find out the markers responsible for two picks, try:
 
 + `plot( my_gwas, find = 2 )`
 
@@ -175,7 +184,7 @@ To find out which markers are above a given significance threshold, use the foll
 
 + `THR =  0.05/number_of_markers`
 + `w = which(PVal > THR)`
-+ `w` *# SIGNIFICANT MARKERS*
++ `w` *# Significant markers*
 
 To find out the Bonferroni threshold in LRT scale, try
 
@@ -235,14 +244,13 @@ Two arguments are necessary for this function: the genotypic matrix (`gen`) and 
 
 # 6. BLUPs
 
-Considering that phenotypes are often replaced by BLUP values for mapping and selection, the NAM package has two functions that allow users to solve mixed models to compute BLUPs and variance components: `reml` and `gibbs`.
+Considering that phenotypes are often replaced by BLUP values for mapping and selection, the NAM package provide functions that allow users to solve mixed models to compute BLUPs and variance components: `reml` and `gibbs`.
 
 To obtain BLUPs using REML the user needs an object for each term of the model: numeric vector for each covariate and for the response variable, and a factors for categorical variables such as environment and genotype.
 
 To check if a given `object` (eg. matrix, vector or factor) belongs to the correct class you expect, you can use the commands `is.vector(object)`, `is.numeric(object)`, `is.matrix(object)` and `is.factor(object)`. To force an object to change class, you can try `object = as.factor(object)` or `object = as.vector(object)`.
 
 Let `trait` be a numeric vector representing your response variable, `env` be a factor representing a different environments, `block` be a factor that indicates some experimental constrain, and `lines` be a factor that represent your lines. To fit a model, try:  
-
 Fit the model
 
 + `FIT = reml ( y = trait, X = ~ block +  env, Z = ~ lines )`
@@ -295,9 +303,9 @@ Fit BRR using the gibbs function
 
 Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When multiple random effects are used in `gibbs`, the argument `Z` accepts formula or a list of matrices and the argument `iK` accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the `gibbs` function, `iR` allows users to include residual covariance structure.
 
-Although it is possible to use `reml` and `gibbs` to generate breeding values, the function `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
+Although it is possible to use `reml` and `gibbs` to generate breeding values, the functions `gmm` and `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
 
-**a. BLUP**
+**a. RR-BLUP**
 
 + `BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)`
 
@@ -317,6 +325,51 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 + `BEN = ben(y = phenotype, gen = genotype)`
 
+**f. Bayesian LASSO**
+
++ `BL = gmm(y = phenotype, gen = genotype, model = "BLASSO")`
+
+**g. Model Average**
+
++ `MA = ben(y = phenotype, gen = genotype, model = "Average")`
+
+**h. GBLUP**
+
++ `LK = ben(y = phenotype, gen = genotype, model = "GBLUP")`
+
+**i. Reproducing Kernel Hilbert Spaces**
+
++ `GK = ben(y = phenotype, gen = genotype, model = "RKHS")`
+
+**j. Random Forest**
+
++ `RF = ben(y = phenotype, gen = genotype, model = "RF")`
+
+For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
+
++ `source(system.file("add","cvNAM.R",package="NAM"))`
+
+Which contains two functions: \code{CV_NAM} and \code{CV_Check}. The former function perform cross-validations, and the latter function summarizes the results. For example, load a small dataset (eg. `load(tpod)`), then check how different models perform:
+
++ `TEST = CV_NAM(y,gen,IT=1500,BI=500)`
++ `CV_Check(TEST)`
+
+The function `gmm` used above provides some extra flexibility for replicatad trials. A data frame containing all relevant data can be provided to the argument `dta`, including a columns named "ID", covariates and environmental information. For that, it is also important to have the rows of your genotypic matrix `gen` named with the same identification provided in the data fram `dta`. FOr that, use the R function `rownames` assign and verify the names of your genotypes in the genotypic matrix.
+
+If spatial information is provided in the Block-Row-Column format, the function gmm will perform spatial adjustment, fitting at the same time the genetic and spatial terms. An example of how the input matrix of `dta` looks like is provided in the example: 
+
++ `example(gmm)`
++ `head(DTA)`
++ `Gen[1:3,1:3]`
+
+In this particular example, the data frame contains information about the genotype identification (ID), the macro-environment (Year), and the spatial information in Block-Row-Column format. Additional columns could be included, such as other covariates to be included into the model. In this function, individuals without genotypic information will treated as a check (fixed effect). Check the example below:
+
++ `demo( fittingMET )`
+
+The output of this function will include prediction (breeding values) of all genotypes that are present in the genotypic matrix - including those without phenotypes. Check the example of how the model can extract field and genetic variation:
+
++ `demo( fieldvar )`
+
 # 7. Finding substructures
 
 If there are unknown stratification factors in your population, such as heterotic groups, one can use R functions to perform the clusters analysis. Let `gen` be the genotypic matrix and suppose that you want to split the population into two groups. Some unsupervised machine learning approaches include:
@@ -329,11 +382,34 @@ If there are unknown stratification factors in your population, such as heteroti
 
 **b. Using k-means**
 
-+ `Stratification2 = kmeans(gen, 2, iter.max = 20)$cluster`
++ `Stratification2 = kmeans(gen, 2)$cluster`
 
 **c. Using multidimensional scaling and k-means**
 
 + `MDS = cmdscale(dist(gen),2)`
 + `Stratification3 = kmeans(MDS, 2)$cluster`
 + `plot(MDS, col = Stratification3)`
+
+# 8. Other structured populations
+
+Functions `gwas` and `gwas2` are very optimized for NAM populations or populations with a given reference haplote. Suppose that one does not have a reference and it is working with a random population instead, where the subgroups were either defined by unsupervised machine learning methods (section above) or they refer to other sources of structure - such as heterotic groups in maize or maturity zones in soybeans. For that, we implemented the function `gwas3` with the same arguments as previous counterparts. This functions has some interesting properties as well.
+
++ 1. Markers are treated as the interaction between subpopulation and allele
++ 2. It is compatible with any allele coding, which allows studies of dominance
++ 3. Meta-analysis is facilitated (function `meta3`)
+
+The function `meta3` takes as input a list of association analyis performed by `gwas3`. Only marker that overlap across association studies are evaluated. Nevertheless, the drawback of this function is the requirement for memory in comparison to `gwas2`. Some extra memory is necessary because `gwas3` stores the residual variances for meta-analysis purposes. A demonstration of meta-analysis through `gwas3` is provided by:
+
++ `demo( metagwas )`
+
+Whereas the meta-analysis that preserve the properties of `gwas2` through the function `gwasGE` is provided by:
+
++ `demo( metaGxE )`
+
+# 9. Further background
+
++ EB-GWAS method: `system(paste('open',system.file("doc","gwa_description.pdf",package="NAM")))`
++ GxE EB-GWAS: `system(paste('open',system.file("doc","gwa_ge_interactions.pdf",package="NAM")))`
++ GWP/GWAS methods: `system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))`
+
 

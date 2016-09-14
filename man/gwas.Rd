@@ -1,17 +1,21 @@
 \name{GWAS}
 \alias{gwas}
 \alias{gwas2}
+\alias{gwas3}
 \alias{gwasGE}
+\alias{meta3}
 \title{
 Empirical Bayes Genome Wide Association Mapping 
 }
 \description{
-The gwas function calculates the likelihood ratio for each marker under the empirical Bayesian framework. The method also works with multiple populations.
+The gwas function calculates the likelihood ratio for each marker under the empirical Bayesian framework. The method allows analysis with multiple populations. \code{gwas2} is computationally optimized. \code{gwas3} was design for multiple random populations.
 }
 \usage{
 gwas(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE)
 gwas2(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL)
-gwasGE(Phe,gen,fam,chr=NULL,cov=NULL,ge=FALSE)
+gwas3(y,gen,fam=NULL,chr=NULL,EIG=NULL,cov=NULL)
+gwasGE(Phe,gen,fam,chr=NULL,cov=NULL,ge=FALSE,ammi=1)
+meta3(ByEnv,ammi=1)
 }
 \arguments{
   \item{y}{
@@ -43,7 +47,13 @@ Numeric vector of length \eqn{n} to be used as covariate in the association anal
 Numeric matrix of observations (\eqn{n*e}) where rows represent genotypes and columns represent environments. \code{NA} is allowed.
 }
   \item{ge}{
-Logical. If TRUE, meta-analysis (function gwasGE) will be done for the GE interaction term only. If FALSE, variance components will be computed for three terms: genotype, environment and interaction.
+Logical. If TRUE, meta-analysis (function gwasGE) will be done for the \eqn{G}x\eqn{E} interactions term only. If FALSE, variance components will be computed for three terms: genotype, environment and interaction.
+}
+  \item{ammi}{
+Integer. It indicates the number of principal components used to represent \eqn{G}x\eqn{E} interactions through additive main-effects and multiplicative interaction (AMMI).
+}
+  \item{ByEnv}{
+List of objected output from \code{gwas3} to perform meta-analysis.
 }
 }
 \details{
@@ -64,18 +74,27 @@ In order to analyze large dateset, one can avoid memory issues by using the func
 
 When multi-environmental trials are the target of mapping, one may use the function \eqn{gwasGE} to perform analysis by environment, followed by "meta-analysis" used to combine the results. This strategy provides an idea of the variation on QTL effect due to environment, genetic background (provided by the stratification factor) and the interaction between environment and genetics.
 
-An alternative to this method is the "mega-analysis", where one can provide the stratification factor as a combination of subpopulation and environment. In this case, the same genotype will appear more than once in the phenotypic and genotypic data.
+An alternative to this method is the mega-analysis, where one can provide the stratification factor as a combination of subpopulation and environment. Meta-analysis can be performed in a single step with function \code{gwasGE}, or users can perform multiple association analyses using \code{gwas3} and perform meta-analysis with \code{meta3}. In \code{gwasGE}, the same genotype will often appear more than once in the phenotypic and genotypic data, so that phenotypes are provided as a matrix. The statistical detail about the meta-analysis are available in the vignette \eqn{Background for Meta-analysis}.
+
+The function \code{gwas3} is an alternative for association analysis and meta-analysis, also solved in the Empirical-Bayes framework for multiple populations. Unlike \code{gwas}, \code{gwas2} and \code{gwasGE}, this function does not set a reference allele and analysis each marker as the interaction of allele by stratification factor (ie. family or subpopulation). Therefore,  \code{gwas3} is compatible with any allele coding.
+
+For further statistical background:
+
+1) \code{system(paste('open',system.file("doc","gwa_description.pdf",package="NAM")))}
+
+2) \code{system(paste('open',system.file("doc","gwa_ge_interactions.pdf",package="NAM")))}
+
 }
 \value{
 The function gwas returns a list containing the method deployed (\eqn{Method}), a summary of predicted parameters and statistical tests (\eqn{PolyTest}), estimated genetic map for NAM panels (\eqn{MAP}) and the marker names (\eqn{SNPs}).
 }
 \references{
 
-Wang, Q. An Empirical Bayes Method for Genome-Wide Association Studies. W799/Statistical Genomics. PAG XXXII. 2015.
+Wang, Q. An Empirical Bayes Method for Genome-Wide Association Studies. W799 Statistical Genomics. PAG XXXII. 2015.
 
-Wei, J., & Xu, S. (2016). A Random Model Approach to QTL Mapping in Multi-parent Advanced Generation Inter-cross (MAGIC) Populations. Genetics, genetics-115.
+Wei, J., & Xu, S. (2016). A Random Model Approach to QTL Mapping in Multi-parent Advanced Generation Inter-cross (MAGIC) Populations. Genetics, 202(2), 471-486.
 
-Xavier, A., Xu, S., Muir, W. M., & Rainey, K. M. (2015). NAM: Association Studies in Multiple Populations. Bioinformatics, btv448.
+Xavier, A., Xu, S., Muir, W. M., & Rainey, K. M. (2015). NAM: Association Studies in Multiple Populations. Bioinformatics, 31(23), 3862-3864.
 
 Zhang et al. 2010. Mixed linear model approach adapted for genome-wide association studies. Nat. Genet. 42:355-360.
 
@@ -85,18 +104,12 @@ Zhou, X., & Stephens, M. (2012). Genome-wide efficient mixed-model analysis for 
 Alencar Xavier, Tiago Pimenta, Qishan Wang and Shizhong Xu
 }
 \examples{
+
 data(tpod)
-test=gwas(y=y,gen=gen[,1:240],fam=fam,chr=chr[1:12])
-par(mfrow=c(2,1))
+gen=reference(gen)
+gwa=gwas2(y=y,gen=gen,fam=fam,chr=chr,fixed=TRUE)
+plot(gwa,pch=20,lwd=4)
 
-# Example Manhattan 1
-SIGNIF = 1+(2*test$PolyTest$lrt>4.9)
-plot(x=test,pch=SIGNIF+3,lwd=SIGNIF,main="Example 2")
-
-# Example Manhattan 2
-plot(x=test,main="Example 3",pch=20,lwd=2)
-Kern = ksmooth(1:240,test$PolyTest$lrt,bandwidth=1)
-lines(Kern,type="l",lwd=2)
 }
 \keyword{ NAM }
 \keyword{ GWAS }
