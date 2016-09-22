@@ -48,23 +48,39 @@
 #'
 #' 14) \code{Bayesian LASSO}{ (pkg. BGLR) from Park and Casella 2008 (Laplacian shrinkage on L2 loss)}
 #'
-#' 15) \code{Bayesian Elastic-Net}{ (pkg. bWGR/NAM) using bagging and acceptance-rejection to find alpha}
+#' 15) \code{Bayesian Elastic-Net}{ (pkg. bWGR) using bagging and acceptance-rejection to find alpha}
 #'
-#' 16) \code{Bagging Bayesian Ridge Regression}{ (pkg. bWGR/NAM), with 30\% of data used at a time: as a mixture of Ridge and Random forest}
+#' 16) \code{Bagging Bayesian Ridge Regression}{ (pkg. bWGR), with 30\% of data used at a time: as a mixture of Ridge and Random forest}
 #'
-#' 17) \code{Bagging Bayesian Ridge Regression}{ (pkg. bWGR/NAM), with 70\% of data used at a time: as a mixture of Ridge and Random forest}
+#' 17) \code{Bagging Bayesian Ridge Regression}{ (pkg. bWGR), with 70\% of data used at a time: as a mixture of Ridge and Random forest}
 #'
-#' 18) \code{Bagging BayesC}{ (pkg. bWGR/NAM), with 50\% of data used at a time: as a mixture of BayesC and Random forest}
+#' 18) \code{k-Nearest Neighbors} { function with k=20, ie., average of 20 most similar individuals based on Euclidean distance}
 #'
-#' 19) \code{k-Nearest Neighbors} { function with k=20, ie., average of 20 most similar individuals based on Euclidean distance}
+#' 19) \code{Boosting Regression} { (pkg. gbm) Linear regression with adaptive Boosting}
 #'
-#' 20) \code{Boosting Regression} { (pkg. gbm) Linear regression with adaptive Boosting}
+#' 20) \code{Partial least square regression} { (pkg. pls) with cross-validation to define the number of Eigenvectos}
 #'
-#' 21) \code{Partial least square regression} { (pkg. pls) with cross-validation to define the number of Eigenvectos}
+#' 21) \code{General Ensemble Learning Algorithm} { (pkg. bWGR) GELA: Mix elements of random forest, RKHS, ridge regression and kNN}
 #'
-#' 22) \code{General Ensemble Learning Algorithm} { (pkg. bWGR) GELA: Mix elements of random forest, RKHS, ridge regression and kNN}
+#' 22) \code{Weighted General Ensemble Learning Algorithm}{ (pkg. bWGR) wGELA: same as above, but with weighted models based on out-of-bag prediction error}
 #'
-#' 23) \code{Weighted General Ensemble Learning Algorithm}{ (pkg. bWGR) wGELA: same as above, but with weighted models based on out-of-bag prediction error}
+#' 23) \code{Variational BayesB}{ (pkg. VIGoR) with prior tunning of hyperparameters, starting with Mvar=0.5 and Kappa=0.1 }
+#'
+#' 24) \code{Variational BayesC}{ (pkg. VIGoR) with the same tunning as in varBayesB }
+#'
+#' 25) \code{Variational Bayesian stochastic search variable selection}{ (pkg. VIGoR) with the same tunning as in varBayesB }
+#'
+#' 26) \code{Variational Extended Bayesian LASSO}{ (pkg. VIGoR) with the same tunning as in varBayesB }
+#'
+#' 27) \code{Variational Bayesian mixture of models}{ (pkg. VIGoR) with the same tunning as in varBayesB }
+#'
+#' 28) \code{EM-BayesA}{ (pkg. bWGR) with default settings }
+#'
+#' 29) \code{EM-BayesB}{ (pkg. bWGR) with default settings }
+#'
+#' 30) \code{EM-BayesC}{ (pkg. bWGR) with default settings }
+#'
+#' 31) \code{EM-BRR}{ (pkg. bWGR) with default settings }
 #'
 
 CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
@@ -75,133 +91,27 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
     # Check if you have packages
     check = function(mypkg) if(!is.element(mypkg,installed.packages()[,1])) install.packages(mypkg)
     check('BGLR')
-    check('bWGR')
     check('glmnet')
     check('gbm')
     check('rrBLUP')
     check('pls')
     check('randomForest')
     check('kernlab')
+    check('bWGR')
+    check('VIGoR')
     # Loading packages
     require(BGLR,quietly = T)
     require(randomForest,quietly = T)
-    require(bWGR,quietly = T)
     require(glmnet,quietly = T)
     require(gbm,quietly = T)
     require(rrBLUP,quietly = T)
     require(pls,quietly = T)
     require(kernlab,quietly = T)
+    require(bWGR,quietly = T)
+    require(VIGoR,quietly = T)
     # KNN function
     knn = function(y,E,k=20){d=function(d) mean(r[which(d<=(sort(d)[k]))]);
     w=which(is.na(y));D=E[,-w];r=y[-w];return(apply(D,1,d))}
-    # Generic Ensemble Learning Algorithm
-    GELA = function(y,x,It=500,CL=4,PC=15,Par=20,Bg=0.6,rdg=1e-6,eig=NULL){
-      mi = which(is.na(y))
-      nmi = length(mi)
-      if(is.null(eig)){
-        D2 = as.matrix(dist(x)^2)
-        GK = exp(-D2/mean(D2))
-        eig = eigen(GK,T)}
-      Y = y[-mi]
-      X = x[-mi,]
-      xx = x[mi,]
-      E = eig$vectors[-mi,]
-      ee = eig$vectors[mi,]
-      R2x = cor(Y,X)^2
-      R2x = as.vector(R2x/sum(R2x))
-      R2e = cor(Y,E)^2
-      R2e = as.vector(R2e/sum(R2e))
-      R2v = as.vector(eig$values/sum(eig$values))
-      Bag = round(Bg*length(Y))
-      yhat = matrix(NA,nmi,It)
-      Xb = matrix(NA,Bag,Par)
-      Eb = matrix(NA,Bag,PC)
-      Pb = matrix(NA,Bag+nmi,PC)
-      n = length(Y)
-      nW = (1+PC+CL*Par)
-      Wp = matrix(NA,Bag,nW)
-      Wv = matrix(NA,nmi,nW)
-      pb = txtProgressBar(style = 3)
-      for(i in 1:It){
-        o = sample(1:n,Bag)
-        t = sample(1:ncol(X),Par,prob=R2x)
-        g = sample(1:ncol(E),PC,prob=R2e)
-        p = sample(1:ncol(E),PC,prob=R2v)
-        Xb[1:Bag,1:Par] = X[o,t]
-        Eb[1:Bag,1:PC] = E[o,g]
-        Pb[1:Bag,1:PC] = E[o,p]
-        Pb[(Bag+1):(Bag+nmi),1:PC] = ee[,p]
-        K = factor(kmeans(Pb,CL)$cluster)
-        K1 = K[1:Bag]
-        K2 = K[(Bag+1):(Bag+nmi)]
-        Wp[1:Bag,1:nW] = model.matrix(~Eb+K1:Xb)
-        Wv[1:nmi,1:nW] = model.matrix(~ee[,g]+K2:xx[,t])
-        WW = crossprod(Wp)
-        diag(WW) = diag(WW)+c(0,rep(rdg,nW-1))
-        Wy = crossprod(Wp,Y[o])
-        fit = solve(WW,Wy)
-        yhat[,i] = Wv %*% fit
-        setTxtProgressBar(pb, i/It)}
-      close(pb)
-      Hat = rowMeans(yhat)
-      yFit = y
-      yFit[mi] = Hat
-      return(yFit)
-    }
-    wGEMLA = function(y,x,It=500,CL=4,PC=15,Par=20,Bg=0.6,rdg=1e-6){
-      mi = which(is.na(y))
-      nmi = length(mi)
-      D2 = as.matrix(dist(x)^2)
-      GK = exp(-D2/mean(D2))
-      eig = eigen(GK,T)
-      Y = y[-mi]
-      X = x[-mi,]
-      xx = x[mi,]
-      E = eig$vectors[-mi,]
-      ee = eig$vectors[mi,]
-      R2x = cor(Y,X)^2
-      R2x = as.vector(R2x/sum(R2x))
-      R2e = cor(Y,E)^2
-      R2e = as.vector(R2e/sum(R2e))
-      R2v = as.vector(eig$values/sum(eig$values))
-      Bag = round(Bg*length(Y))
-      yhat = matrix(NA,nmi,It)
-      Xb = matrix(NA,Bag,Par)
-      Eb = matrix(NA,Bag,PC)
-      Pb = matrix(NA,Bag+nmi,PC)
-      n = length(Y)
-      nW = (1+PC+CL*Par)
-      Wp = matrix(NA,Bag,nW)
-      Wv = matrix(NA,nmi,nW)
-      WR2 = rep(NA,It)
-      pb = txtProgressBar(style = 3)
-      for(i in 1:It){
-        o = sample(1:n,Bag)
-        t = sample(1:ncol(X),Par,prob=R2x)
-        g = sample(1:ncol(E),PC,prob=R2e)
-        p = sample(1:ncol(E),PC,prob=R2v)
-        Xb[1:Bag,1:Par] = X[o,t]
-        Eb[1:Bag,1:PC] = E[o,g]
-        Pb[1:Bag,1:PC] = E[o,p]
-        Pb[(Bag+1):(Bag+nmi),1:PC] = ee[,p]
-        K = factor(kmeans(Pb,CL)$cluster)
-        K1 = K[1:Bag]
-        K2 = K[(Bag+1):(Bag+nmi)]
-        Wp[1:Bag,1:nW] = model.matrix(~Eb+K1:Xb)
-        Wv[1:nmi,1:nW] = model.matrix(~ee[,g]+K2:xx[,t])
-        WW = crossprod(Wp)
-        diag(WW) = diag(WW)+c(0,rep(rdg,nW-1))
-        Wy = crossprod(Wp,Y[o])
-        fit = solve(WW,Wy)
-        WR2[i] = cor(Wp%*%fit,Y[o])
-        yhat[,i] = Wv %*% fit
-        setTxtProgressBar(pb, i/It)}
-      close(pb)
-      Hat = apply(yhat,1,weighted.mean,w=WR2)
-      yFit = y
-      yFit[mi] = Hat
-      return(yFit)
-    }
     # Kernels
     E2 = as.matrix(dist(gen)^2)
     K=exp(-(E2/mean(E2)))
@@ -263,27 +173,38 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       # Boosting
       f8=gbm::gbm.fit(x=gen[-w,],y=y[-w],distribution="gaussian",n.trees = 150)
       # Bag Bayes
-      f9=wgr(y,gen,it=1800,bi=0,bag=.5,rp=T,pi=0.01,verb=T)
       f9b=wgr(y,gen,it=1800,bi=0,bag=.3,verb=T,rp=FALSE)
       f9c=wgr(y,gen,it=1800,bi=0,bag=.7,verb=T,rp=FALSE)
       # REML GBLUP
       f10 = mixed.solve(y,K=G)
       cat('done with Bags and GBLUP\n')
       # GELA
-      f11 = GELA(y,x=gen,eig=eK)
-      f12 = wGEMLA(y,gen)
+      f11 = GELA(y,x=gen,weighted = FALSE)
+      f12 = GELA(y,gen,weighted = TRUE)
       cat('done with GELAs\n')
       # BagMAN
-      f13b = BagMEN(y=y,X=gen,alpha=.75,wpe = 25)
+      f13b = BEN(y=y,gen=gen)
       # EN
       cv3 = cv.glmnet(x=gen[-w,],y=y[-w],alpha=0.5)
       lmb3 = cv3$lambda.min
       f14 = glmnet(x=gen[-w,],y=y[-w],lambda = lmb1,alpha = 0.5)
-      # PLS'
+      # PLS
       cat('now PLS\n')
       f16a=plsr(y[-w]~gen[-w,],validation='CV')
       ncomp=which.max(cor(f16a$validation$pred[,1,],y[-w]))
       pls16a = predict(f16a,gen[w,])[,1,ncomp]
+      # varBayes
+      f17a = gen[w,] %*% vigor(y,gen,'BayesB',hyperpara(gen,.5,'BayesB',.1),Function = 'tuning')$Beta
+      f17b = gen[w,] %*% vigor(y,gen,'BayesC',hyperpara(gen,.5,'BayesC',.1),Function = 'tuning')$Beta
+      f17c = gen[w,] %*% vigor(y,gen,'SSVS',hyperpara(gen,.5,'SSVS',.1),Function = 'tuning')$Beta
+      f17d = gen[w,] %*% vigor(y,gen,'EBL',hyperpara(gen,.5,'EBL',.1),Function = 'tuning')$Beta
+      f17e = gen[w,] %*% vigor(y,gen,'MIX',hyperpara(gen,.5,'MIX',.1),Function = 'tuning')$Beta
+      # emBayes
+      f18a = gen[w,] %*% emBA(y[-w],gen[-w,])$b
+      f18b = gen[w,] %*% emBB(y[-w],gen[-w,])$b
+      f18c = gen[w,] %*% emBC(y[-w],gen[-w,])$b
+      f18d = gen[w,] %*% emRR(y[-w],gen[-w,])$b
+      cat('Done with emBayes and varBayes\n')
       
       # Removing junk files and creating MODs
       file.remove(list.files(pattern='dat'))
@@ -291,10 +212,11 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       NamesMod = c('RandomForest','RBF','BayesB','BayesC','RKHS',
                    'RKHS(3GK)','LASSO','BL','RidgeReg',
                    'BRR','BayesB+RKHS','BayesB+3GK','kNN',
-                   'Boost','BayesC(50%)','Bagging(30%)','Bagging(70%)',
-                   'GBLUP-REML','GELA','wGELA',
-                   'BEN','EN','PLS','OBSERVATION')
-      M = matrix(NA,Nk,24)
+                   'Boost','emBRR','Bagging(30%)','Bagging(70%)',
+                   'GBLUP-REML','GELA','wGELA','BEN','EN','PLS',
+                   'varBayesB','varBayesC','SSVS','EBL','varMIX',
+                   'emBayesA','emBayesB','emBayesC','OBSERVATION')
+      M = matrix(NA,Nk,length(NamesMod))
       colnames(M) = NamesMod
       # VALUES
       M[,1]=predict(f1,gen[w,]) # RF
@@ -311,7 +233,7 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       M[,12]=f6b$yHat[w] # BB+3GK
       M[,13]=f7[w] # KNN
       M[,14]=predict(f8,gen[w,],150) # Boosting
-      M[,15]=f9$hat[w] # Bag1
+      M[,15]=f18d # emRR
       M[,16]=f9b$hat[w] # Bag2
       M[,17]=f9c$hat[w] # Bag3
       M[,18]=f10$u[w] # REML
@@ -320,7 +242,15 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       M[,21]=f13b$hat[w] # BagMEN
       M[,22]=predict(f14,gen[w,]) # EN
       M[,23]=pls16a # PLS
-      M[,24]=Y[w] # OBSERVARIONS
+      M[,24]=f17a # varBB
+      M[,25]=f17b # varBC
+      M[,26]=f17c # SSVS
+      M[,27]=f17d # EBL
+      M[,28]=f17e # varMix
+      M[,29]=f18a # emBA
+      M[,30]=f18b # emBB
+      M[,31]=f18c # emBC
+      M[,32]=Y[w] # OBSERVARIONS
       return(M)
     }
     # Running Cross-validations
@@ -338,7 +268,6 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
     # Check whether you have the packages
     check = function(mypkg) if(!is.element(mypkg,installed.packages()[,1])) install.packages(mypkg)
     check('BGLR')
-    check('bWGR')
     check('glmnet')
     check('gbm')
     check('rrBLUP')
@@ -346,120 +275,12 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
     check('kernlab')
     check('randomForest')
     check('snow')
+    check('VIGoR')
     # Loading packages
     require(snow,quietly = T)
     # KNN function
     knn = function(y,E,k=20){d=function(d) mean(r[which(d<=(sort(d)[k]))]);
     w = which(is.na(y));D=E[,-w];r=y[-w];return(apply(D,1,d))}
-    # Generic Ensemble Learning Algorithm
-    GELA = function(y,x,It=500,CL=4,PC=15,Par=20,Bg=0.6,rdg=1e-6,eig=NULL){
-      mi = which(is.na(y))
-      nmi = length(mi)
-      if(is.null(eig)){
-        D2 = as.matrix(dist(x)^2)
-        GK = exp(-D2/mean(D2))
-        eig = eigen(GK,T)}
-      Y = y[-mi]
-      X = x[-mi,]
-      xx = x[mi,]
-      E = eig$vectors[-mi,]
-      ee = eig$vectors[mi,]
-      R2x = cor(Y,X)^2
-      R2x = as.vector(R2x/sum(R2x))
-      R2e = cor(Y,E)^2
-      R2e = as.vector(R2e/sum(R2e))
-      R2v = as.vector(eig$values/sum(eig$values))
-      Bag = round(Bg*length(Y))
-      yhat = matrix(NA,nmi,It)
-      Xb = matrix(NA,Bag,Par)
-      Eb = matrix(NA,Bag,PC)
-      Pb = matrix(NA,Bag+nmi,PC)
-      n = length(Y)
-      nW = (1+PC+CL*Par)
-      Wp = matrix(NA,Bag,nW)
-      Wv = matrix(NA,nmi,nW)
-      pb = txtProgressBar(style = 3)
-      for(i in 1:It){
-        o = sample(1:n,Bag)
-        t = sample(1:ncol(X),Par,prob=R2x)
-        g = sample(1:ncol(E),PC,prob=R2e)
-        p = sample(1:ncol(E),PC,prob=R2v)
-        Xb[1:Bag,1:Par] = X[o,t]
-        Eb[1:Bag,1:PC] = E[o,g]
-        Pb[1:Bag,1:PC] = E[o,p]
-        Pb[(Bag+1):(Bag+nmi),1:PC] = ee[,p]
-        K = factor(kmeans(Pb,CL)$cluster)
-        K1 = K[1:Bag]
-        K2 = K[(Bag+1):(Bag+nmi)]
-        Wp[1:Bag,1:nW] = model.matrix(~Eb+K1:Xb)
-        Wv[1:nmi,1:nW] = model.matrix(~ee[,g]+K2:xx[,t])
-        WW = crossprod(Wp)
-        diag(WW) = diag(WW)+c(0,rep(rdg,nW-1))
-        Wy = crossprod(Wp,Y[o])
-        fit = solve(WW,Wy)
-        yhat[,i] = Wv %*% fit
-        setTxtProgressBar(pb, i/It)}
-      close(pb)
-      Hat = rowMeans(yhat)
-      yFit = y
-      yFit[mi] = Hat
-      return(yFit)
-    }
-    wGELA = function(y,x,It=500,CL=4,PC=15,Par=20,Bg=0.6,rdg=1e-6,eig=NULL){
-      mi = which(is.na(y))
-      nmi = length(mi)
-      if(is.null(eig)){
-        D2 = as.matrix(dist(x)^2)
-        GK = exp(-D2/mean(D2))
-        eig = eigen(GK,T)}
-      Y = y[-mi]
-      X = x[-mi,]
-      xx = x[mi,]
-      E = eig$vectors[-mi,]
-      ee = eig$vectors[mi,]
-      R2x = cor(Y,X)^2
-      R2x = as.vector(R2x/sum(R2x))
-      R2e = cor(Y,E)^2
-      R2e = as.vector(R2e/sum(R2e))
-      R2v = as.vector(eig$values/sum(eig$values))
-      Bag = round(Bg*length(Y))
-      yhat = matrix(NA,nmi,It)
-      Xb = matrix(NA,Bag,Par)
-      Eb = matrix(NA,Bag,PC)
-      Pb = matrix(NA,Bag+nmi,PC)
-      n = length(Y)
-      nW = (1+PC+CL*Par)
-      Wp = matrix(NA,Bag,nW)
-      Wv = matrix(NA,nmi,nW)
-      WR2 = rep(NA,It)
-      pb = txtProgressBar(style = 3)
-      for(i in 1:It){
-        o = sample(1:n,Bag)
-        t = sample(1:ncol(X),Par,prob=R2x)
-        g = sample(1:ncol(E),PC,prob=R2e)
-        p = sample(1:ncol(E),PC,prob=R2v)
-        Xb[1:Bag,1:Par] = X[o,t]
-        Eb[1:Bag,1:PC] = E[o,g]
-        Pb[1:Bag,1:PC] = E[o,p]
-        Pb[(Bag+1):(Bag+nmi),1:PC] = ee[,p]
-        K = factor(kmeans(Pb,CL)$cluster)
-        K1 = K[1:Bag]
-        K2 = K[(Bag+1):(Bag+nmi)]
-        Wp[1:Bag,1:nW] = model.matrix(~Eb+K1:Xb)
-        Wv[1:nmi,1:nW] = model.matrix(~ee[,g]+K2:xx[,t])
-        WW = crossprod(Wp)
-        diag(WW) = diag(WW)+c(0,rep(rdg,nW-1))
-        Wy = crossprod(Wp,Y[o])
-        fit = solve(WW,Wy)
-        WR2[i] = cor(Wp%*%fit,Y[o])
-        yhat[,i] = Wv %*% fit
-        setTxtProgressBar(pb, i/It)}
-      close(pb)
-      Hat = apply(yhat,1,weighted.mean,w=WR2)
-      yFit = y
-      yFit[mi] = Hat
-      return(yFit)
-    }
     # Kernels
     E2 = as.matrix(dist(gen)^2)
     K=exp(-(E2/mean(E2)))
@@ -479,16 +300,16 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
     cvs = length(Seeds) 
     rm(Z,K1,K2,K3)
     # Cross-validation function
-    folds = function(Seed,k,N,gen,G,eK,eK1,eK2,eK3,Y,y,E2,knn,wGELA,GELA){
+    folds = function(Seed,k,N,gen,G,eK,eK1,eK2,eK3,Y,y,E2,knn){
       # Loading packages
       require(BGLR,quietly = T)
       require(randomForest,quietly = T)
-      require(bWGR,quietly = T)
       require(glmnet,quietly = T)
       require(gbm,quietly = T)
       require(rrBLUP,quietly = T)
       require(pls,quietly = T)
       require(kernlab,quietly = T)
+      require(VIGoR,quietly = T)
       # Begin folds
       set.seed(Seed)
       Nk = round(N/k)
@@ -536,11 +357,11 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       f10 = mixed.solve(y,K=G)
       cat('done with Bags and GBLUP\n')
       # GELA
-      f11 = GELA(y,x=gen,eig=eK)
-      f12 = wGELA(y,gen,eig=eK)
+      f11 = GELA(y,x=gen,weighted = FALSE)
+      f12 = GELA(y,gen,weighted = TRUE)
       cat('done with GELAs\n')
       # BagMAN
-      f13b = BagMEN(y=y,X=gen,alpha=.75,wpe = 25)
+      f13b = ben(y=y,gen=gen,wpe = 25)
       # EN
       cv3 = cv.glmnet(x=gen[-w,],y=y[-w],alpha=0.5)
       lmb3 = cv3$lambda.min
@@ -553,6 +374,18 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       # RBF
       cat('now RBF\n')
       f2=predict(rvm(gen,y),gen)[,1]
+      # varBayes
+      f17a = gen[w,] %*% vigor(y,gen,'BayesB',hyperpara(gen,.5,'BayesB',.1),Function = 'tuning')$Beta
+      f17b = gen[w,] %*% vigor(y,gen,'BayesC',hyperpara(gen,.5,'BayesC',.1),Function = 'tuning')$Beta
+      f17c = gen[w,] %*% vigor(y,gen,'SSVS',hyperpara(gen,.5,'SSVS',.1),Function = 'tuning')$Beta
+      f17d = gen[w,] %*% vigor(y,gen,'EBL',hyperpara(gen,.5,'EBL',.1),Function = 'tuning')$Beta
+      f17e = gen[w,] %*% vigor(y,gen,'MIX',hyperpara(gen,.5,'MIX',.1),Function = 'tuning')$Beta
+      # emBayes
+      f18a = gen[w,] %*% emBA(y[-w],gen[-w,])$b
+      f18b = gen[w,] %*% emBB(y[-w],gen[-w,])$b
+      f18c = gen[w,] %*% emBC(y[-w],gen[-w,])$b
+      f18d = gen[w,] %*% emRR(y[-w],gen[-w,])$b
+      cat('Done with emBayes and varBayes\n')
       
       # Removing junk files and creating MODs
       file.remove(list.files(pattern='dat'))
@@ -560,10 +393,11 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       NamesMod = c('RandomForest','RBF','BayesB','BayesC','RKHS',
                    'RKHS(3GK)','LASSO','BL','RidgeReg',
                    'BRR','BayesB+RKHS','BayesB+3GK','kNN',
-                   'Boost','BayesC(50%)','Bagging(30%)','Bagging(70%)',
-                   'GBLUP-REML','GELA','wGELA',
-                   'BEN','EN','PLS','OBSERVATION')
-      M = matrix(NA,Nk,24)
+                   'Boost','emBRR','Bagging(30%)','Bagging(70%)',
+                   'GBLUP-REML','GELA','wGELA','BEN','EN','PLS',
+                   'varBayesB','varBayesC','SSVS','EBL','varMIX',
+                   'emBayesA','emBayesB','emBayesC','OBSERVATION')
+      M = matrix(NA,Nk,length(NamesMod))
       colnames(M) = NamesMod
       # VALUES
       M[,1]=predict(f1,gen[w,]) # RF
@@ -580,7 +414,7 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       M[,12]=f6b$yHat[w] # BB+3GK
       M[,13]=f7[w] # KNN
       M[,14]=predict(f8,gen[w,],150) # Boosting
-      M[,15]=f9$hat[w] # Bag1
+      M[,15]=f18d # emRR
       M[,16]=f9b$hat[w] # Bag2
       M[,17]=f9c$hat[w] # Bag3
       M[,18]=f10$u[w] # REML
@@ -589,14 +423,22 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
       M[,21]=f13b$hat[w] # BagMEN
       M[,22]=predict(f14,gen[w,]) # EN
       M[,23]=pls16a # PLS
-      M[,24]=Y[w] # OBSERVARIONS
+      M[,24]=f17a # varBB
+      M[,25]=f17b # varBC
+      M[,26]=f17c # SSVS
+      M[,27]=f17d # EBL
+      M[,28]=f17e # varMix
+      M[,29]=f18a # emBA
+      M[,30]=f18b # emBB
+      M[,31]=f18c # emBC
+      M[,32]=Y[w] # OBSERVARIONS
       return(M)
     }
     # Create sock cluster
     cat('Creating Cluster with',cores,'cores\n')
     cl = makeSOCKcluster(cores)
     cat('Starting parallelization\n')
-    b = clusterApply(cl, Seeds, fun=folds,k=k,N=N,gen=gen,G=G,eK=eK,eK1=eK1,eK2=eK2,eK3=eK3,Y=Y,y=y,E2=E2,knn=knn,wGELA=wGELA,GELA=GELA)
+    b = clusterApply(cl, Seeds, fun=folds,k=k,N=N,gen=gen,G=G,eK=eK,eK1=eK1,eK2=eK2,eK3=eK3,Y=Y,y=y,E2=E2,knn=knn)
     cat('Closing cluster\n')
     stopCluster(cl)
     cat('All done\n')
@@ -616,21 +458,22 @@ CV.model=function(y,gen,k=5,Seeds=1:5,cores=NULL){
 
 CV.check=function(cv){
   n = length(cv)
-  dta = matrix(0,0,24)
+  m = ncol(cv$CV_1)
+  dta = matrix(0,0,m)
   for(i in 1:n) dta = rbind(dta,cv[[i]])
   # functions
   MSE = function(A,B) mean((A-B)^2)
   TOPS = function(A,B,TOP=0.2) mean(which(B>quantile(B,1-TOP,na.rm = TRUE))%in%which(A>quantile(A,1-TOP,na.rm = TRUE)))
   BIAS = function(A,B) cov(A,B)/var(A)
   # summary
-  PA = sort(cor(dta)[-24,24],decreasing = TRUE)
-  Rank = sort(cor(dta,method = 'sp')[-24,24],decreasing = TRUE)
-  MSPE = sort(apply(dta[,-24],2,MSE,B=dta[,24]))
-  Top20 = sort(apply(dta[,-24],2,TOPS,B=dta[,24]),decreasing = TRUE)
-  Bias = apply(dta[,-24],2,BIAS,B=dta[,24])
+  PA = sort(cor(dta)[-m,m],decreasing = TRUE)
+  Rank = sort(cor(dta,method = 'sp')[-m,m],decreasing = TRUE)
+  MSPE = sort(apply(dta[,-m],2,MSE,B=dta[,m]))
+  Top20 = sort(apply(dta[,-m],2,TOPS,B=dta[,m]),decreasing = TRUE)
+  Bias = apply(dta[,-m],2,BIAS,B=dta[,m])
   Bias = Bias[order(as.matrix(dist(c(1,Bias)))[-1,1])]
   # Model choice
-  o1 = o2 = o3 = o4 = o5 = 1:23
+  o1 = o2 = o3 = o4 = o5 = 1:(m-1)
   names(o1) = names(PA); o1 = o1[order(names(o1))]
   names(o2) = names(PA); o2 = o2[order(names(o2))]
   names(o3) = names(PA); o3 = o3[order(names(o3))]

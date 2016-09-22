@@ -30,7 +30,7 @@ Integer. Burn-in, the number of iterations or samples to be discarted.
 Integer. Thinning parameter, used to save memory by storing only one every 'th' samples.
 }
   \item{bag}{
-If different than one (= complete data), it indicates the proportion of data to be subsampled in each Markov chain. For datasets with moderate number of observations, values of bag from 0.30 to 0.60 may speed up computation without losses in predicion properties. This argument enable users to enhance MCMC through SBMC (\eqn{subssampling bootstrap Markov chain}).
+If different than one (= complete data), it indicates the proportion of data to be subsampled in each Markov chain. For datasets with moderate number of observations, values of bag from 0.30 to 0.60 may speed up computation without losses in predicion properties. This argument enable users to enhance MCMC through SBMC (subssampling bootstrap Markov chain).
 }
   \item{rp}{
 Logical. Use replacement for bootstrap samples when bag is different than one.
@@ -39,7 +39,7 @@ Logical. Use replacement for bootstrap samples when bag is different than one.
 Logical. Assign markers independent variance. If true, turns the default model BLUP into BayesA. For this model, the shape parameter is conjugated by a gamma with hyperpriors calculated based on the R2 rule.
 }
   \item{pi}{
-Value between 0 and 1. If greater than zero it activates variable selection, where markers have expected probability pi of having null effect, in other words, the lower the value of pi the more stringent the variable selection is. The model conjugates variable selection from a Beta-Binomial distribution.
+Value between 0 and 1. If greater than zero it activates variable selection, where markers have expected probability pi of having null effect, in other words, the lower the value of pi the more stringent the variable selection is. Attention: Implementation of variable selection is still under development.
 }
   \item{df}{
 Hyperprior degrees of freedom of variance components.
@@ -71,7 +71,7 @@ The model for the whole-genome regression is as follows:
 
 \deqn{y = mu + Xg + u + e}
 
-where \eqn{y} is the response variable, \eqn{mu} is the intercept, \eqn{X} is the genotypic matrix, \eqn{g} is the product of two terms (\eqn{g = bg}), \eqn{b} is the effect of an allele substitution, \eqn{d} is an indicator variable that define whether or not the marker should be included into the model, \eqn{u} is the polygenic term and \eqn{e} is the residual term.
+where \eqn{y} is the response variable, \eqn{mu} is the intercept, \eqn{X} is the genotypic matrix, \eqn{g} is the regression coefficient as the product of \eqn{b}x\eqn{d}, \eqn{b} is the effect of an allele substitution, \eqn{d} is an indicator variable that define whether or not the marker should be included into the model, \eqn{u} is the polygenic term and \eqn{e} is the residual term.
 
 Users can obtain four WGR methods out of this function: BRR (pi=0,iv=F), BayesA (pi=0,iv=T), BayesB (pi=0.01,iv=T) and BayesC (pi=0.01,iv=F). The full theoretical basis of each model is described by de los Campos et al. (2013).
 
@@ -83,14 +83,9 @@ The model for the bagging elastic net (ben) is as follows:
 
 Elastic net is controlled by two parameters, alpha and lambda. Lambda is analytically estimated as the ratio between residual variance and parameter variance (\eqn{\lambda = Ve/Vb}). Variance components and regression coefficients are updated as a Bayesian ridge regression. Alpha is found through random walk: A new value of alpha is proposed in each MCMC round. The acceptance of the new value depends on the algorithm (Metropolis-Hastings or Acceptance-Rejection), and the probability of a new value of alpha to be accepted is based on the Elastic-Net loss function and out-of-bag prediction error. Unfortunately, there is a computation burden associated to the fact that the regression coefficients are updated for the current and new value of alpha.
 
-For further statistical background: \code{system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))}
-
 }
 \value{
 The function wgr returns a list with expected value from the marker effect (\eqn{b}), probability of marker being in the model (\eqn{d}), regression coefficient (\eqn{g}), variance of each marker (\eqn{Vb}), the intercept (\eqn{mu}), the polygene (\eqn{u}) and polygenic variance (\eqn{Vk}), residual variance (\eqn{Ve}) and the fitted value (\eqn{hat}).
-
-variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients.
-
 }
 \references{
 

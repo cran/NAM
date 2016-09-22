@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2016-09-14" />
+<meta name="date" content="2016-09-21" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2016-09-14</em></h4>
+<h4 class="date"><em>2016-09-21</em></h4>
 
 
 
@@ -312,9 +312,9 @@
 </ul>
 <p>Both functions <code>reml</code> and <code>gibbs</code> accept formulas and matrices as inputs. When multiple random effects are used in <code>gibbs</code>, the argument <code>Z</code> accepts formula or a list of matrices and the argument <code>iK</code> accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the <code>gibbs</code> function, <code>iR</code> allows users to include residual covariance structure.</p>
 <p>Although it is possible to use <code>reml</code> and <code>gibbs</code> to generate breeding values, the functions <code>gmm</code> and <code>wgr</code> (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:</p>
-<p><strong>a. RR-BLUP</strong></p>
+<p><strong>a. BLUP</strong></p>
 <ul>
-<li><code>BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)</code></li>
+<li><code>BLUP = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)</code></li>
 </ul>
 <p><strong>b. BayesA</strong></p>
 <ul>
@@ -351,6 +351,22 @@
 <p><strong>j. Random Forest</strong></p>
 <ul>
 <li><code>RF = ben(y = phenotype, gen = genotype, model = &quot;RF&quot;)</code></li>
+</ul>
+<p><strong>k. BSR</strong></p>
+<ul>
+<li><code>VS = emBA(y = phenotype, gen = genotype)</code></li>
+</ul>
+<p><strong>l. BSSVS</strong></p>
+<ul>
+<li><code>VS = emBB(y = phenotype, gen = genotype)</code></li>
+</ul>
+<p><strong>k. Mixture of Models</strong></p>
+<ul>
+<li><code>MM = emBC(y = phenotype, gen = genotype)</code></li>
+</ul>
+<p><strong>k. Ridge Regression</strong></p>
+<ul>
+<li><code>RR = emRR(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p>For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a  part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script</p>
 <ul>

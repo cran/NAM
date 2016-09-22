@@ -38,8 +38,6 @@ If y is a matrix with multiple traits, the fuctions solves the mixed model via a
 
 MCreml is based on subsampling with \code{samp} observations at a time, repeating the procedure \code{MC} times. Subsampling is a common Monte Carlo strategy to reduce the computational burden to estimate variance components in large datasets.
 
-For further background: \code{system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))}
-
 }
 \value{
 The function reml returns a list with variance components and heritability (VC), fixed effect coefficients and standard variations (Fixed) and estimated breeding values (EBV). 

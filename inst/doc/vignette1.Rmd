@@ -305,9 +305,9 @@ Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When m
 
 Although it is possible to use `reml` and `gibbs` to generate breeding values, the functions `gmm` and `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
 
-**a. RR-BLUP**
+**a. BLUP**
 
-+ `BRR = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)`
++ `BLUP = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)`
 
 **b. BayesA**
 
@@ -344,6 +344,22 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 **j. Random Forest**
 
 + `RF = ben(y = phenotype, gen = genotype, model = "RF")`
+
+**k. BSR**
+
++ `VS = emBA(y = phenotype, gen = genotype)`
+
+**l. BSSVS**
+
++ `VS = emBB(y = phenotype, gen = genotype)`
+
+**k. Mixture of Models**
+
++ `MM = emBC(y = phenotype, gen = genotype)`
+
+**k. Ridge Regression**
+
++ `RR = emRR(y = phenotype, gen = genotype)`
 
 For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
 

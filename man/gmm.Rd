@@ -46,7 +46,9 @@ Unobserved genotypes not provided in \code{dta} but provided in \code{gen} are p
 
 In whole-genome regression models, the regularization of the genetic term is either based on chosen prior (t, Gaussian or Laplace) or through the average of three priors. Gaussian (from ridge regression), t (from BayesA) and Laplace (from Bayesian LASSO). Kernel models (GBLUP and RKHS) are regularized as Gaussian process, which is similar to a ridge regression of Eigenvectors where the regularization of Eigenpairs also relies on the Eigenvalues. Random forest is, at some extend, regularized by multiple parameters including sample size (SSZ), numer of trees (NTR), number of variables (MTR), etc.
 
-If there is a large number of trials and users acknowledge the use of sparse matrix, we recommend installing the Matrix package and run the following code that enables sparsity: \code{source(system.file("add","sparseGMM.R",package="NAM"))}
+If there is a large number of trials and users acknowledge the necessity of sparse matrices, we recommend installing the Matrix package and run the following code that enables sparsity:
+
+\code{source(system.file("add","sparseGMM.R",package="NAM"))}
 
 }
 \value{

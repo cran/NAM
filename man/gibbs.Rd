@@ -58,13 +58,9 @@ Numeric matrix of observations for multivariate mixed models. Each column repres
 }
 \details{
 The general model is \eqn{y=Xb+Zu+e}, where \eqn{u=N(0,A\sigma2a)} and \eqn{e=N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case.
-
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients.
-
-For further statistical background: \code{system(paste('open',system.file("doc","background_stat_gen.pdf",package="NAM")))}
-
 }
 \references{
 

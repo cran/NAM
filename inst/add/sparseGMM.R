@@ -238,19 +238,21 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   }else{
     
     # KERNEL AND REGRESSION METHODS
-    
+    d = rep(1,ncol(gen))
     E = MAP(e,Z,Weight) 
-    update = KMUP(X=gen,b=g,xx=xx,E=E,L=L,p=p,Ve=Ve,pi=0)
+    update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
       df_prior = 5
       Sk_prior = R2 * var(y, na.rm = T) * (df_prior + 2)
+      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
     }else{
       R2 = 0.5
-      df_prior = 5
+      df_prior = 3
       MSx = sum(apply(gen, 2, var, na.rm = T))
       S_prior = R2 * var(y, na.rm = T) * (df_prior + 2)/MSx
+      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
       shape_prior = 1.1
       rate_prior = (shape_prior - 1)/S_prior
     }
@@ -263,7 +265,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     
     if(KERN){
       Vb = (sum(g^2/V) + Sk_prior)/rchisq(1, df_prior + p)
-      Ve = crossprod(e)/rchisq(1,n+2)
+      Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
       L = Ve/(Vb*V)
     }else{
       # Update BayesA variance components
@@ -272,7 +274,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       Vb = (S_conj + g^2)/rchisq(p, df_prior + 1)
       S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
       # Update Ve and Lambda
-      Ve = crossprod(e)/rchisq(1,n+2)
+      Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
       L = Ve/Vb
     }
     
@@ -337,7 +339,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = KMUP(X=gen,b=g,xx=xx,E=E,L=L,p=p,Ve=Ve,pi=0)
+      update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
       g = update$b
       bv = Matrix::tcrossprod(g,gen)
       bvs = as.vector(Matrix::tcrossprod(Z,bv))

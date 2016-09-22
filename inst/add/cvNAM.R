@@ -1,5 +1,5 @@
 
-CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=1500,BI=500,cl=NULL){
+CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
   
   # Cross-validation function
   folds = function(Seed,y,gen,k,it,bi){
@@ -13,10 +13,10 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=1500,BI=500,cl=NULL){
     
     # BayesB
     cat('BayesB\n')
-    f1=wgr(y,gen,iv = T,pi=0.01,verb=T,it=IT,bi=BI)
+    f1=wgr(y,gen,iv = T,pi=0.1,verb=T,it=IT,bi=BI)
     # BayesC
     cat('BayesC\n')
-    f2=wgr(y,gen,pi=0.01,verb=T,it=IT,bi=BI)
+    f2=wgr(y,gen,pi=0.1,verb=T,it=IT,bi=BI)
     # BEN
     cat('BEN\n')
     f3=ben(y,gen,it=IT,bi=BI,bag = 0.8)
@@ -41,13 +41,29 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=1500,BI=500,cl=NULL){
     # RKHS
     cat('RKHS\n')
     f10=gmm(y,gen,model = 'RKHS',it=IT,bi=BI)
+    # Ridge
+    cat('RR\n')
+    f12=emRR(y[-w],gen[-w,])
+    # BSR
+    cat('BSR\n')
+    f11=emBA(y[-w],gen[-w,])
+    # SSVS
+    cat('SSVS\n')
+    f13=emBB(y[-w],gen[-w,])
+    # Mixture
+    cat('Mixture\n')
+    f14=emBC(y[-w],gen[-w,])
+    
     NamesMod = c('BayesB','BayesC','BEN','RF','BRR','BLASSO','BayesA',
-                 'Average','GBLUP','RKHS','OBSERVATION')
-    M = matrix(NA,Nk,11)
+                 'Average','GBLUP','RKHS','RR','BSR','SSVS','Mixture',
+                 'OBSERVATION')
+    
+    M = matrix(NA,Nk,length(NamesMod))
     colnames(M) = NamesMod
     for(i in 1:3) M[,i]=get(paste('f',i,sep=''))$hat[w]
     for(i in 4:10) M[,i]=get(paste('f',i,sep=''))$EBV[w]
-    M[,11] = Y[w]
+    for(i in 11:14) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
+    M[,15] = Y[w]
     return(M)
   }
   
@@ -65,21 +81,22 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=1500,BI=500,cl=NULL){
 
 CV_Check=function(cv){
   n = length(cv)
-  dta = matrix(0,0,11)
+  m = ncol(cv$CV_1)
+  dta = matrix(0,0,m)
   for(i in 1:n) dta = rbind(dta,cv[[i]])
   # functions
   MSE = function(A,B) mean((A-B)^2)
   TOPS = function(A,B,TOP=0.2) mean(which(B>quantile(B,1-TOP,na.rm = TRUE))%in%which(A>quantile(A,1-TOP,na.rm = TRUE)))
-  BIAS = function(A,B) lm(B~A)$coefficients[[2]]
+  BIAS = function(A,B) cov(A,B)/var(A)
   # summary
-  PA = sort(cor(dta)[-11,11],decreasing = TRUE)
-  Rank = sort(cor(dta,method = 'sp')[-11,11],decreasing = TRUE)
-  MSPE = sort(apply(dta[,-11],2,MSE,B=dta[,11]))
-  Top20 = sort(apply(dta[,-11],2,TOPS,B=dta[,11]),decreasing = TRUE)
-  Bias = apply(dta[,-11],2,BIAS,B=dta[,11])
+  PA = sort(cor(dta)[-m,m],decreasing = TRUE)
+  Rank = sort(cor(dta,method = 'sp')[-m,m],decreasing = TRUE)
+  MSPE = sort(apply(dta[,-m],2,MSE,B=dta[,m]))
+  Top20 = sort(apply(dta[,-m],2,TOPS,B=dta[,m]),decreasing = TRUE)
+  Bias = apply(dta[,-m],2,BIAS,B=dta[,m])
   Bias = Bias[order(as.matrix(dist(c(1,Bias)))[-1,1])]
   # Model choice
-  o1 = o2 = o3 = o4 = o5 = 1:10
+  o1 = o2 = o3 = o4 = o5 = 1:(m-1)
   names(o1) = names(PA); o1 = o1[order(names(o1))]
   names(o2) = names(PA); o2 = o2[order(names(o2))]
   names(o3) = names(PA); o3 = o3[order(names(o3))]
@@ -92,4 +109,5 @@ CV_Check=function(cv){
                'MSPE'=MSPE,'Bias'=Bias,
                'Top20'=Top20,'ModelChoice'= ModelChoice)
   return(final)
+  
 }

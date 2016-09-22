@@ -471,8 +471,7 @@ Gdist = function(gen,method=1){
     cat("Rogers' distance\n")
     p = ncol(gen)
     d = dist(gen,method = 'euclidean')
-    d = d/p
-    }
+    d = d/p}
   # Provesti
   else if (method == 5){
     cat("Provesti's distance\n")
@@ -484,8 +483,7 @@ Gdist = function(gen,method=1){
     cat("Modified Rogers' distance\n")
     p = ncol(gen)
     d = dist(gen,method = 'euclidean')
-    d = d/sqrt(2*p) }
-  
+    d = d/sqrt(4*p)}
   return(d)
 }
 

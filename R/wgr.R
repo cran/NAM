@@ -1,22 +1,20 @@
 
 wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.5,eigK=NULL,VarK=0.95,verb=FALSE){
-  
   anyNA = function(x) any(is.na(x))
   if(anyNA(gen)){stop('No missing values allowed in Z')}
-  if(anyNA(pi>=1)){stop('Pi must be lower than 1')}
+  if(pi>0.5) pi=1-pi; pi=min(pi,0.25)
   gen0 = gen
-  
   # Polygenic term
   if(!is.null(eigK)){
-   V = eigK$values
-   pk = which.max(cumsum(V)/length(V)<VarK)
-   U0 = U = eigK$vectors[,1:pk]
-   V = V[1:pk]
-   H = h = rep(0,pk)
-   Vk = rep(1,pk)
-   xxK = rep(bag,pk)
-  }  
-  
+    V = eigK$values
+    pk = which.max(cumsum(V)/length(V)<VarK)
+    U0 = U = eigK$vectors[,1:pk]
+    V = V[1:pk]
+    H = h = rep(0,pk)
+    dh = rep(0,pk)
+    Vk = rep(1,pk)
+    xxK = rep(bag,pk)
+  }
   # Remove missing y's
   if(anyNA(y)){
     mis = which(is.na(y))
@@ -24,158 +22,122 @@ wgr = function(y,gen,it=1500,bi=500,th=1,bag=1,rp=FALSE,iv=FALSE,pi=0,df=5,R2=0.
     gen = gen[-mis,]
     if(!is.null(eigK)) U = U[-mis,]
   }
-  
   # MCMC settings
   post = seq(bi,it,th)
   mc = length(post)
-  
   # Preparing inputs
   X = gen
   n = nrow(gen)
   p = ncol(gen)
   xx = apply(X,2,crossprod)*bag
-  b = g = rep(0,p)
+  b = rep(0,p)
   d = rep(1,p)
   mu = mean(y - X%*%b)
-  e = y - X%*%g - mu
+  e = y - mu
   Va = 0.0001
   Vb = rep(Va,p)
   Ve = 1
-  md = pi
-  
+  L = Ve/Vb
   # Priors
   df_prior = df 
   MSx = sum(apply(X,2,var,na.rm=T))
-  S_prior = R2*var(y,na.rm=T)*(df_prior+2)/MSx/(1-pi)
+  Sb_prior = R2*var(y,na.rm=T)*(df_prior+2)/MSx/ifelse(pi==0,1,pi)
+  Se_prior = (1-R2)*var(y,na.rm=T)*(df_prior+2)
   shape_prior  = 1.1
-  rate_prior = (shape_prior-1)/S_prior
+  rate_prior = (shape_prior-1)/Sb_prior
   S_conj = rgamma(1,p*df_prior/2+shape_prior,sum(1/Vb)/2+rate_prior)
   if(!is.null(eigK)) Sk_prior = R2*var(y,na.rm=T)*(df_prior+2)
-  
   # Storing Posterior
   B0 = VA = VE = VP = S = 0
-  VB = G = D = B = rep(0,p)
-  
+  VB = D = B = rep(0,p)
   #RUN
   if(verb) pb = txtProgressBar(style = 3)
-  
   for(i in 1:it){
-    
     # Resampling
-    if(bag!=1) Use = sort(sample(n,n*bag,rp))
-    
+    if(bag!=1) Use = sort(sample(n,n*bag,rp))-1
     # Update polygenic term and regression coefficients
     if(!is.null(eigK)){
-      
       Lk = Ve/(V*Vk)
-      if(bag!=1){ update = KMUP(U[Use,],h,xxK,e[Use],Lk,pk,Ve,0)
-      }else{ update = KMUP(U,h,xxK,e,Lk,pk,Ve,0)}
+      if(bag!=1){ update = KMUP2(U,Use,h,dh,xxK,e,Lk,Ve,0)
+      }else{ update = KMUP(U,h,dh,xxK,e,Lk,Ve,0)}
       h = update[[1]]
       e = update[[3]]
-      
-      if(pi>0){PI = rbeta(1,10*pi+md+1,10*(1-pi)-md+1)
-      }else{PI=0}  
-      L = Ve/Vb
-      if(bag!=1){update = KMUP(X[Use,],g,xx,e,L,p,Ve,PI)
-      }else{ update = KMUP(X,g,xx,e,L,p,Ve,PI)}
-      #if(bag!=1){update = KMUP(X[Use,],b,xx,e,L,p,Ve,PI)
-      #}else{ update = KMUP(X,b,xx,e,L,p,Ve,PI)}
+      if(bag!=1){update = KMUP2(X,Use,b,d,xx,e,L,Ve,pi)}else{update = KMUP(X,b,d,xx,e,L,Ve,pi)}
+      if(pi>0) d = update[[2]]
       b = update[[1]]
-      d = update[[2]]; if(pi>0) d[is.nan(d)] = 1
       e = update[[3]]
-      g = b*d
-      md = mean(d)
-      
     }else{
-    
       # Update regression coefficients without polygene
-      if(pi>0){PI = rbeta(1,25*pi+md+1,25*(1-pi)-md+1)}else{PI=0}  
-      L = Ve/Vb
-      #if(bag!=1){update = KMUP(X[Use,],b,xx,e[Use],L,p,Ve,PI)
-      #}else{ update = KMUP(X,b,xx,e,L,p,Ve,PI)}
-      if(bag!=1){update = KMUP(X[Use,],g,xx,e[Use],L,p,Ve,PI)
-      }else{ update = KMUP(X,g,xx,e,L,p,Ve,PI)}
+      if(bag!=1){update = KMUP2(X,Use,b,d,xx,e,L,Ve,pi)}else{update = KMUP(X,b,d,xx,e,L,Ve,pi)}
+      if(pi>0) d = update[[2]]
       b = update[[1]]
-      d = update[[2]]; if(pi>0) d[is.nan(d)] = 1
       e = update[[3]]
-      g = b*d
-      md = mean(d)
-      
     }
-            
     # Update genetic variance
-    if(iv){    
-      Vb = (S_conj+b^2)/rchisq(p,df_prior + 1)
+    if(iv){
+      if(pi>0){
+        q = d; q[q==0]=pi
+        Vb = (S_conj+(b/q)^2)/rchisq(p,df_prior+1)
+      }else{
+        Vb = (S_conj+b^2)/rchisq(p,df_prior+1)
+      }
       S_conj = rgamma(1,p*df_prior/2+shape_prior,sum(1/Vb)/2+rate_prior)
     }else{
-      Va = (sum(b^2)+S_prior)/rchisq(1,df_prior + p)
+      Va = (crossprod(b)+Sb_prior)/rchisq(1,df_prior+p)
       Vb = rep(Va,p)
     }
     if(!is.null(eigK)){
-      Vp = (sum(h^2/V)+Sk_prior)/rchisq(1,df_prior + pk)
+      Vp = (sum(h^2/V)+Sk_prior)/rchisq(1,df_prior+pk)
       Vk = rep(Vp,pk)
     }
-    
-    
     # Residual variance
-    Ve = (sum(e*e)+S_prior)/rchisq(1,n*bag + df_prior)
-        
+    Ve = (crossprod(e)+Se_prior)/rchisq(1,n*bag+df_prior)
+    L = Ve/Vb;
     # Intercept
-    if(!is.null(eigK)){e = y-X%*%g-U%*%h}else{e = y-X%*%g}
-      mu = rnorm(1,mean(e),(Ve+1E-5)/n)
-      if(is.na(mu)||is.nan(mu)) mu = mean(y,na.rm=T)
-    e = e-mu
-
+    if(!is.null(eigK)){e = y-mu-X%*%b-U%*%h}else{e = y-mu-X%*%b}
+    mu0 = rnorm(1,mean(e),Ve/n)
+    mu = mu+mu0
+    e = e-mu0
     # Save posterior
     if(i%in%post){
-      B0 = B0+mu
+      B0 = B0+mu;
       B = B+b
       D = D+d
-      G = G+g
       VE = VE+Ve
       if(iv){VB = VB+Vb}else{VA = VA+Va}
       if(!is.null(eigK)){H = H+h; VP = VP+Vp}
     }
-    
     if(verb) setTxtProgressBar(pb, i/it)
   }
-  
   if(verb) close(pb)
-  
   # Posterior mean
   B0 = B0/mc
-  B = B/mc
   D = D/mc
-  G = G/mc
+  B = B/mc/mean(D)
   VE = VE/mc
   if(iv){VB = VB/mc}else{VA = VA/mc}
   if(!is.null(eigK)){H = H/mc; VP = VP/mc}
-  
   # Fitted values
   if(!is.null(eigK)){
     poly = U0 %*% H
-    HAT = B0 + gen0 %*% G + poly
+    HAT = B0 + gen0 %*% B + poly
   }else{
-    HAT = B0 + gen0 %*% G
+    HAT = B0 + gen0 %*% B
   }
-  
   # Output
   if(!is.null(eigK)){
     if(iv){
-      final = list('mu'=B0,'b'=B,'Vb'=VB,'g'=G,'d'=D,'Ve'=VE,'hat'=HAT,'u'=poly,'Vk'=VP)
+      final = list('mu'=B0,'b'=B,'Vb'=VB,'d'=D,'Ve'=VE,'hat'=HAT,'u'=poly,'Vk'=VP,'cxx'=mean(xx))
     }else{
-      final = list('mu'=B0,'b'=B,'Vb'=VA,'g'=G,'d'=D,'Ve'=VE,'hat'=HAT,'u'=poly,'Vk'=VP)
+      final = list('mu'=B0,'b'=B,'Vb'=VA,'d'=D,'Ve'=VE,'hat'=HAT,'u'=poly,'Vk'=VP,'cxx'=mean(xx))
     }
   }else{
     if(iv){
-      final = list('mu'=B0,'b'=B,'Vb'=VB,'g'=G,'d'=D,'Ve'=VE,'hat'=HAT)
+      final = list('mu'=B0,'b'=B,'Vb'=VB,'d'=D,'Ve'=VE,'hat'=HAT,'cxx'=mean(xx))
     }else{
-      final = list('mu'=B0,'b'=B,'Vb'=VA,'g'=G,'d'=D,'Ve'=VE,'hat'=HAT)
+      final = list('mu'=B0,'b'=B,'Vb'=VA,'d'=D,'Ve'=VE,'hat'=HAT,'cxx'=mean(xx))
     }
   }
-  
-
-  
   return(final)
 }
 
@@ -185,58 +147,78 @@ ben = function(y,gen,it=750,bi=250,th=1,bag=0.80,alpha=0.5,wpe=50,MH=FALSE,verb=
   rm(gen);
   
   # Function to update beta
-  upB = function(e,mu,X,b,l,a,xx,p,E2,X2,bag,pi,wpe,ve,O){
+  upB = function(e,mu,X,b,l,a,xx,p,E2,X2,bag,pi,wpe,ve,O,mh=TRUE){
     xx = xx*bag
     pi = (0.5+a*99)/100
-    a_new = rbeta(1,200*pi,200*(1-pi))
-    b1 = b2 = rep(NA,p)
-    e1 = e2 = e
-    L1_1 = (1-a)*l/(2*xx)
-    L2_1 = (a)*(xx/(xx*l))
-    L1_2 = (1-a_new)*l/(2*xx)
-    L2_2 = (1-a_new)*(xx/(xx*l))
-    # Update regression coefficients
-    for(j in O){
-      # Old alpha
-      xy1 = (crossprod(e1,X[,j])+b[j]*xx[j])/xx[j]
-      s1 = sign(xy1)
-      beta = abs(xy1)-L1_1[j]
-      ben = s1*beta*L2_1[j]
-      b1[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
-      e1 = e1 - X[,j]*(b1[j]-b[j])
-      # New alpha
-      xy2 = (crossprod(e2,X[,j])+b[j]*xx[j])/xx[j]
-      s2 = sign(xy2)
-      beta = abs(xy2)-L1_2[j]
-      ben = s2*beta*L2_2[j]
-      b2[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
-      e2 = e2 - X[,j]*(b2[j]-b[j])
-    }
-    # Loss function
-    SSPE_1 = sum(as.vector(tcrossprod(b1,X2)-E2)^2)
-    SSPE_2 = sum(as.vector(tcrossprod(b2,X2)-E2)^2)
-    LOSS1 = wpe*SSPE_1+crossprod(e1)+l*(0.5*crossprod(b1)*(1-a)+sum(abs(b1))*a)
-    LOSS2 = wpe*SSPE_2+crossprod(e2)+l*(0.5*crossprod(b2)*(1-a_new)+sum(abs(b2))*a_new)
-    LR = LOSS2/LOSS1
-    if(is.na(LR)|is.nan(LR)) LR=0
-    if(LR>1){
-      P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
-    }else{
-      if(MH){
-        # Metropolis-Hastings
-        if(LR>runif(1)){
-          P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
-        }else{
-          P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_2)
-        }
-      }else{
-        # Acceptance-Rejection
-        P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_2)
+    if(mh){
+      a_new = rbeta(1,200*pi,200*(1-pi))
+      b1 = b2 = rep(NA,p)
+      e1 = e2 = e
+      L1_1 = (1-a)*l/(2*xx)
+      L2_1 = (a)*(xx/(xx*l))
+      L1_2 = (1-a_new)*l/(2*xx)
+      L2_2 = (1-a_new)*(xx/(xx*l))
+      # Update regression coefficients
+      for(j in O){
+        # Old alpha
+        xy1 = (crossprod(e1,X[,j])+b[j]*xx[j])/xx[j]
+        s1 = sign(xy1)
+        beta = abs(xy1)-L1_1[j]
+        ben = s1*beta*L2_1[j]
+        b1[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
+        e1 = e1 - X[,j]*(b1[j]-b[j])
+        # New alpha
+        xy2 = (crossprod(e2,X[,j])+b[j]*xx[j])/xx[j]
+        s2 = sign(xy2)
+        beta = abs(xy2)-L1_2[j]
+        ben = s2*beta*L2_2[j]
+        b2[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
+        e2 = e2 - X[,j]*(b2[j]-b[j])
       }
+      # Loss function
+      SSPE_1 = sum(as.vector(tcrossprod(b1,X2)-E2)^2)
+      SSPE_2 = sum(as.vector(tcrossprod(b2,X2)-E2)^2)
+      LOSS1 = wpe*SSPE_1+crossprod(e1)+l*(0.5*crossprod(b1)*(1-a)+sum(abs(b1))*a)
+      LOSS2 = wpe*SSPE_2+crossprod(e2)+l*(0.5*crossprod(b2)*(1-a_new)+sum(abs(b2))*a_new)
+      LR = LOSS2/LOSS1
+      if(is.na(LR)|is.nan(LR)) LR=0
+      if(LR>1){
+        P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
+      }else{
+        if(MH){
+          # Metropolis-Hastings
+          if(LR>runif(1)){
+            P=list('b'=b2,'a'=a_new,'e'=e2,'oob'=SSPE_2)
+          }else{
+            P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_1)
+          }
+        }else{
+          # Acceptance-Rejection
+          P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE_1)
+        }
+      }
+    }else{
+      b1 = rep(NA,p)
+      e1 = e
+      L1_1 = (1-a)*l/(2*xx)
+      L2_1 = (a)*(xx/(xx*l))
+      # Update regression coefficients
+      for(j in O){
+        # Old alpha
+        xy1 = (crossprod(e1,X[,j])+b[j]*xx[j])/xx[j]
+        s1 = sign(xy1)
+        beta = abs(xy1)-L1_1[j]
+        ben = s1*beta*L2_1[j]
+        b1[j] = ifelse(beta>0,rnorm(1,ben,ve/(xx[j])),0)
+        e1 = e1 - X[,j]*(b1[j]-b[j])}
+      # Loss function
+      SSPE = sum(as.vector(tcrossprod(b1,X2)-E2)^2)
+      P=list('b'=b1,'a'=a,'e'=e1,'oob'=SSPE)
     }
-    cat('LR',LR,'pi',pi,'a2',a_new,'a',P$a,'\n')
     return(P)
   }
+  
+  
   # Missing
   if(anyNA(y)){
     mis = which(is.na(y))
@@ -271,14 +253,14 @@ ben = function(y,gen,it=750,bi=250,th=1,bag=0.80,alpha=0.5,wpe=50,MH=FALSE,verb=
   # Loop
   for(i in 1:it){
     
-      # Bagging
-      s = sort(sample(1:n,n-bn,replace=FALSE))
-      # UPDATE
-      UP = upB(e[-s],mu,X[-s,],b,l,a,xx*bag,p,e[s],
-               X[s,],bag,pi=a,wpe,ve,O=O)
-      b = UP[[1]]
-      a = UP[[2]]
-      e = UP[[3]]
+    # Bagging
+    s = sort(sample(1:n,n-bn,replace=FALSE))
+    # UPDATE
+    UP = upB(e[-s],mu,X[-s,],b,l,a,xx*bag,p,e[s],
+             X[s,],bag,pi=a,wpe,ve,O=O,mh=i%%10==0)
+    b = UP[[1]]
+    a = UP[[2]]
+    e = UP[[3]]
     
     mu = mu + mean(e)
     df_prior = 2+rpois(1,3)

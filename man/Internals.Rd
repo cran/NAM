@@ -10,6 +10,11 @@
 \alias{SAMP2}
 \alias{gs}
 \alias{KMUP}
+\alias{KMUP2}
+\alias{emRR}
+\alias{emBA}
+\alias{emBB}
+\alias{emBC}
 \alias{Gdist}
 \alias{markov}
 \alias{eigX}
@@ -54,6 +59,8 @@ Some of the functions available for users include:
 
 11) \code{NNcov(NN,y):}{  This function utilizes the output of \code{NNsrc} to generate a numeric vector, averageing the observed values of \code{y}. This function is useful to generate field covariates to control micro-environmental variance without krigging.}
 
+11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}) and Ridge regression (\code{emRR}).}
+
 }
 \author{
   Alencar Xavier and Tiago Pimenta
@@ -86,4 +93,8 @@ plot(eG[[2]],col=fam)
 # Polygenic kinship matrices
 Ks = G2A_Kernels(gen)
 ls(Ks)
+
+# Genomic regression fitted via EM
+h = emBA(y,gen)
+plot(h$b,pch=20)
 }
