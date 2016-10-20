@@ -1,8 +1,8 @@
-98317e05812bf2c365ead0a778115762 *DESCRIPTION
+4b244245d1df764ba53657ed686639ce *DESCRIPTION
 d9db7d325fc0d9be2925cf684644e444 *NAMESPACE
 2a1ae464793c837c091f034d12620b55 *R/RcppExports.R
 b19129d1046d4f266ad019dbd2b19db8 *R/gibbs.R
-b279fbbe92a9b934fcf84c7d4e95a068 *R/gmm.R
+eba595f55e641de6cacac7b7274e847e *R/gmm.R
 01ee5287ecf30c064580da05fd33b9ce *R/gwas.R
 e2589358777e1b01e7be208deb122d25 *R/reml.R
 57f559c697889ff8f07d3741c080c1f7 *R/snp.R
@@ -21,9 +21,9 @@ efd90001d6663d4906b0a13fa7fcf624 *inst/add/Ggamma.R
 8883fec4dd7fd21be344cdf01e60d16d *inst/add/fastPhase.R
 0c044eea8dc2d7d37b069b2ebae0f5ee *inst/add/gwasPAR.R
 4ab0eee846e86d28b90f2ee05c3fb2d7 *inst/add/modelSelect.R
-8f248fcbf2551c153c458ba43ee9a233 *inst/add/sparseGMM.R
+0b8958816edda7637e0dc0d762a3af86 *inst/add/sparseGMM.R
 1b143ac341636de81dfe2cc0fce2094a *inst/doc/background_stat_gen.pdf
-369a562847e6279834572dc9fe9d44e9 *inst/doc/gwa_description.pdf
+c2e298be3f09b68123be30980aadc8ea *inst/doc/gwa_description.pdf
 0ca72190616de24eaddcb8bab1790c60 *inst/doc/gwa_ge_interactions.pdf
 a6e1a5f185243389c53a4bd3f97f9816 *inst/doc/vignette1.Rmd
 cd90e242b445b2aaa025a6c2b30ef369 *inst/doc/vignette1.html
@@ -31,9 +31,9 @@ f58110637989cfff1e897991e81a9a89 *inst/doc/vignette2.R
 c9c93764cfaf667a71f409108b343c44 *inst/doc/vignette2.Rmd
 d05920d5e32ad81b2c40905701f19c89 *inst/doc/vignette2.html
 48ff966fb63be11020156d577bfd73b7 *man/Fst.Rd
-ddaba29dd0f5d94bd6dff13b63d0aa4c *man/Internals.Rd
+c521891b105791f9d9aeed00041741da *man/Internals.Rd
 880bd02a591c6ba1da807b7613b4be77 *man/Manhattan.Rd
-105cc3c1e0d609489d07f6105072c37a *man/NAM-package.Rd
+2231e1f18f0d86cc35b1eaed5cf0f457 *man/NAM-package.Rd
 99bacb260c71584c61e19c2833f76be5 *man/cleanREP.Rd
 5e58be011fb15e0f7bb66ad6911631cc *man/gibbs.Rd
 515288036a22f92a8072e25248f9e1a6 *man/gmm.Rd

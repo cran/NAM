@@ -221,7 +221,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     # KERNEL AND REGRESSION METHODS
     d = rep(1,ncol(gen))
     E = MAP(e,Z,Weight) 
-    update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=0)
+    update = KMUP(X=gen,b=g,d=d,xx=xx,E=E,L=L,Ve=Ve,pi=0)
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
@@ -319,7 +319,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=0)
+      update = KMUP(X=gen,b=g,d=d,xx=xx,E=E,L=L,Ve=Ve,pi=0)
       g = update$b
       bv = tcrossprod(g,gen)
       bvs = as.vector(tcrossprod(Z,bv))

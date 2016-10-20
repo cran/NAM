@@ -60,7 +60,7 @@ Some of the functions available for users include:
 
 11) \code{NNcov(NN,y):}{  This function utilizes the output of \code{NNsrc} to generate a numeric vector, averageing the observed values of \code{y}. This function is useful to generate field covariates to control micro-environmental variance without krigging.}
 
-11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}) and Ridge regression (\code{emRR}).}
+11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}) and Ridge regression (\code{emRR}).}
 
 }
 \author{

@@ -1,7 +1,7 @@
 Package: NAM
 Type: Package
 Title: Nested Association Mapping
-Version: 1.4.9
+Version: 1.5.0
 Date: 2016-10-20
 Author: Alencar Xavier, William Muir, Katy Rainey, Shizhong Xu.
 Maintainer: Alencar Xavier <alenxav@gmail.com>
@@ -10,9 +10,9 @@ License: GPL-3
 Imports: Rcpp,randomForest
 LinkingTo: Rcpp
 Depends: R (>= 3.2.0)
-Packaged: 2016-10-20 20:02:31 UTC; Alencar
+Packaged: 2016-10-20 21:01:28 UTC; Alencar
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2016-10-20 22:27:38
+Date/Publication: 2016-10-20 23:14:00
 Suggests: knitr,rmarkdown,BGLR,GenABEL,lme4,VIGoR
 VignetteBuilder: knitr
