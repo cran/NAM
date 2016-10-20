@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2016-09-21" />
+<meta name="date" content="2016-10-20" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2016-09-21</em></h4>
+<h4 class="date"><em>2016-10-20</em></h4>
 
 
 
@@ -352,21 +352,25 @@
 <ul>
 <li><code>RF = ben(y = phenotype, gen = genotype, model = &quot;RF&quot;)</code></li>
 </ul>
-<p><strong>k. BSR</strong></p>
+<p><strong>k. Bayesian Shrinkage Regression</strong></p>
 <ul>
 <li><code>VS = emBA(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>l. BSSVS</strong></p>
+<p><strong>l. Bayesian Variable Selection</strong></p>
 <ul>
 <li><code>VS = emBB(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>k. Mixture of Models</strong></p>
+<p><strong>m. Mixture</strong></p>
 <ul>
 <li><code>MM = emBC(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>k. Ridge Regression</strong></p>
+<p><strong>n. GSRU Ridge Regression</strong></p>
 <ul>
 <li><code>RR = emRR(y = phenotype, gen = genotype)</code></li>
+</ul>
+<p><strong>o. Laplace Variable Selection</strong></p>
+<ul>
+<li><code>LV = emBL(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p>For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a  part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script</p>
 <ul>

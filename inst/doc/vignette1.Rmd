@@ -345,21 +345,25 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 + `RF = ben(y = phenotype, gen = genotype, model = "RF")`
 
-**k. BSR**
+**k. Bayesian Shrinkage Regression**
 
 + `VS = emBA(y = phenotype, gen = genotype)`
 
-**l. BSSVS**
+**l. Bayesian Variable Selection**
 
 + `VS = emBB(y = phenotype, gen = genotype)`
 
-**k. Mixture of Models**
+**m. Mixture**
 
 + `MM = emBC(y = phenotype, gen = genotype)`
 
-**k. Ridge Regression**
+**n. GSRU Ridge Regression**
 
 + `RR = emRR(y = phenotype, gen = genotype)`
+
+**o. Laplace Variable Selection**
+
++ `LV = emBL(y = phenotype, gen = genotype)`
 
 For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
 

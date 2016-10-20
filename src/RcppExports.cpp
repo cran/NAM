@@ -64,6 +64,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// emBL
+SEXP emBL(NumericVector y, NumericMatrix gen, int it, double R2, double alpha);
+RcppExport SEXP NAM_emBL(SEXP ySEXP, SEXP genSEXP, SEXP itSEXP, SEXP R2SEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type gen(genSEXP);
+    Rcpp::traits::input_parameter< int >::type it(itSEXP);
+    Rcpp::traits::input_parameter< double >::type R2(R2SEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(emBL(y, gen, it, R2, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
 // emRR
 SEXP emRR(NumericVector y, NumericMatrix gen, double df, double R2, int it);
 RcppExport SEXP NAM_emRR(SEXP ySEXP, SEXP genSEXP, SEXP dfSEXP, SEXP R2SEXP, SEXP itSEXP) {

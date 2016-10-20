@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier and Shizhong Xu" />
 
-<meta name="date" content="2016-09-21" />
+<meta name="date" content="2016-10-20" />
 
 <title>Meta-analysis</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Meta-analysis</h1>
 <h4 class="author"><em>Alencar Xavier and Shizhong Xu</em></h4>
-<h4 class="date"><em>2016-09-21</em></h4>
+<h4 class="date"><em>2016-10-20</em></h4>
 
 
 
@@ -97,7 +97,7 @@
 </tr>
 </tbody>
 </table>
-<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is <span class="math">\(E = UDV\)</span>. Where, <span class="math">\(U\)</span> is a <span class="math">\(e\times e\)</span> matrix, <span class="math">\(D\)</span> is a <span class="math">\(e\times f\)</span> retangular diagonal matrix, and <span class="math">\(V\)</span> is a <span class="math">\(f\times f\)</span> matrix. In analogy to the Eigendecomposition, <span class="math">\(U\)</span> and <span class="math">\(V\)</span> represent Eigenvectors while <span class="math">\(D\)</span> are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs <span class="math">\(E\)</span> using the first <span class="math">\(p=2\)</span> principal components:</p>
+<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is <span class="math">\(E = UDS'\)</span>. Where, <span class="math">\(U\)</span> is a <span class="math">\(e\times e\)</span> matrix, <span class="math">\(D\)</span> is a <span class="math">\(e\times f\)</span> retangular diagonal matrix, and <span class="math">\(S\)</span> is a <span class="math">\(f\times f\)</span> matrix. In analogy to the Eigendecomposition, <span class="math">\(U\)</span> and <span class="math">\(S\)</span> represent Eigenvectors while <span class="math">\(D\)</span> are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs <span class="math">\(E\)</span> using the first <span class="math">\(p=2\)</span> principal components:</p>
 <table>
 <thead>
 <tr class="header">
@@ -150,7 +150,7 @@
 </div>
 <div id="hypothesis-testing" class="section level2">
 <h2>Hypothesis testing</h2>
-<p>The log-likelihood of the model is, therefore, <span class="math">\(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\)</span>, where the variance is expressed as <span class="math">\(\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\)</span> and the log-likelihood of the model above is tested agaist <span class="math">\(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\)</span>, providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, <span class="math">\(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\)</span>.</p>
+<p>The log-likelihood of the model is, therefore, <span class="math">\(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\)</span>, where the variance is expressed as <span class="math">\(\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\)</span> and the log-likelihood of the model above is tested against <span class="math">\(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\)</span>, providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, <span class="math">\(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\)</span>.</p>
 </div>
 <div id="woodburys-matrix-identities" class="section level2">
 <h2>Woodbury’s matrix identities</h2>

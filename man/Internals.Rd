@@ -15,6 +15,7 @@
 \alias{emBA}
 \alias{emBB}
 \alias{emBC}
+\alias{emBL}
 \alias{Gdist}
 \alias{markov}
 \alias{eigX}

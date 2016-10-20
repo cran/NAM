@@ -35,7 +35,7 @@ rownames(GE) = paste('G',1:5,sep='')
 kable(GE)
 ```
 
-The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is $E = UDV$. Where, $U$ is a $e\times e$ matrix, $D$ is a $e\times f$ retangular diagonal matrix, and $V$ is a $f\times f$ matrix. In analogy to the Eigendecomposition, $U$ and $V$ represent Eigenvectors while $D$ are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs $E$ using the first $p=2$ principal components:
+The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is $E = UDS'$. Where, $U$ is a $e\times e$ matrix, $D$ is a $e\times f$ retangular diagonal matrix, and $S$ is a $f\times f$ matrix. In analogy to the Eigendecomposition, $U$ and $S$ represent Eigenvectors while $D$ are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs $E$ using the first $p=2$ principal components:
 
 ```{r, echo=FALSE}
 GE = paste('$q_{',rep(1:4,each=5),
@@ -50,7 +50,7 @@ The matrix above can be rearranged as a vector, and be included into the model o
 
 ## Hypothesis testing
 
-The log-likelihood of the model is, therefore, $L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )$, where the variance is expressed as $\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R$ and the log-likelihood of the model above is tested agaist $L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)$, providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, $LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})$.
+The log-likelihood of the model is, therefore, $L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )$, where the variance is expressed as $\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R$ and the log-likelihood of the model above is tested against $L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)$, providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, $LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})$.
 
 ## Woodbury's matrix identities
 

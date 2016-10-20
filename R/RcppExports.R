@@ -17,6 +17,10 @@ emBC <- function(y, gen, df = 5, R2 = 0.5, it = 75L, Pi = 0.95) {
     .Call('NAM_emBC', PACKAGE = 'NAM', y, gen, df, R2, it, Pi)
 }
 
+emBL <- function(y, gen, it = 200L, R2 = 0.5, alpha = 0.025) {
+    .Call('NAM_emBL', PACKAGE = 'NAM', y, gen, it, R2, alpha)
+}
+
 emRR <- function(y, gen, df = 5, R2 = 0.5, it = 75L) {
     .Call('NAM_emRR', PACKAGE = 'NAM', y, gen, df, R2, it)
 }

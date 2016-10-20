@@ -1,4 +1,5 @@
 require(Matrix)
+
 gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   # models: Average - BRR - BayesA - BLASSO - GBLUP - RKHS - RF
@@ -89,14 +90,14 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     fixed = TRUE
     dta2 = dta[,-which(names(dta)%in%c("Block","Row","Col","ID"))]
     dta2 = data.frame(dta2)
-    X = Matrix::sparse.model.matrix(~.-1,data=dta2)
+    X = sparse.model.matrix(~.-1,data=dta2)
   }else{
     fixed = FALSE
     cat("No additional effects other than splines and genomics \n")
   }
   
   # Search for NN plots
-  NNsrc = function(sp=NULL,rho=1,dist=3){
+  NNsrc = function(sp=NULL,rho=1,dist=3,...){
     # OCTREE search function 
     NN = function(a,sp){
       # shared environment
@@ -128,14 +129,14 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     j = unlist(NN)
     i = as.numeric(gsub('\\..+','',names(j)))
     n = tail(i,1)[1]
-    x = Matrix::sparseMatrix(i,j,x=1,dims = c(n,n))
+    x = sparseMatrix(i,j,x=1,dims = c(n,n))
     return(x)
   }
   
   # Covariate from NNmat
   SPcov = function(R,e){
-    k = Matrix::crossprod(R,e)
-    r = Matrix::rowSums(R)
+    k = crossprod(R,e)
+    r = rowSums(R)
     k = as.vector(k/r)
     k = suppressWarnings(k-mean(k,na.rm=TRUE))
     if(anyNA(k)) k[is.na(k)]=0
@@ -151,9 +152,9 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   # Preparing genotypic mapping matrix
   cat("Generating the incidence matrix of genotypes \n")
-  Z = Matrix::sparse.model.matrix(~id-1)
+  Z = sparse.model.matrix(~id-1)
   colnames(Z) = gsub('^id','',colnames(Z))
-  Weight = Matrix::colSums(Z)
+  Weight = colSums(Z)
   
   # Dealing with unphenotyped material
   if(any(Weight==0)){
@@ -179,11 +180,11 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   # Getting the first round fitted
   # (a) Fixed
   fitSM = function(y,X,rdg=1){
-    XX = Matrix::crossprod(X)
-    Matrix::diag(XX) = Matrix::diag(XX)+rdg
-    Xy = Matrix::crossprod(X,y)
-    b = Matrix::solve(XX,Xy)
-    hat = Matrix::tcrossprod(Matrix::t(b),X)  
+    XX = crossprod(X)
+    diag(XX) = diag(XX)+rdg
+    Xy = crossprod(X,y)
+    b = solve(XX,Xy)
+    hat = tcrossprod(t(b),X)  
     e = y - as.vector(hat)
     ret = list('b'=as.vector(b),'e'=e,'y'=hat)
   }
@@ -200,11 +201,12 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   # (b) Preparing genotypic data
   gen0 = gen
   gen = gen[colnames(Z),]
-  MAP = function(e,Z,Weight) as.vector(Matrix::crossprod(Z,e))/Weight
+  MAP = function(e,Z,Weight) as.vector(crossprod(Z,e))/Weight
   
   # Setting random forest parameters
   if(model=="RF"){
-    RFReg = function(x,y,NTR=50,MTR=50,SSZ=80,NSZ=4,MNO=10,IMP=TRUE,RPL=TRUE)
+    RFReg = function(x,y,NTR=50,MTR=50,SSZ=80,NSZ=4,
+                     MNO=10,IMP=TRUE,RPL=TRUE)
       randomForest::randomForest(x=x,y=y,ntree=NTR,
                                  mtry=MTR,sampsize=SSZ,nodesize=NSZ,
                                  maxnodes=MNO,importance=IMP,
@@ -228,39 +230,37 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     E = MAP(e,Z,Weight)
     # FIT
     u=RFReg(gen,E,...)
-
     # PREDICT
     bv_pred = as.vector(predict(u,gen))
     bv = u$predicted
-    bvs = as.vector(Matrix::tcrossprod(Z,bv))
+    bvs = as.vector(tcrossprod(Z,bv))
     e = e-bvs
     
   }else{
     
     # KERNEL AND REGRESSION METHODS
-    d = rep(1,ncol(gen))
+    
     E = MAP(e,Z,Weight) 
-    update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
+    update = NAM::KMUP(X=gen,b=g,xx=xx,E=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
       df_prior = 5
       Sk_prior = R2 * var(y, na.rm = T) * (df_prior + 2)
-      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
     }else{
       R2 = 0.5
-      df_prior = 3
+      df_prior = 5
       MSx = sum(apply(gen, 2, var, na.rm = T))
       S_prior = R2 * var(y, na.rm = T) * (df_prior + 2)/MSx
-      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
       shape_prior = 1.1
       rate_prior = (shape_prior - 1)/S_prior
     }
+    Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
     
     # BV
     g = update$b
-    bv = Matrix::tcrossprod(g,gen)
-    bvs = as.vector(Matrix::tcrossprod(Z,bv))
+    bv = tcrossprod(g,gen)
+    bvs = as.vector(tcrossprod(Z,bv))
     e = e-bvs
     
     if(KERN){
@@ -280,7 +280,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     
   }
   
-
+  
   # (d) Adding Splines to X
   if(isTRUE(spline)){
     spEff = SPcov(R,e)
@@ -328,40 +328,40 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       E = MAP(e,Z,Weight)+bv
       # FIT
       u=RFReg(gen,E,...)
-
+      
       # PREDICT
       bv_pred = as.vector(predict(u,gen0))
       bv = u$predicted
-      bvs = as.vector(Matrix::tcrossprod(Z,bv))
+      bvs = as.vector(tcrossprod(Z,bv))
       e = e+bvs0-bvs
       
     }else{
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
+      update = NAM::KMUP(X=gen,b=g,xx=xx,E=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
       g = update$b
-      bv = Matrix::tcrossprod(g,gen)
-      bvs = as.vector(Matrix::tcrossprod(Z,bv))
+      bv = tcrossprod(g,gen)
+      bvs = as.vector(tcrossprod(Z,bv))
       e = e+bvs0-bvs
       
       # (d) Update VC
       if(model=="BRR"){
         Va = (sum(g^2) + S_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="BayesA"){
         Vm = (S_conj + g^2)/rchisq(p, df_prior + 1)
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="BLASSO"){
         AG=abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
         Vm = rchisq(p,phi)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="Average"){
@@ -371,13 +371,13 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
         Vc = rchisq(p,phi) # Bayesian LASSO
         Vm = (Va+Vb+Vc)/3 # Average
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(KERN){
         Va = (sum(g^2/V) + Sk_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/(Vm*V)
       }
       
@@ -426,12 +426,12 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   # Fitted
   if(RF){
-    RND = as.vector(Matrix::tcrossprod(Z,BV))
+    RND = as.vector(tcrossprod(Z,BV))
     names(RND) = rownames(gen)
     GEBV = BV_pred
     names(GEBV) = rownames(gen0)
   }else{
-    RND = as.vector(Matrix::tcrossprod(Z,Matrix::tcrossprod(G,gen)))
+    RND = as.vector(tcrossprod(Z,tcrossprod(G,gen)))
     names(RND) = rownames(gen)
     GEBV = as.vector(tcrossprod(G,gen0))
     names(GEBV) = rownames(gen0)
@@ -447,7 +447,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   if(isTRUE(fixed)){
     B = B/mc; names(B)=colnames(X)
-    FIX = as.vector(Matrix::tcrossprod(X,B))
+    FIX = as.vector(tcrossprod(X,B))
     hat = hat + FIX
   }
   
@@ -461,7 +461,6 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
                  "EBV"=GEBV)
   }
   
-
   
   if(model=="BRR"|KERN){
     FINAL = c(FINAL,list('cxx'=mean(xx)))

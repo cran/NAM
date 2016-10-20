@@ -1,3 +1,4 @@
+
 gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   # models: Average - BRR - BayesA - BLASSO - GBLUP - RKHS - RF
@@ -5,7 +6,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   
   if(is.null(dta)&nrow(gen)==length(y)){
     n = length(y)
-    ids = paste('g',1:n,sep='.')
+    ids = sort(gsub('\\..\\.','',paste('geno',round(1:n/n,5)+0.000001,sep='.')))
     dta = data.frame("ID"=ids)
     rownames(gen) = ids
     rm(n,ids)
@@ -220,22 +221,21 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     # KERNEL AND REGRESSION METHODS
     d = rep(1,ncol(gen))
     E = MAP(e,Z,Weight) 
-    update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
+    update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=0)
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
       df_prior = 5
       Sk_prior = R2 * var(y, na.rm = T) * (df_prior + 2)
-      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
     }else{
       R2 = 0.5
       df_prior = 3
       MSx = sum(apply(gen, 2, var, na.rm = T))
       S_prior = R2 * var(y, na.rm = T) * (df_prior + 2)/MSx
-      Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
       shape_prior = 1.1
       rate_prior = (shape_prior - 1)/S_prior
     }
+    Se_prior = (1-R2) * var(y, na.rm = T) * (df_prior + 2)
     
     # BV
     g = update$b
@@ -319,7 +319,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=1)
+      update = KMUP(X=gen,b=g,d=d,xx=xx,E=e,L=L,Ve=Ve,pi=0)
       g = update$b
       bv = tcrossprod(g,gen)
       bvs = as.vector(tcrossprod(Z,bv))
@@ -329,19 +329,19 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       if(model=="BRR"){
         Va = (sum(g^2) + S_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="BayesA"){
         Vm = (S_conj + g^2)/rchisq(p, df_prior + 1)
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="BLASSO"){
         AG=abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
         Vm = rchisq(p,phi)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(model=="Average"){
@@ -355,18 +355,16 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
         # Average
         Vm = (Va+Vb+Vc)/3
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
       }
       if(KERN){
         Va = (sum(g^2/V) + Sk_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
-        Ve = crossprod(e)/rchisq(1,n+2)
+        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/(Vm*V)
       }
-      
     }
-    
     
     # (e) Update Splines
     if(isTRUE(spline)){
@@ -446,8 +444,6 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
                  "EBV"=GEBV)
   }
   
-
-  
   if(model=="BRR"|KERN){
     FINAL = c(FINAL,list('cxx'=mean(xx)))
   } 
@@ -464,3 +460,4 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   return(FINAL) 
   
 }
+

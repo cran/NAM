@@ -1,4 +1,4 @@
-citHeader("To cite reshape in publications use:")
+citHeader("To cite NAM in publications use:")
 
 citEntry(entry = "Article",
   title        = "{NAM}: association studies in multiple populations",

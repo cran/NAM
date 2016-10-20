@@ -48,22 +48,25 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
     cat('BSR\n')
     f11=emBA(y[-w],gen[-w,])
     # SSVS
-    cat('SSVS\n')
+    cat('BVS\n')
     f13=emBB(y[-w],gen[-w,])
     # Mixture
     cat('Mixture\n')
     f14=emBC(y[-w],gen[-w,])
+    # Laplace
+    cat('Laplace\n')
+    f15=emBL(y[-w],gen[-w,])
     
     NamesMod = c('BayesB','BayesC','BEN','RF','BRR','BLASSO','BayesA',
-                 'Average','GBLUP','RKHS','RR','BSR','SSVS','Mixture',
-                 'OBSERVATION')
+                 'Average','GBLUP','RKHS','RR','BSR','BVS','Mixture',
+                 'Laplace','OBSERVATION')
     
     M = matrix(NA,Nk,length(NamesMod))
     colnames(M) = NamesMod
     for(i in 1:3) M[,i]=get(paste('f',i,sep=''))$hat[w]
     for(i in 4:10) M[,i]=get(paste('f',i,sep=''))$EBV[w]
-    for(i in 11:14) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
-    M[,15] = Y[w]
+    for(i in 11:15) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
+    M[,16] = Y[w]
     return(M)
   }
   
