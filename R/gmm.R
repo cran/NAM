@@ -339,7 +339,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
         L = Ve/Vm
       }
       if(model=="BLASSO"){
-        AG=abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
+        AG = abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
         Vm = rchisq(p,phi)
         Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm
@@ -460,4 +460,3 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   return(FINAL) 
   
 }
-

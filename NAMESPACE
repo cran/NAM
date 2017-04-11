@@ -1,4 +1,4 @@
-useDynLib(NAM)
+useDynLib(NAM, .registration = TRUE)
 exportPattern("^[[:alpha:]]+")
 importFrom("grDevices", "rgb")
 importFrom("graphics", "abline", "axis", "hist", "identify", "lines",

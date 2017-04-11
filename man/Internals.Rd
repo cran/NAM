@@ -16,6 +16,8 @@
 \alias{emBB}
 \alias{emBC}
 \alias{emBL}
+\alias{emDE}
+\alias{emEN}
 \alias{Gdist}
 \alias{markov}
 \alias{eigX}
@@ -52,7 +54,7 @@ Some of the functions available for users include:
 
 07) \code{covar(sp=NULL,rho=3.5,type=1,dist=2.5):}{  Builds a spatial kernel from field plot information. Input format is provided with \code{covar()}. Parameter \code{rho} detemines the decay of relationship among neighbor plots. \code{type} defines if the kernel is exponential (1), Gaussian (2) or some intermediate. \code{dist} informs the distance ratio between range neighbors and row neighbors.}
 
-08) \code{Gdist(gen,fam):}{  Computes the input of the argument \code{EIG} of the function \code{gwas2}.}
+08) \code{eigX(gen,fam):}{  Computes the input of the argument \code{EIG} of the function \code{gwas2}.}
 
 09) \code{G2A_Kernels(gen):}{  Computes a list of orthogonal kernels containing additive, dominant and first-order epistatic effects, in accordance to the G2A model from ZB Zeng et al. 2005. These kernels can be used for description of genetic architecture through variance components, for that we recommend packages \code{varComp} and \code{BGLR}.}
 
@@ -60,7 +62,7 @@ Some of the functions available for users include:
 
 11) \code{NNcov(NN,y):}{  This function utilizes the output of \code{NNsrc} to generate a numeric vector, averageing the observed values of \code{y}. This function is useful to generate field covariates to control micro-environmental variance without krigging.}
 
-11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}) and Ridge regression (\code{emRR}).}
+11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}), BLASSO2 (\code{emDE}), Elastic-Net (\code{emEN}), and Ridge regression (\code{emRR}). L2 variable-selection methods, emBB and emBC, are not stable.}
 
 }
 \author{

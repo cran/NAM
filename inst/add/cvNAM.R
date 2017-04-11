@@ -3,7 +3,8 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
   
   # Cross-validation function
   folds = function(Seed,y,gen,k,it,bi){
-
+    
+    require(NAM)
     N = nrow(gen)
     # Begin folds
     set.seed(Seed)
@@ -27,7 +28,7 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
     cat('BRR\n')
     f5=gmm(y,gen,model = 'BRR',it=IT,bi=BI)
     # BLASSO
-    cat('BLASSO\n')
+    cat('BLASSO-L1\n')
     f6=gmm(y,gen,model = 'BLASSO',it=IT,bi=BI)
     # BayesA
     cat('BayesA\n')
@@ -55,18 +56,27 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
     f14=emBC(y[-w],gen[-w,])
     # Laplace
     cat('Laplace\n')
-    f15=emBL(y[-w],gen[-w,])
+    f15=emDE(y[-w],gen[-w,])
+    # Mix L1l2
+    cat('MixL1L2\n')
+    f16=emBL(y[-w],gen[-w,])
+    # Elastic net
+    cat('ElasticNet\n')
+    f17=emEN(y[-w],gen[-w,])
+    # BLASSO2
+    cat('BLASSO-L2\n')
+    f18=wgr(y,gen,it=IT,bi=BI,de=TRUE)
     
-    NamesMod = c('BayesB','BayesC','BEN','RF','BRR','BLASSO','BayesA',
-                 'Average','GBLUP','RKHS','RR','BSR','BVS','Mixture',
-                 'Laplace','OBSERVATION')
+    NamesMod = c('wgr.BayesB','wgr.BayesC','ben','gmm.RF','gmm.BRR','gmm.BLASSO',
+                 'gmm.BayesA','gmm.Average','gmm.GBLUP','gmm.RKHS',
+                 'emRR','emBA','emBB','emBC','emDE','emBL','emEN','emBL','OBSERVATION')
     
     M = matrix(NA,Nk,length(NamesMod))
     colnames(M) = NamesMod
     for(i in 1:3) M[,i]=get(paste('f',i,sep=''))$hat[w]
-    for(i in 4:10) M[,i]=get(paste('f',i,sep=''))$EBV[w]
-    for(i in 11:15) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
-    M[,16] = Y[w]
+    for(i in c(4:10)) M[,i]=get(paste('f',i,sep=''))$EBV[w]
+    for(i in 11:18) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
+    M[,19] = Y[w]
     return(M)
   }
   

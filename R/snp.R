@@ -190,15 +190,16 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
   }else{cat("No redundant SNPs found",'\n')}
   # CHECKING MINOR ALLELE FREQUENCY
   if(MAF>0){
-    LAF=c();for(j in 1:(ncol(gen2))){
-      AA=length(which(gen2[,j]==2))
-      Aa=length(which(gen2[,j]==1))
-      aa=length(which(gen2[,j]==0))
+    Count_maf = function(x){
+      AA=sum(x==2)
+      Aa=sum(x==1)
+      aa=sum(x==0)
       Total=AA+Aa+aa
       PA=(AA+0.5*Aa)/Total
       Pa=(aa+0.5*Aa)/Total
       lowerAF=min(PA,Pa)
-      LAF=c(LAF,lowerAF)}
+      return(lowerAF)}
+    LAF = apply(gen2,2,Count_maf)
     maf=which(LAF<MAF)
     # REMOVE SNP WITH INSUFICIENT VARIATION (eg. singletons) # NEW!
     vsnp = apply(gen2,2,sd)
@@ -213,6 +214,8 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
         gen3=gen2[,-maf]
         if(any(noVar)){gen3=gen3[,-noVar]}
         if(any(noVal)){gen3=gen3[,-noVal]}
+      }else{
+        gen3=gen2
         }
     }else{cat("No marker below MAF threshold",'\n');
       gen3=gen2

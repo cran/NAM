@@ -331,19 +331,19 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 **g. Model Average**
 
-+ `MA = ben(y = phenotype, gen = genotype, model = "Average")`
++ `MA = gmm(y = phenotype, gen = genotype, model = "Average")`
 
 **h. GBLUP**
 
-+ `LK = ben(y = phenotype, gen = genotype, model = "GBLUP")`
++ `LK = gmm(y = phenotype, gen = genotype, model = "GBLUP")`
 
 **i. Reproducing Kernel Hilbert Spaces**
 
-+ `GK = ben(y = phenotype, gen = genotype, model = "RKHS")`
++ `GK = gmm(y = phenotype, gen = genotype, model = "RKHS")`
 
 **j. Random Forest**
 
-+ `RF = ben(y = phenotype, gen = genotype, model = "RF")`
++ `RF = gmm(y = phenotype, gen = genotype, model = "RF")`
 
 **k. Bayesian Shrinkage Regression**
 
@@ -362,6 +362,14 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 + `RR = emRR(y = phenotype, gen = genotype)`
 
 **o. Laplace Variable Selection**
+
++ `LV = emDE(y = phenotype, gen = genotype)`
+
+**p. Elastic net**
+
++ `LV = emEN(y = phenotype, gen = genotype)`
+
+**q. Mix L1-L2 Variable Selection**
 
 + `LV = emBL(y = phenotype, gen = genotype)`
 
