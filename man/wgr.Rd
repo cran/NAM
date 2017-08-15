@@ -29,7 +29,7 @@ Integer. Burn-in, the number of iterations or samples to be discarted.
 Integer. Thinning parameter, used to save memory by storing only one every 'th' samples.
 }
   \item{bag}{
-If different than one (= complete data), it indicates the proportion of data to be subsampled in each Markov chain. For datasets with moderate number of observations, values of bag from 0.30 to 0.60 may speed up computation without losses in predicion properties. This argument enable users to enhance MCMC through SBMC (\eqn{subssampling bootstrap Markov chain}).
+If different than one (= complete data), it indicates the proportion of data to be subsampled in each Markov chain. For datasets with moderate number of observations, values of bag from 0.30 to 0.60 may speed up computation without losses in predicion properties. This argument enable users to enhance MCMC through SBMC (\eqn{subssampling bootstrap Markov chain}). For more details about subsampling check Xavier et al. (2017). 
 }
   \item{rp}{
 Logical. Use replacement for bootstrap samples when bag is different than one.
@@ -69,6 +69,7 @@ where \eqn{y} is the response variable, \eqn{mu} is the intercept, \eqn{X} is th
 Users can obtain four WGR methods out of this function: BRR (pi=0,iv=F), BayesA (pi=0,iv=T), BayesB (pi=0.01,iv=T), BayesC (pi=0.01,iv=F) and BayesL (pi=0,de=T). The full theoretical basis of each model is described by de los Campos et al. (2013).
 
 Gibbs sampler that updates regression coefficients is adapted from GSRU algorithm (Legarra and Misztal 2008). The variable selection works through the unconditional prior algorithm proposed by Kuo and Mallick (1998). The polygenic term is solved by Bayesian algorithm of reproducing kernel Hilbert Spaces proposed by de los Campos et al. (2010).
+
 }
 \value{
 The function wgr returns a list with expected value from the marker effect (\eqn{b}), probability of marker being in the model (\eqn{d}), regression coefficient (\eqn{g}), variance of each marker (\eqn{Vb}), the intercept (\eqn{mu}), the polygene (\eqn{u}) and polygenic variance (\eqn{Vk}), residual variance (\eqn{Ve}) and the fitted value (\eqn{hat}).
@@ -82,6 +83,8 @@ de los Campos, G., Gianola, D., Rosa, G. J., Weigel, K. A., & Crossa, J. (2010).
 Kuo, L., & Mallick, B. (1998). Variable selection for regression models. Sankhya: The Indian Journal of Statistics, Series B, 65-81.
 
 Legarra, A., & Misztal, I. (2008). Technical note: Computing strategies in genome-wide selection. Journal of dairy science, 91(1), 360-366.
+
+Xavier, A., Xu, S., Muir, W. and Rainey, K.M., 2017. Genomic prediction using subsampling. BMC bioinformatics, 18(1), p.191.
 
 }
 \author{

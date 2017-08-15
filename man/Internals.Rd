@@ -30,6 +30,12 @@
 \alias{.Random.seed}
 \alias{NNsrc}
 \alias{NNcov}
+\alias{CNT}
+\alias{MSX}
+\alias{IMP}
+\alias{NOR}
+\alias{GAU}
+\alias{SPC}
 \title{
   Internal functions
 }
@@ -63,6 +69,18 @@ Some of the functions available for users include:
 11) \code{NNcov(NN,y):}{  This function utilizes the output of \code{NNsrc} to generate a numeric vector, averageing the observed values of \code{y}. This function is useful to generate field covariates to control micro-environmental variance without krigging.}
 
 11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}), BLASSO2 (\code{emDE}), Elastic-Net (\code{emEN}), and Ridge regression (\code{emRR}). L2 variable-selection methods, emBB and emBC, are not stable.}
+
+12) \code{CNT(X):}{  Centralizes parameters from matrix \code{X}. Useful to convert allele coding from 012 or -101 into G2A coding. This function does not return anything, rather it modifies \code{X} directly.}
+
+13) \code{IMP(X):}{  Imputes missing points from matrix \code{X} with the average value of the column. This function does not return anything, rather it modifies \code{X} directly.}
+
+14) \code{GAU(X):}{ Created a Gaussian kernel from matrix \code{X}.}
+
+15) \code{MSX(X):}{ Computes the cross-product of each column of \code{X} and the sum of variances of each column of \code{X}.}
+
+16) \code{NOR(y,X,cxx,xx,maxit=50,tol=10e-6):}{ Solves a ridge regression using GSRU, where  \code{y} corresponds to the response variable, \code{X} is the set of parameters, \code{cxx} and \code{xx} are the output from the MSX function, \code{maxit} and \code{tol} are the convergence criteria.}
+
+17) \code{SPC(y,blk,row,col,rN=3,cN=1):}{ Computes a spatial covariate, similar to what could be obtained using NNsrc and NNcov but in a single step. It often is faster than NNsrc/NNcov.}
 
 }
 \author{

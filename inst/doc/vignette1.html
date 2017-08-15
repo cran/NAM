@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2017-04-11" />
+<meta name="date" content="2017-08-15" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2017-04-11</em></h4>
+<h4 class="date"><em>2017-08-15</em></h4>
 
 
 
@@ -353,23 +353,23 @@ Fit the model</p>
 <ul>
 <li><code>RF = gmm(y = phenotype, gen = genotype, model = &quot;RF&quot;)</code></li>
 </ul>
-<p><strong>k. Bayesian Shrinkage Regression</strong></p>
+<p><strong>k. non-MCMC BayesA</strong></p>
 <ul>
 <li><code>VS = emBA(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>l. Bayesian Variable Selection</strong></p>
+<p><strong>l. non-MCMC BayesB (variable selection not stable)</strong></p>
 <ul>
 <li><code>VS = emBB(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>m. Mixture</strong></p>
+<p><strong>m. non-MCMC BayesC (variable selection not stable)</strong></p>
 <ul>
 <li><code>MM = emBC(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>n. GSRU Ridge Regression</strong></p>
+<p><strong>n. non-MCMC BRR</strong></p>
 <ul>
 <li><code>RR = emRR(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>o. Laplace Variable Selection</strong></p>
+<p><strong>o. non-MCMC Bayesian LASSO</strong></p>
 <ul>
 <li><code>LV = emDE(y = phenotype, gen = genotype)</code></li>
 </ul>
@@ -377,7 +377,7 @@ Fit the model</p>
 <ul>
 <li><code>LV = emEN(y = phenotype, gen = genotype)</code></li>
 </ul>
-<p><strong>q. Mix L1-L2 Variable Selection</strong></p>
+<p><strong>q. Mixed L1-L2 (variation of Elastic net)</strong></p>
 <ul>
 <li><code>LV = emBL(y = phenotype, gen = genotype)</code></li>
 </ul>

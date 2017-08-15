@@ -17,3 +17,8 @@ Data provided by Rainey Lab for Soybean Breeding and Genetics, Purdue University
 \author{
   Alencar Xavier, Ben Hall and Katy Rainey
 }
+\references{
+
+Xavier, A., Hall, B., Hearst, A.A., Cherkauer, K.A. and Rainey, K.M., 2017. Genetic Architecture of Phenomic-Enabled Canopy Coverage in Glycine max. Genetics, 206(2), pp.1081-1089.
+
+}

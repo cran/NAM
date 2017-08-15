@@ -416,7 +416,7 @@ gwasPAR = function(y,gen,fam=NULL,chr=NULL,cl=NULL,EIG=NULL,cov=NULL){
         pval = 0
       }else{
         lod = lrt/4.61
-        pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
         if(pval<0) pval = 0
       }
       if(r>2) names(gamma) = c("allele.eff.standard",paste("allele.eff.founder.",1:(r-1),sep=""))

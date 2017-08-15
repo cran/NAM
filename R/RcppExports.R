@@ -73,3 +73,27 @@ timesVec <- function(aa, h, bb, q) {
     .Call('NAM_timesVec', PACKAGE = 'NAM', aa, h, bb, q)
 }
 
+CNT <- function(X) {
+    invisible(.Call('NAM_CNT', PACKAGE = 'NAM', X))
+}
+
+MSX <- function(X) {
+    .Call('NAM_MSX', PACKAGE = 'NAM', X)
+}
+
+IMP <- function(X) {
+    invisible(.Call('NAM_IMP', PACKAGE = 'NAM', X))
+}
+
+NOR <- function(y, X, cxx, xx, maxit = 50L, tol = 10e-6) {
+    .Call('NAM_NOR', PACKAGE = 'NAM', y, X, cxx, xx, maxit, tol)
+}
+
+GAU <- function(X) {
+    .Call('NAM_GAU', PACKAGE = 'NAM', X)
+}
+
+SPC <- function(y, blk, row, col, rN = 3L, cN = 1L) {
+    .Call('NAM_SPC', PACKAGE = 'NAM', y, blk, row, col, rN, cN)
+}
+

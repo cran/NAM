@@ -5,12 +5,6 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
   ## INTRODUCTION ##
   ##################
   
-  # Centralize when there is a cov
-  if(!is.null(cov)){
-    tm = tapply(y,fam,mean,na.rm=T)
-    cnt = tm[as.character(fam)]
-    y=y-cnt}
-  
   # REMOVAL OF MISSING Y's  
   anyNA = function(x) any(is.na(x))
   if(any(is.na(y))){
@@ -38,18 +32,6 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
   f=organ(fam,y,covariate,gen);fam=f[[1]];y=f[[2]];covariate=f[[3]];gen=f[[4]];rm(f);
   covariate=matrix(covariate,ncol=1)
   
-  # IMPUTATION OF MISSING Y's - OBSOLETE
-  Ymc=function(y,fam){
-    MC=function(y){
-      x=mean(y,na.rm=T)
-      s2=var(y,na.rm=T)
-      W=which(is.na(y))
-      IMP=rnorm(length(W),x,s2)
-      y[W]=IMP;return(y)}
-    imp=tapply(y,fam,MC)
-    y=unlist(imp);return(as.vector(y))}
-  if(any(is.na(y))) y=Ymc(y,fam) # calc
-  
   # MARKER IMPUT FUNCTION
   gen[gen==5]=NA
   IMPUT=function(X){
@@ -66,7 +48,6 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
   if(any(is.na(gen))) gen=IMPUT(gen) # calc
   
   # SPARSE DESING MATRIX FUNCTION
-  
   cat("Generating Design Matrix",'\n')
   SDM = function(gen,fam){
     m = ncol(gen)
@@ -74,9 +55,7 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
     u = unique(fam)
     f = length(u)+1
     gg=matrix(0,n,m*f)
-    # filling std parent
     gg[,(1:m-1)*f+1]=gen
-    # filling founder parent
     gen=-(gen-2)
     pb=txtProgressBar(style=3)
     for(i in 1:(f-1)){
@@ -354,7 +333,8 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
         pval = 0
       }else{
         lod = lrt/4.61
-        pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        #pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
         if(pval<0) pval = 0
       }
       if(r==2){
@@ -500,7 +480,8 @@ gwas = function(y,gen,fam=NULL,chr=NULL,window=NULL,fixed=FALSE){
         pval = 0
       }else{
         lod = lrt/4.61
-        pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        #pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
         if(pval<0) pval = 0
       }    
       if(r==2){
@@ -1024,7 +1005,8 @@ gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL){
         pval = 0
       }else{
         lod = lrt/4.61
-        pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        #pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
         if(pval<0) pval = 0
       }
       if(r>2) names(gamma) = c("std.eff",paste("eff.founder.",1:(r-1),sep=""))
@@ -1111,17 +1093,17 @@ gwas2 = function(y,gen,fam=NULL,chr=NULL,fixed=FALSE,EIG=NULL,cov=NULL){
       zx = timesMatrix(xu,h,zu,q,r)
       zy = timesVec(yu,h,zu,r)
       zz = timesMatrix(zu,h,zu,r,r)
-      diag(zz) = diag(zz)+1e-8
+      diag(zz) = diag(zz)+1e-12
       zzi<-solve(zz)
       b<-solve(zz,zy)
       s2<-(yy-t(zy)%*%zzi%*%zy)/(n-r-q)
       v<-zzi*drop(s2);
       if(r==1){
-        g<-b-mean(b); gamma<-g
-        wald<-t(b)%*%solve(v)%*%b
+        g<-b; gamma<-g
+        wald<-t(b)%*%chol2inv(v)%*%b
       }else{
         g<-b-mean(b); gamma<-g
-        wald<-t(g)%*%solve(v)%*%g}
+        wald<-t(g)%*%chol2inv(v)%*%g}
       sigma2<-s2
       if(r>1){
         rownames(gamma) = c("std.eff",paste("eff.",1:(r-1),sep=""))
@@ -1564,7 +1546,8 @@ gwasGE = function(Phe,gen,fam,chr=NULL,cov=NULL,ge=FALSE,ammi=1){
           pval = 0
         }else{
           lod = lrt/4.61
-          pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+          #pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+          pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
           if(pval<0) pval = 0
         }
         if(r>2) names(gamma) = c("eff.std",paste("eff.founder.",1:(r-1),sep=""))
@@ -2324,7 +2307,8 @@ gwas3 = function(y,gen,fam=NULL,chr=NULL,EIG=NULL,cov=NULL){
         pval = 0
       }else{
         lod = lrt/4.61
-        pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        #pval = round(-log(dchisq(lrt,0.5),base = 10),2)
+        pval = round(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10),2)
         if(pval<0) pval = 0
       }
       if(r>2) names(gamma) = paste("eff.",1:r,sep="")
@@ -2598,7 +2582,6 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,
       axis(1, at=round(medians), labels=1:length(medians))
     }
     
-    
     # QTL
     if(!is.null(find)){Loc=identify(n=find,x=1:length(pv),y=pv,labels=gwas$SNPs);for(i in Loc) cat(gwas$SNPs[i],'\n')}
     
@@ -2640,7 +2623,7 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,
       if(is.null(FDR)){
         A = 1-alpha
         LRmax = qchisq(A,0.5)
-        lim = -log(dchisq(LRmax, 0.5),base = 10)
+        lim = -log(pchisq(LRmax, 0.5,lower.tail = FALSE),base = 10)
         abline(h=lim,col=1,lty=2)
         
       }else{
@@ -2662,7 +2645,7 @@ plot.NAM = function(x,...,alpha=0.05,colA=2,colB=4,find=NULL,FDR=NULL,gtz=FALSE,
         for(i in 1:(NumChr)){
           A = 1-alpha/(MT[i]*(1-FDR))
           LRmax = qchisq(A,0.5)
-          lim = -log(dchisq(LRmax, 0.5),base = 10)
+          lim = -log(pchisq(LRmax, 0.5,lower.tail=FALSE),base = 10)
           lines(x = c(Ch0[i],Ch1[i]),y = c(lim,lim))
         }
         

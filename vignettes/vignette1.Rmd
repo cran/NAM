@@ -345,23 +345,23 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 + `RF = gmm(y = phenotype, gen = genotype, model = "RF")`
 
-**k. Bayesian Shrinkage Regression**
+**k. non-MCMC BayesA**
 
 + `VS = emBA(y = phenotype, gen = genotype)`
 
-**l. Bayesian Variable Selection**
+**l. non-MCMC BayesB (variable selection not stable)**
 
 + `VS = emBB(y = phenotype, gen = genotype)`
 
-**m. Mixture**
+**m. non-MCMC BayesC (variable selection not stable)**
 
 + `MM = emBC(y = phenotype, gen = genotype)`
 
-**n. GSRU Ridge Regression**
+**n. non-MCMC BRR**
 
 + `RR = emRR(y = phenotype, gen = genotype)`
 
-**o. Laplace Variable Selection**
+**o. non-MCMC Bayesian LASSO**
 
 + `LV = emDE(y = phenotype, gen = genotype)`
 
@@ -369,7 +369,7 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 + `LV = emEN(y = phenotype, gen = genotype)`
 
-**q. Mix L1-L2 Variable Selection**
+**q. Mixed L1-L2 (variation of Elastic net)**
 
 + `LV = emBL(y = phenotype, gen = genotype)`
 

@@ -57,7 +57,7 @@ Numeric matrix of observations for multivariate mixed models. Each column repres
 }
 }
 \details{
-The general model is \eqn{y=Xb+Zu+e}, where \eqn{u=N(0,A\sigma2a)} and \eqn{e=N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case.
+The general model is \eqn{y=Xb+Zu+e}, where \eqn{u=N(0,A\sigma2a)} and \eqn{e=N(0,R\sigma2e)}. The function solves Gaussian mixed models in the Bayesian framework as described by Garcia-Cortes and Sorensen (1996) and Sorensen and Gianola (2002) with conjugated priors. The alternative function, "ml", finds the solution iteratively using the full-conditional expectation. The function "gibbs2" can be used for the multivariate case, check Xavier et al. (2017) for an example of multivariate mixed model using Gibbs sampling.
 }
 \value{
 The function gibbs returns a list with variance components distribution a posteriori (Posterior.VC) and mode estimated (VC.estimate), a list with the posterior distribution of regression coefficients (Posterior.Coef) and the posterior mean (Coef.estimate), and the fitted values using the mean (Fit.mean) of posterior coefficients.
@@ -71,6 +71,9 @@ Legarra, A., & Misztal, I. (2008). Technical note: Computing strategies in genom
 Garcia-Cortes, L. A., and Sorensen, D. (1996). On a multivariate implementation of the Gibbs sampler. Genetics Selection Evolution, 28(1), 121-126.
 
 Sorensen, D., & Gianola, D. (2002). Likelihood, Bayesian, and MCMC methods in quantitative genetics. Springer Science & Business Media.
+
+Xavier, A., Hall, B., Casteel, S., Muir, W. and Rainey, K.M. (2017). Using unsupervised learning techniques to assess interactions among complex traits in soybeans. Euphytica, 213(8), p.200.
+
 }
 \author{
 Alencar Xavier

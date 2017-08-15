@@ -705,3 +705,45 @@ NumericMatrix timesVec(NumericVector aa, NumericVector h, NumericMatrix bb, int 
   return(resul);
 }
 
+// [[Rcpp::export]]
+void CNT(NumericMatrix X){for(int j=0;j<X.ncol();j++){X(_,j)=X(_,j)-mean(X(_,j));}}
+
+// [[Rcpp::export]]
+SEXP MSX(NumericMatrix X){
+  int p = X.ncol(); int n = X.nrow(); double m; NumericVector xx(p); NumericVector sx(p);
+  for(int k=0; k<p; k++){ xx[k] = sum(X(_,k)*X(_,k)); m = sum(X(_,k)); sx[k] = m*m/n; }
+  double cxx = sum(xx-sx)/(n-1); return List::create(Named("cxx")=cxx,Named("xx")=xx);}
+
+// [[Rcpp::export]]
+void IMP(NumericMatrix X){;int p = X.ncol(); int n = X.nrow();
+LogicalVector MIS(n); NumericVector x(n); NumericVector z; double EXP;
+for(int j=0; j<p; j++){;if(is_true(any(is_na(X(_,j))))){
+  x = X(_,j); MIS = is_na(x);z = x[!MIS]; EXP = mean(z);
+  X(_,j) = ifelse(MIS,EXP,x);};};};
+
+// [[Rcpp::export]]
+SEXP NOR(NumericVector y, NumericMatrix X, double cxx, NumericVector xx, int maxit = 50, double tol = 10e-6){
+  int p = X.ncol(); int n = X.nrow(); double Ve,b0,b1,eM; double mu = mean(y); double Va=1;
+  NumericVector b(p), bc(p), fit(n), E(n); NumericVector e = y-mu; double Lmb = cxx;
+  int numit = 0; double cnv = 1; while(numit<maxit){bc = b+0; for(int j=0; j<p; j++){
+    b0 = b[j]; b1 = (sum(X(_,j)*e)+xx[j]*b0)/(Lmb+xx(j)); b[j]=b1; e = e-X(_,j)*(b1-b0);}
+  eM = mean(e); mu = mu+eM; e = e-eM; Ve = sum(e*y)/(n-1); Va = var(b)+mean(Ve/(xx+Lmb));
+  Lmb = sqrt(cxx*Ve/Va); ++numit; cnv = sum(abs(bc-b)); if( cnv<tol ){break;};}
+  for(int k=0; k<n; k++){ fit[k] = sum(X(k,_)*b); E[k] = y[k]-fit[k];}; Va=Va*cxx;
+  return List::create(Named("b")=b,Named("v")=Va,Named("h")=fit,Named("e")=E);}
+
+// [[Rcpp::export]]
+NumericMatrix GAU(NumericMatrix X){
+  int n = X.nrow(); NumericVector D; NumericMatrix K(n,n); double d2, md;
+  for(int i=0; i<n; i++){; for(int j=0; j<n; j++){
+    if(i==j){ K(i,j)=0; }else if(j>i){; D = X(i,_)-X(j,_);
+    d2 = sum(D*D); d2 = d2*d2; K(i,j)=d2; K(j,i)=d2; }}}; md = mean(K);
+    for(int i=0; i<n; i++){K(i,_) = exp(-K(i,_)/md);} return K;}
+
+// [[Rcpp::export]]
+NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, int rN=3, int cN=1){
+  int n = y.size(); NumericVector Cov(n), Phe(n), Obs(n);
+  for(int i=0; i<n; i++){; for(int j=0; j<n; j++){
+    if( (i!=j) & (blk[i]==blk[j]) & (abs(row[i]-row[j])<=rN) & (abs(col[i]-col[j])<=cN) ){
+      Phe[j] = y[j]; Obs[j] = 1; }else{ Phe[j] = 0; Obs[j] = 0; }}
+  Cov[i] = sum(Phe)/sum(Obs);} return Cov;}

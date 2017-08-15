@@ -265,3 +265,77 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// CNT
+void CNT(NumericMatrix X);
+RcppExport SEXP NAM_CNT(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    CNT(X);
+    return R_NilValue;
+END_RCPP
+}
+// MSX
+SEXP MSX(NumericMatrix X);
+RcppExport SEXP NAM_MSX(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(MSX(X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// IMP
+void IMP(NumericMatrix X);
+RcppExport SEXP NAM_IMP(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    IMP(X);
+    return R_NilValue;
+END_RCPP
+}
+// NOR
+SEXP NOR(NumericVector y, NumericMatrix X, double cxx, NumericVector xx, int maxit, double tol);
+RcppExport SEXP NAM_NOR(SEXP ySEXP, SEXP XSEXP, SEXP cxxSEXP, SEXP xxSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type cxx(cxxSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP);
+    Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(NOR(y, X, cxx, xx, maxit, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GAU
+NumericMatrix GAU(NumericMatrix X);
+RcppExport SEXP NAM_GAU(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(GAU(X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SPC
+NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, int rN, int cN);
+RcppExport SEXP NAM_SPC(SEXP ySEXP, SEXP blkSEXP, SEXP rowSEXP, SEXP colSEXP, SEXP rNSEXP, SEXP cNSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type blk(blkSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type row(rowSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
+    Rcpp::traits::input_parameter< int >::type rN(rNSEXP);
+    Rcpp::traits::input_parameter< int >::type cN(cNSEXP);
+    rcpp_result_gen = Rcpp::wrap(SPC(y, blk, row, col, rN, cN));
+    return rcpp_result_gen;
+END_RCPP
+}
