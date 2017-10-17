@@ -1,6 +1,6 @@
 require(Matrix)
 
-gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
+gmm = function(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...){
   
   # models: Average - BRR - BayesA - BLASSO - GBLUP - RKHS - RF
   # spline: dta must include a column called "ID Block Row Col"
@@ -239,9 +239,9 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   }else{
     
     # KERNEL AND REGRESSION METHODS
-    
     E = MAP(e,Z,Weight)
-    update = NAM::KMUP(X=gen,b=g,xx=xx,E=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
+    update = NAM::KMUP(X=gen,b=g,xx=xx,e=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
+    
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
@@ -339,7 +339,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = NAM::KMUP(X=gen,b=g,xx=xx,E=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
+      update = NAM::KMUP(X=gen,b=g,xx=xx,e=E,L=L,d=rep(1,p),Ve=Ve,pi=0)
       g = update$b
       bv = tcrossprod(g,gen)
       bvs = as.vector(tcrossprod(Z,bv))

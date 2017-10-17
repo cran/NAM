@@ -1,4 +1,4 @@
-\name{Internals}
+\name{Optimizations}
 \alias{calcSize}
 \alias{funI}
 \alias{funX}
@@ -40,7 +40,7 @@
   Internal functions
 }
 \description{
-Function under optimization, complimentary statistics and loops written in C++ to speed up \eqn{gwas}, \eqn{gibbs} and \eqn{wgr}.
+Internal function under optimization, complimentary statistics, and loops written in C++ to speed up \eqn{gwas}, \eqn{gibbs} and \eqn{wgr}.
 }
 \details{
 

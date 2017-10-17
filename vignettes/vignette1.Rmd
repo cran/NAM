@@ -315,11 +315,11 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 **c. BayesB**
 
-+ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.01)`
++ `BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.8)`
 
 **d. BayesC**
 
-+ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.01)`
++ `BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.8)`
 
 **e. Bayesian Elastic Net**
 
@@ -327,11 +327,11 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 **f. Bayesian LASSO**
 
-+ `BL = gmm(y = phenotype, gen = genotype, model = "BLASSO")`
++ `BL = wgr(y = phenotype, gen = genotype, de=TRUE)`
 
-**g. Model Average**
+**g. Extended Bayesian LASSO**
 
-+ `MA = gmm(y = phenotype, gen = genotype, model = "Average")`
++ `EBL = wgr(y = phenotype, gen = genotype, de=TRUE, pi=0.8)`
 
 **h. GBLUP**
 
@@ -347,31 +347,31 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 **k. non-MCMC BayesA**
 
-+ `VS = emBA(y = phenotype, gen = genotype)`
++ `eBA = emBA(y = phenotype, gen = genotype)`
 
 **l. non-MCMC BayesB (variable selection not stable)**
 
-+ `VS = emBB(y = phenotype, gen = genotype)`
++ `eBB = emBB(y = phenotype, gen = genotype)`
 
 **m. non-MCMC BayesC (variable selection not stable)**
 
-+ `MM = emBC(y = phenotype, gen = genotype)`
++ `eBC = emBC(y = phenotype, gen = genotype)`
 
 **n. non-MCMC BRR**
 
-+ `RR = emRR(y = phenotype, gen = genotype)`
++ `eRR = emRR(y = phenotype, gen = genotype)`
 
 **o. non-MCMC Bayesian LASSO**
 
-+ `LV = emDE(y = phenotype, gen = genotype)`
++ `eBL = emDE(y = phenotype, gen = genotype)`
 
 **p. Elastic net**
 
-+ `LV = emEN(y = phenotype, gen = genotype)`
++ `eEN = emEN(y = phenotype, gen = genotype)`
 
 **q. Mixed L1-L2 (variation of Elastic net)**
 
-+ `LV = emBL(y = phenotype, gen = genotype)`
++ `eMix = eMix(y = phenotype, gen = genotype)`
 
 For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
 

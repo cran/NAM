@@ -49,8 +49,8 @@ inputRow <- function(x, exp, n) {
     .Call('NAM_inputRow', PACKAGE = 'NAM', x, exp, n)
 }
 
-KMUP <- function(X, b, d, xx, E, L, Ve, pi) {
-    .Call('NAM_KMUP', PACKAGE = 'NAM', X, b, d, xx, E, L, Ve, pi)
+KMUP <- function(X, b, d, xx, e, L, Ve, pi) {
+    .Call('NAM_KMUP', PACKAGE = 'NAM', X, b, d, xx, e, L, Ve, pi)
 }
 
 KMUP2 <- function(X, Use, b, d, xx, E, L, Ve, pi) {

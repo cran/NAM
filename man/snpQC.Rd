@@ -1,13 +1,17 @@
 \name{SNP QC}
 \alias{snpQC}
+\alias{cleanREP}
+\alias{reference}
 \title{
 SNP Quality Control
 }
 \description{
-A function for quality control. It may be used to count/remove neighbor repeated SNPs and markers with MAF lower than a given threshold. This function is also used for imputations.
+Functions for quality control. 'snpQC' may be used to count/remove neighbor repeated SNPs, markers with MAF lower than a given threshold, and imputations. 'cleanREP' identifies and merge duplicate genotypes. The 'reference' function changes the reference genotype. For NAM populations, this function must be used when genotypes are coded according to the reference genome instead of the standard parent.
 }
 \usage{
 snpQC(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE)
+cleanREP(y,gen,fam=NULL,thr=0.95)
+reference(gen,ref=NULL)
 }
 \arguments{
   \item{gen}{
@@ -29,9 +33,25 @@ Logical. Remove SNPs due to PSY or MAF.
   \item{impute}{
 If TRUE, impute missing values using Random Forest adapted from the package missForest (Stekhoven and Buhlmann 2012) as suggested by Rutkoski et al (2013).
 }
+  \item{y}{
+Numeric vector (\eqn{n}) or numeric matrix (\eqn{n} x \eqn{t}) of observations describing the trait to be analyzed. \code{NA} is allowed.
+}
+  \item{fam}{
+Numeric vector of length (\eqn{n}) indicating which subpopulations (\eqn{i.e.} family) each observation comes from. Default assumes that all observations are from the same populations.
+}
+  \item{thr}{
+Threshold above which genotypes are considered identical. Default is 0.95, merging genotypes >95 percent identical.
+}
+\item{ref}{
+Numeric vector of length \eqn{n} with elements coded as \code{0, 1, 2}, it represents the genotypic information of a new reference genotype. Default assumes that more frequent allele represents the reference genome.
+}
 }
 \value{
-Returns the genomic matrix without missing values, redundancy or low MAF markers.
+snpQC - Returns the genomic matrix without missing values, redundancy or low MAF markers.
+
+cleanREP - List containing the inputs without replicates. Groups of replicates are replaced by a single observation with the phenotypic expected value. The algorithm keeps the genotypic information of the first individual (genotypic matrix order).
+
+reference - Returns a recoded \eqn{gen} matrix
 }
 \references{
 Rutkoski, J. E., Poland, J., Jannink, J. L., & Sorrells, M. E. (2013). Imputation of unordered markers and the impact on genomic selection accuracy. G3: Genes| Genomes| Genetics, 3(3), 427-439.
@@ -45,4 +65,5 @@ Alencar Xavier, Katy Rainey and William Muir
 data(tpod)
 gen=reference(gen)
 gen=snpQC(gen=gen,psy=1,MAF=0.05,remove=TRUE,impute=FALSE)
+test=cleanREP(y,gen)
 }

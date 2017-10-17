@@ -551,107 +551,103 @@ NumericVector inputRow(NumericVector x, int exp, int n){
 }
 
 // [[Rcpp::export]]
-SEXP KMUP(NumericMatrix X, NumericVector b,
-          NumericVector d, NumericVector xx,
-          NumericVector E, NumericVector L,
-          double Ve, double pi){
-  
+SEXP KMUP(NumericMatrix X, NumericVector b, NumericVector d, NumericVector xx, NumericVector e, NumericVector L, double Ve, double pi){  
   RNGScope scope;
   int p = X.ncol();
-  NumericVector g = b;
-  NumericVector e1 = E;
-  NumericVector e2 = E;
-  double G,G0,Gp,D,pj,LR;
-  double Cons = -0.5/Ve;
-  double Pi0 = pi/(1-pi);
-  
-  for(int i=0; i<p; i++){
-    G0 = g[i];
-    G = R::rnorm((sum(X(_,i)*E)+G0)/(xx(i)+L(i)),
-                 sqrt(Ve/(xx(i)+L(i))));
-    Gp = G*pi;
-    e1 = E - X(_,i)*(G-G0);
+  NumericVector e1 = e+0;
+  NumericVector e2 = e+0;
+  double b0,b1,cj,dj,pj;
+  double C = -0.5/Ve;
+  //
+  for(int j=0; j<p; j++){
+    b0 = b[j];
+    b1 = R::rnorm( (sum(X(_,j)*e)+xx[j]*b0)/(xx[j]+L[j]),
+                   sqrt(Ve/(xx[j]+L[j]))  );
+    e1 = e-X(_,j)*(b1-b0); // with marker
     if(pi>0){
-      e2 = E - X(_,i)*(Gp-G0);
-      LR = Pi0*exp(Cons*(sum(e1*e1)-sum(e2*e2)));
-      pj = 1-1/(1+LR);
-      D = R::rbinom(1,pj);
-      if(D==0){
-        d[i] = 0;
-        g[i] = Gp;
-        E = e2;
+      e2 = e-X(_,j)*(0-b0); // without marker
+      //
+      cj = (1-pi)*exp(C*sum(e1*e1));
+      dj = (pi)*exp(C*sum(e2*e2));
+      pj = cj/(cj+dj);
+      //
+      if(R::rbinom(1,pj)==1){
+        b[j] = b1;
+        d[j] = 1;
+        e = e1;
       }else{
-        d[i] = 1;
-        g[i] = G;
-        E = e1;
+        b[j] = R::rnorm(0,sqrt(Ve/(xx[j]+L[j])));
+        d[j] = 0;
+        e = e2;
       }
     }else{
-      d[i] = 1;
-      g[i] = G;
-      E = e1;
+      // WO Variable Selection
+      d[j] = 1;
+      b[j] = b1;
+      e = e1;
     }
+    //e = e - X(_,j)*(b[j]-b0);
   }
-  return List::create(Named("b") = g,
-                      Named("d") = d,
-                      Named("e") = E);
+  //
+  return List::create(Named("b") = b,Named("d") = d,Named("e") = e);
 }
 
 // [[Rcpp::export]]
-SEXP KMUP2(NumericMatrix X, NumericVector Use, NumericVector b,
-           NumericVector d, NumericVector xx, NumericVector E,
-           NumericVector L, double Ve, double pi){
-  
+SEXP KMUP2(NumericMatrix X, NumericVector Use, NumericVector b,  NumericVector d, NumericVector xx, NumericVector E, NumericVector L, double Ve, double pi){  
   RNGScope scope;
   int p = X.ncol();
   int n0 = X.nrow();
   int n = Use.size();
+  NumericVector e1 = E+0;
+  NumericVector e2 = E+0;
+  double b0,b1,cj,dj,pj;
+  double C = -0.5/Ve;
+  //
   double bg = n0/n;
-  NumericVector E0(n);
+  NumericVector e0(n);
   NumericVector H(n);
+  //
   for(int k=0; k<n; k++){
-    E0[k] = E[Use[k]];
+    e0[k] = E[Use[k]];
   }
-  NumericVector g = b;
-  NumericVector e1 = E0;
-  NumericVector e2 = E0;
-  double G,G0,Gp,D,pj,LR;
-  double Cons = -0.5/Ve;
-  double Pi0 = pi/(1-pi);
-  
-  for(int i=0; i<p; i++){
-    G0 = g[i];
+  //
+  for(int j=0; j<p; j++){
+    //
     for(int x=0; x<n; x++){
-      H[x] = X(Use[x],i);
+      H[x] = X(Use[x],j);
     }
-    G = R::rnorm((sum(H*E0)+G0)/(xx(i)*bg+L(i)),
-                 sqrt(Ve/(xx(i)*bg+L(i))));
-    Gp = G*pi;
-    e1 = E0 - H*(G-G0);
+    //
+    b0 = b[j];
+    b1 = R::rnorm((sum(H*e0)+b0)/(xx(j)*bg+L(j)),sqrt(Ve/(xx(j)*bg+L(j))));
+    e1 = e0 - H*(b1-b0);
+    //
     if(pi>0){
-      e2 = E0 - H*(Gp-G0);
-      LR = Pi0*exp(Cons*(sum(e1*e1)-sum(e2*e2)));
-      pj = 1-1/(1+LR);
-      D = R::rbinom(1,pj);
-      if(D==0){
-        d[i] = 0;
-        g[i] = Gp;
-        E0 = e2;
+      e2 = e0 - H*(b1-b0);
+      //
+      cj = (1-pi)*exp(C*sum(e1*e1));
+      dj = (pi)*exp(C*sum(e2*e2));
+      pj = cj/(cj+dj);
+      //
+      if(R::rbinom(1,pj)==1){
+        b[j] = b1;
+        d[j] = 1;
+        e0 = e1;
       }else{
-        d[i] = 1;
-        g[i] = G;
-        E0 = e1;
+        b[j] = R::rnorm(0,sqrt(Ve/(xx[j]+L[j])));
+        d[j] = 0;
+        e0 = e2;
       }
+      //
     }else{
-      d[i] = 1;
-      g[i] = G;
-      E0 = e1;
+      d[j] = 1;
+      b[j] = b1;
+      e0 = e1;
     }
-  }
-  
-  
-  return List::create(Named("b") = g,
+    //
+  }  
+  return List::create(Named("b") = b,
                       Named("d") = d,
-                      Named("e") = E0);
+                      Named("e") = e0);
 }
 
 // [[Rcpp::export]]

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2017-08-15" />
+<meta name="date" content="2017-10-17" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2017-08-15</em></h4>
+<h4 class="date"><em>2017-10-17</em></h4>
 
 
 
@@ -323,11 +323,11 @@ Fit the model</p>
 </ul>
 <p><strong>c. BayesB</strong></p>
 <ul>
-<li><code>BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.01)</code></li>
+<li><code>BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.8)</code></li>
 </ul>
 <p><strong>d. BayesC</strong></p>
 <ul>
-<li><code>BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.01)</code></li>
+<li><code>BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.8)</code></li>
 </ul>
 <p><strong>e. Bayesian Elastic Net</strong></p>
 <ul>
@@ -335,11 +335,11 @@ Fit the model</p>
 </ul>
 <p><strong>f. Bayesian LASSO</strong></p>
 <ul>
-<li><code>BL = gmm(y = phenotype, gen = genotype, model = &quot;BLASSO&quot;)</code></li>
+<li><code>BL = wgr(y = phenotype, gen = genotype, de=TRUE)</code></li>
 </ul>
-<p><strong>g. Model Average</strong></p>
+<p><strong>g. Extended Bayesian LASSO</strong></p>
 <ul>
-<li><code>MA = gmm(y = phenotype, gen = genotype, model = &quot;Average&quot;)</code></li>
+<li><code>EBL = wgr(y = phenotype, gen = genotype, de=TRUE, pi=0.8)</code></li>
 </ul>
 <p><strong>h. GBLUP</strong></p>
 <ul>
@@ -355,31 +355,31 @@ Fit the model</p>
 </ul>
 <p><strong>k. non-MCMC BayesA</strong></p>
 <ul>
-<li><code>VS = emBA(y = phenotype, gen = genotype)</code></li>
+<li><code>eBA = emBA(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>l. non-MCMC BayesB (variable selection not stable)</strong></p>
 <ul>
-<li><code>VS = emBB(y = phenotype, gen = genotype)</code></li>
+<li><code>eBB = emBB(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>m. non-MCMC BayesC (variable selection not stable)</strong></p>
 <ul>
-<li><code>MM = emBC(y = phenotype, gen = genotype)</code></li>
+<li><code>eBC = emBC(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>n. non-MCMC BRR</strong></p>
 <ul>
-<li><code>RR = emRR(y = phenotype, gen = genotype)</code></li>
+<li><code>eRR = emRR(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>o. non-MCMC Bayesian LASSO</strong></p>
 <ul>
-<li><code>LV = emDE(y = phenotype, gen = genotype)</code></li>
+<li><code>eBL = emDE(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>p. Elastic net</strong></p>
 <ul>
-<li><code>LV = emEN(y = phenotype, gen = genotype)</code></li>
+<li><code>eEN = emEN(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>q. Mixed L1-L2 (variation of Elastic net)</strong></p>
 <ul>
-<li><code>LV = emBL(y = phenotype, gen = genotype)</code></li>
+<li><code>eMix = eMix(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p>For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a  part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script</p>
 <ul>

@@ -1,7 +1,7 @@
 
-gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
+gmm = function(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...){
   
-  # models: Average - BRR - BayesA - BLASSO - GBLUP - RKHS - RF
+  # models: BRR - BayesA - GBLUP - RKHS - RF
   # spline: dta must include a column called "ID Block Row Col"
   
   if(is.null(dta)&nrow(gen)==length(y)){
@@ -28,7 +28,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
   } 
   
   # Checking if the model is acceptable
-  if(! model %in% c("Average","BRR","BayesA","BLASSO","GBLUP","RKHS","RF")) stop("Model must be either 'Average', 'BRR', 'BayesA','BLASSO','GBLUP','RKHS' or 'RF' ")
+  if(! model %in% c("BRR","BayesA","GBLUP","RKHS","RF")) stop("Model must be either 'BRR', 'BayesA','GBLUP','RKHS' or 'RF' ")
   if(model=="GBLUP"|model=="RKHS"){
     KERN = TRUE
     if(model=="GBLUP"){
@@ -221,7 +221,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
     # KERNEL AND REGRESSION METHODS
     d = rep(1,ncol(gen))
     E = MAP(e,Z,Weight) 
-    update = KMUP(X=gen,b=g,d=d,xx=xx,E=E,L=L,Ve=Ve,pi=0)
+    update = KMUP(X=gen,b=g,d=d,xx=xx,e=E,L=L,Ve=Ve,pi=0)
     # First round of WGR: Setting priors
     if(KERN){
       R2 = 0.5
@@ -319,7 +319,7 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       
       bvs0 = bvs
       E = MAP(e,Z,Weight)
-      update = KMUP(X=gen,b=g,d=d,xx=xx,E=E,L=L,Ve=Ve,pi=0)
+      update = KMUP(X=gen,b=g,d=d,xx=xx,e=E,L=L,Ve=Ve,pi=0)
       g = update$b
       bv = tcrossprod(g,gen)
       bvs = as.vector(tcrossprod(Z,bv))
@@ -334,26 +334,6 @@ gmm = function(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...){
       }
       if(model=="BayesA"){
         Vm = (S_conj + g^2)/rchisq(p, df_prior + 1)
-        S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
-        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-        L = Ve/Vm
-      }
-      if(model=="BLASSO"){
-        AG = abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
-        Vm = rchisq(p,phi)
-        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-        L = Ve/Vm
-      }
-      if(model=="Average"){
-        AG=abs(g); MAG=mean(AG); phi=(AG*MAG+S_prior)*(1+rpois(1,10))
-        # Ridge
-        Va = (sum(g^2) + S_prior)/rchisq(1, df_prior + p)
-        # BayesA
-        Vb = (S_conj + g^2)/rchisq(p, df_prior + 1)
-        # Bayesian LASSO
-        Vc = rchisq(p,phi)
-        # Average
-        Vm = (Va+Vb+Vc)/3
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
         Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
         L = Ve/Vm

@@ -7,7 +7,7 @@ Genomic mixed model
 This function was developed to solve a mixel model for multi-environmental trials and/or replicated trials when genomic is available. The model includes a semi-parametric term to account for spatial variation when the field layout of the experiment is know. Covariates (fixed effects), genetics (random effect) and spatial term are fitted all in a single step.
 }
 \usage{
-gmm(y,gen,dta=NULL,it=500,bi=200,th=1,model="BRR",...)
+gmm(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...)
 }
 \arguments{
   \item{y}{
@@ -29,7 +29,7 @@ Integer. Burn-in of MCMC iterations, i.e., number of iteration to be discarted p
 Integer. Thinning parameter: saves only 1 interation every \code{th}. Thinning is used to reduce the auto-correlation between Markov chains.
 }
   \item{model}{
-Prediction model: The options are: \code{BRR}, \code{BayesA}, \code{BLASSO}, \code{Average}, \code{GBLUP}, \code{RKHS} and \code{RF}.
+Prediction model: The options are: \code{BRR}, \code{BayesA}, \code{GBLUP}, \code{RKHS} and \code{RF}.
 }
   \item{...}{
 Pass arguments to the function that builds the spatial splines \code{NNsrc}: rho and dist. By default, \code{rho=1} and \code{dist=3}. To check how it looks like in the field, type \code{NNsrc(rho=1,dist=3)}. If \code{model="RF"}, it also passes the setting of random forest: number of trees \code{(NTR=50)}, sample size \code{(SSZ=80)}, max nodes \code{(MNO=10)}, node size \code{(NSZ=4)}, number of variables \code{(MTR=50)}, importance sampling \code{(IMP=TRUE)} and replacement \code{(RPL=TRUE)}.
@@ -40,11 +40,11 @@ Pass arguments to the function that builds the spatial splines \code{NNsrc}: rho
 
 The general model is \eqn{y=Xb+Zu+f(x)+e}, where \eqn{y} is the response variable, \eqn{Xb} refers to the fixed effects, \eqn{Zu} regards the genetic effect, \eqn{f(x)} represents the field variation, and \eqn{e} is the vector of residuals. In this model \eqn{u} is a link function that represents the genetic component, which depends on the model specified.
 
-For whole-genome regression models (BRR, BLASSO, BayesA, Average), \eqn{u = Ma}, where \eqn{M} is the matrix of genotypes. For kernel models (RKHS and GBLUP), \eqn{u=N(0,K\sigma2a)}, where K is either a Gaussian kernel (RKHS) or a linear kernel (GBLUP). For the non-parametric model (RF), \eqn{u} is updated every round of MCMC and prediction on unobseved genotyped are performed in every round of MCMC and average out in the end. To avoid over-representation of genotypes, \eqn{u} is not weighted according to the number of observations of each genotype.
+For whole-genome regression models (BRR or BayesA), \eqn{u = Ma}, where \eqn{M} is the matrix of genotypes. For kernel models (RKHS and GBLUP), \eqn{u=N(0,K\sigma2a)}, where K is either a Gaussian kernel (RKHS) or a linear kernel (GBLUP). For the non-parametric model (RF), \eqn{u} is updated every round of MCMC and prediction on unobseved genotyped are performed in every round of MCMC and average out in the end. To avoid over-representation of genotypes, \eqn{u} is not weighted according to the number of observations of each genotype.
 
 Unobserved genotypes not provided in \code{dta} but provided in \code{gen} are predicted in the output of the function. Genotypes without genotypic information are transfered to the fixed effect (eg. checks). Missing loci are imputed with the expectation. If \code{dta} is not provided, the function will work as a regular genomic prediction model, so the length of \code{y} must match the number of rows of \code{gen}.
 
-In whole-genome regression models, the regularization of the genetic term is either based on chosen prior (t, Gaussian or Laplace) or through the average of three priors. Gaussian (from ridge regression), t (from BayesA) and Laplace (from Bayesian LASSO). Kernel models (GBLUP and RKHS) are regularized as Gaussian process, which is similar to a ridge regression of Eigenvectors where the regularization of Eigenpairs also relies on the Eigenvalues. Random forest is, at some extend, regularized by multiple parameters including sample size (SSZ), numer of trees (NTR), number of variables (MTR), etc.
+In whole-genome regression models, the regularization of the genetic term is either based on chosen prior (t, Gaussian), Gaussian (from ridge regression) and t (from BayesA). Kernel models (GBLUP and RKHS) are regularized as Gaussian process, which is similar to a ridge regression of Eigenvectors where the regularization of Eigenpairs also relies on the Eigenvalues. Random forest is, at some extend, regularized by multiple parameters including sample size (SSZ), numer of trees (NTR), number of variables (MTR), etc.
 
 If there is a large number of trials and users acknowledge the necessity of sparse matrices, we recommend installing the Matrix package and run the following code that enables sparsity:
 

@@ -14,69 +14,64 @@ CV_NAM=function(y,gen,k=5,Seeds=1:5,IT=400,BI=100,cl=NULL){
     
     # BayesB
     cat('BayesB\n')
-    f1=wgr(y,gen,iv = T,pi=0.1,verb=T,it=IT,bi=BI)
+    f1=wgr(y,gen,iv = T,pi=0.8,verb=T,it=IT,bi=BI)
     # BayesC
     cat('BayesC\n')
-    f2=wgr(y,gen,pi=0.1,verb=T,it=IT,bi=BI)
+    f2=wgr(y,gen,pi=0.8,verb=T,it=IT,bi=BI)
     # BEN
     cat('BEN\n')
     f3=ben(y,gen,it=IT,bi=BI,bag = 0.8)
     # RF
     cat('RF\n')
-    f4=gmm(y,gen,model = 'RF',it=IT,bi=0)
+    f4=gmm(y,gen,model = 'RF',it=round(IT/100),bi=round(BI/100))
     # BRR
     cat('BRR\n')
     f5=gmm(y,gen,model = 'BRR',it=IT,bi=BI)
-    # BLASSO
-    cat('BLASSO-L1\n')
-    f6=gmm(y,gen,model = 'BLASSO',it=IT,bi=BI)
     # BayesA
     cat('BayesA\n')
-    f7=gmm(y,gen,model = 'BayesA',it=IT,bi=BI)
-    # Average
-    cat('Average\n')
-    f8=gmm(y,gen,model = 'Average',it=IT,bi=BI)
+    f6=gmm(y,gen,model = 'BayesA',it=IT,bi=BI)
     # GBLUP
     cat('GBLUP\n')
-    f9=gmm(y,gen,model = 'GBLUP',it=IT,bi=BI)
+    f7=gmm(y,gen,model = 'GBLUP',it=IT,bi=BI)
     # RKHS
     cat('RKHS\n')
-    f10=gmm(y,gen,model = 'RKHS',it=IT,bi=BI)
+    f8=gmm(y,gen,model = 'RKHS',it=IT,bi=BI)
     # Ridge
     cat('RR\n')
-    f12=emRR(y[-w],gen[-w,])
+    f9=emRR(y[-w],gen[-w,])
     # BSR
     cat('BSR\n')
-    f11=emBA(y[-w],gen[-w,])
+    f10=emBA(y[-w],gen[-w,])
     # SSVS
     cat('BVS\n')
-    f13=emBB(y[-w],gen[-w,])
+    f11=emBB(y[-w],gen[-w,])
     # Mixture
     cat('Mixture\n')
-    f14=emBC(y[-w],gen[-w,])
+    f12=emBC(y[-w],gen[-w,])
     # Laplace
     cat('Laplace\n')
-    f15=emDE(y[-w],gen[-w,])
+    f13=emDE(y[-w],gen[-w,])
     # Mix L1l2
     cat('MixL1L2\n')
-    f16=emBL(y[-w],gen[-w,])
+    f14=emBL(y[-w],gen[-w,])
     # Elastic net
     cat('ElasticNet\n')
-    f17=emEN(y[-w],gen[-w,])
+    f15=emEN(y[-w],gen[-w,])
     # BLASSO2
     cat('BLASSO-L2\n')
-    f18=wgr(y,gen,it=IT,bi=BI,de=TRUE)
+    f16=wgr(y,gen,it=IT,bi=BI,de=TRUE)
     
-    NamesMod = c('wgr.BayesB','wgr.BayesC','ben','gmm.RF','gmm.BRR','gmm.BLASSO',
-                 'gmm.BayesA','gmm.Average','gmm.GBLUP','gmm.RKHS',
-                 'emRR','emBA','emBB','emBC','emDE','emBL','emEN','emBL','OBSERVATION')
+    NamesMod = c('wgr.BayesB','wgr.BayesC','ben',
+                 'gmm.RF','gmm.BRR','gmm.BayesA','gmm.GBLUP','gmm.RKHS',
+                 'emRR','emBA','emBB','emBC','emDE','emBL','emEN','wgr.BL',
+                 'OBSERVATION')
     
     M = matrix(NA,Nk,length(NamesMod))
     colnames(M) = NamesMod
     for(i in 1:3) M[,i]=get(paste('f',i,sep=''))$hat[w]
     for(i in c(4:10)) M[,i]=get(paste('f',i,sep=''))$EBV[w]
-    for(i in 11:18) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
-    M[,19] = Y[w]
+    for(i in 11:16) M[,i]=gen[w,]%*%get(paste('f',i,sep=''))$b
+    M[,17] = Y[w]
     return(M)
   }
   

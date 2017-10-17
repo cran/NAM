@@ -181,6 +181,7 @@ plot.fst = function(x,..., p=NULL,chr=NULL){
 # function for marker quality control
 snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
   anyNA = function(x) any(is.na(x))
+  
   # CHECKING REDUNDANT MARKERS
   gen2=gen; redundancy=c(0); for(i in 1:(ncol(gen)-1)){
     a=mean((gen[,i]==gen[,(i+1)]),na.rm=TRUE);redundancy=c(redundancy,a)} 
@@ -188,6 +189,11 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
   if(b>0){cat("Genotypic data contains",b,"redundant SNPs",'\n')
     if(remove==TRUE){gen2=gen[,-a]}
   }else{cat("No redundant SNPs found",'\n')}
+  
+  # REMOVE SNP A LOT OF MISSING # NEW!
+  msnp = apply(gen2,2,function(x) mean(is.na(x)) )
+  noVal = which(msnp>misThr)
+  
   # CHECKING MINOR ALLELE FREQUENCY
   if(MAF>0){
     Count_maf = function(x){
@@ -201,25 +207,23 @@ snpQC=function(gen,psy=1,MAF=0.05,misThr=0.8,remove=TRUE,impute=FALSE){
       return(lowerAF)}
     LAF = apply(gen2,2,Count_maf)
     maf=which(LAF<MAF)
-    # REMOVE SNP WITH INSUFICIENT VARIATION (eg. singletons) # NEW!
-    vsnp = apply(gen2,2,sd)
-    noVar = which(vsnp< max(MAF,0.001))
+    
     # REMOVE SNP A LOT OF MISSING # NEW!
-    msnp = apply(gen2,2,sd)
+    msnp = apply(gen2,2,function(x) mean(is.na(x)) )
     noVal = which(msnp>misThr)
+    
     # hist(LAF,col=3,nclass=50,main="Histogram of MAF",xlab="Minor Allele Frequency")
     if(length(maf)>0){
       cat("There are",length(maf),"markers with MAF below the threshold",'\n')
       if(remove==TRUE){
         gen3=gen2[,-maf]
-        if(any(noVar)){gen3=gen3[,-noVar]}
         if(any(noVal)){gen3=gen3[,-noVal]}
       }else{
         gen3=gen2
-        }
+      }
+      
     }else{cat("No marker below MAF threshold",'\n');
       gen3=gen2
-      if(any(noVar)){gen3=gen3[,-noVar]}
       if(any(noVal)){gen3=gen3[,-noVal]}
       }
   }else{gen3=gen2}
@@ -475,9 +479,9 @@ Gdist = function(gen,method=1){
     p = ncol(gen)
     d = dist(gen,method = 'euclidean')
     d = d/p}
-  # Provesti
+  # Prevosti
   else if (method == 5){
-    cat("Provesti's distance\n")
+    cat("Prevosti's distance\n")
     p = ncol(gen)
     d = dist(gen,method = 'manhattan')
     d = d/(2*p)}

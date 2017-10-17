@@ -169,8 +169,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // KMUP
-SEXP KMUP(NumericMatrix X, NumericVector b, NumericVector d, NumericVector xx, NumericVector E, NumericVector L, double Ve, double pi);
-RcppExport SEXP NAM_KMUP(SEXP XSEXP, SEXP bSEXP, SEXP dSEXP, SEXP xxSEXP, SEXP ESEXP, SEXP LSEXP, SEXP VeSEXP, SEXP piSEXP) {
+SEXP KMUP(NumericMatrix X, NumericVector b, NumericVector d, NumericVector xx, NumericVector e, NumericVector L, double Ve, double pi);
+RcppExport SEXP NAM_KMUP(SEXP XSEXP, SEXP bSEXP, SEXP dSEXP, SEXP xxSEXP, SEXP eSEXP, SEXP LSEXP, SEXP VeSEXP, SEXP piSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -178,11 +178,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type d(dSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type xx(xxSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type E(ESEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type e(eSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type L(LSEXP);
     Rcpp::traits::input_parameter< double >::type Ve(VeSEXP);
     Rcpp::traits::input_parameter< double >::type pi(piSEXP);
-    rcpp_result_gen = Rcpp::wrap(KMUP(X, b, d, xx, E, L, Ve, pi));
+    rcpp_result_gen = Rcpp::wrap(KMUP(X, b, d, xx, e, L, Ve, pi));
     return rcpp_result_gen;
 END_RCPP
 }
