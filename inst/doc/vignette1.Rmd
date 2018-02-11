@@ -188,7 +188,26 @@ To find out which markers are above a given significance threshold, use the foll
 
 To find out the Bonferroni threshold in LRT scale, try
 
-+ `optim(1,fn=function(x)abs(-log(dchisq(x,df=0.5),base=10)+ log(0.05/number_of_markers)),method="CG")$par`
++ `optim(1,fn=function(x)abs(-log(pchisq(lrt,0.5,lower.tail=FALSE),base = 10) + log(0.05/number_of_markers)),method="CG")$par`
+
+The meaning of each column from PolyTest is summarized below:
+
++ conv = convergence
++ fn1 = Likelihood of the full model (marker included) 
++ fn0 =  Likelihood of the reduced model (marker excluded) 
++ lod = lod score, Logarithm of Odds
++ pval = -log10(p-value) 
++ lrt = likelihood ratio test statistic
++ sigma2g = genetic variance estimated from the SNP
++ sigma2 = residual variance of the full model
++ h2 = narrow-sense heritability of the full model h2=Va/(Va+Ve), where Va=Var(SNP)+Var(Polygene)
++ lam_k = Va(snp)/Ve 
++ var.snp = variance explained by SNP as Var(marker)/Var(Y)
++ intercept = intercept of the model
++ std.eff (gwas/gwas2) = allele effect from the reference line (standard parent for NAM)
++ eff.1 = allele effect in sub-population 1 or family 1
++ eff.2 = allele effect in sub-population 2 or family 2
++ eff.X = allele effect in sub-population X or family X
 
 The output of the  GWAS function provides the allele effect into the GWAS of multiple populations context, testing one marker at a time. To find out the effect of each marker conditional to the genome (i.e. given all the other makers are in the model). This technique is known as whole-genome regression (WGR) method.
 
@@ -371,7 +390,7 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 
 **q. Mixed L1-L2 (variation of Elastic net)**
 
-+ `eMix = eMix(y = phenotype, gen = genotype)`
++ `eMix = emBL(y = phenotype, gen = genotype)`
 
 For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
 
