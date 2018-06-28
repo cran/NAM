@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2018-05-11" />
+<meta name="date" content="2018-06-28" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2018-05-11</em></h4>
+<h4 class="date"><em>2018-06-28</em></h4>
 
 
 
@@ -334,31 +334,31 @@ Fit the model</p>
 <p>Although it is possible to use <code>reml</code> and <code>gibbs</code> to generate breeding values, the functions <code>gmm</code> and <code>wgr</code> (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:</p>
 <p><strong>a. BLUP</strong></p>
 <ul>
-<li><code>BLUP = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0)</code></li>
+<li><code>BLUP = wgr(y = phenotype, X = genotype, iv=FALSE, pi=0)</code></li>
 </ul>
 <p><strong>b. BayesA</strong></p>
 <ul>
-<li><code>BA = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0)</code></li>
+<li><code>BA = wgr(y = phenotype, X = genotype, iv=TRUE, pi=0)</code></li>
 </ul>
 <p><strong>c. BayesB</strong></p>
 <ul>
-<li><code>BB = wgr(y = phenotype, gen = genotype, iv=TRUE, pi=0.8)</code></li>
+<li><code>BB = wgr(y = phenotype, X = genotype, iv=TRUE, pi=0.8)</code></li>
 </ul>
 <p><strong>d. BayesC</strong></p>
 <ul>
-<li><code>BC = wgr(y = phenotype, gen = genotype, iv=FALSE, pi=0.8)</code></li>
+<li><code>BC = wgr(y = phenotype, X = genotype, iv=FALSE, pi=0.8)</code></li>
 </ul>
-<p><strong>e. Bayesian Elastic Net</strong></p>
+<p><strong>e. Bayesian Elastic Net</strong> (under dev)</p>
 <ul>
 <li><code>BEN = ben(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p><strong>f. Bayesian LASSO</strong></p>
 <ul>
-<li><code>BL = wgr(y = phenotype, gen = genotype, de=TRUE)</code></li>
+<li><code>BL = wgr(y = phenotype, X = genotype, de=TRUE)</code></li>
 </ul>
 <p><strong>g. Extended Bayesian LASSO</strong></p>
 <ul>
-<li><code>EBL = wgr(y = phenotype, gen = genotype, de=TRUE, pi=0.8)</code></li>
+<li><code>EBL = wgr(y = phenotype, X = genotype, de=TRUE, pi=0.8)</code></li>
 </ul>
 <p><strong>h. GBLUP</strong></p>
 <ul>
