@@ -104,6 +104,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// emML
+SEXP emML(NumericVector y, NumericMatrix gen, Rcpp::Nullable<Rcpp::NumericVector> D);
+RcppExport SEXP _NAM_emML(SEXP ySEXP, SEXP genSEXP, SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type gen(genSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(emML(y, gen, D));
+    return rcpp_result_gen;
+END_RCPP
+}
 // calcSize
 int calcSize(NumericVector col, NumericVector fam);
 RcppExport SEXP _NAM_calcSize(SEXP colSEXP, SEXP famSEXP) {
@@ -348,6 +361,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NAM_emBL", (DL_FUNC) &_NAM_emBL, 4},
     {"_NAM_emDE", (DL_FUNC) &_NAM_emDE, 3},
     {"_NAM_emEN", (DL_FUNC) &_NAM_emEN, 4},
+    {"_NAM_emML", (DL_FUNC) &_NAM_emML, 3},
     {"_NAM_calcSize", (DL_FUNC) &_NAM_calcSize, 2},
     {"_NAM_funI", (DL_FUNC) &_NAM_funI, 4},
     {"_NAM_funX", (DL_FUNC) &_NAM_funX, 2},

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Alencar Xavier (alenxav@gmail.com)" />
 
-<meta name="date" content="2018-06-28" />
+<meta name="date" content="2018-08-24" />
 
 <title>Introduction to NAM</title>
 
@@ -32,7 +32,7 @@
 
 <h1 class="title toc-ignore">Introduction to NAM</h1>
 <h4 class="author"><em>Alencar Xavier (<a href="mailto:alenxav@gmail.com">alenxav@gmail.com</a>)</em></h4>
-<h4 class="date"><em>2018-06-28</em></h4>
+<h4 class="date"><em>2018-08-24</em></h4>
 
 
 
@@ -399,6 +399,10 @@ Fit the model</p>
 <p><strong>q. Mixed L1-L2 (variation of Elastic net)</strong></p>
 <ul>
 <li><code>eMix = emBL(y = phenotype, gen = genotype)</code></li>
+</ul>
+<p><strong>r. Maximum likelihood</strong></p>
+<ul>
+<li><code>eML = emML(y = phenotype, gen = genotype)</code></li>
 </ul>
 <p>For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a  part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script</p>
 <ul>

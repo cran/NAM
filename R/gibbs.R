@@ -29,7 +29,7 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
     Z=ZZ
     rm(ZZ,Randoms)
   }
-
+  
   if(!GSRU){
     # Defaults for null and incomplete iK
     if(is.null(iK)){
@@ -94,18 +94,18 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
   # Keeping on
   # GSRU does not deal with WW or iK
   if(!GSRU){
-  if(is.null(iR)){
-    r = crossprod(W,y)
-    WW = (crossprod(W))
-  }else{
-    r = crossprod(W,iR)%*%y
-    WW = (crossprod(W,iR))%*%W
-  }
-  # Covariance Matrix
-  Sigma = matrix(0,N,N)
-  for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
-  # Matching WW and Sigma
-  C = WW+Sigma
+    if(is.null(iR)){
+      r = crossprod(W,y)
+      WW = (crossprod(W))
+    }else{
+      r = crossprod(W,iR)%*%y
+      WW = (crossprod(W,iR))%*%W
+    }
+    # Covariance Matrix
+    Sigma = matrix(0,N,N)
+    for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
+    # Matching WW and Sigma
+    C = WW+Sigma
   }else{
     L = rep(0,ncol(W))
     for(i in 1:Randoms) L[Qs1[i+1]:Qs2[i+1]] = lambda[i]
@@ -120,21 +120,22 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
   # Hperpriors: Degrees of freedom (DF) and Shape (S)
   df0 = DF
   
+  # S0 has analystical solution (De los Campos et al 2013)
   if(is.null(S)){
-    S0=rep(0,Randoms) # S0 has analystical solution (De los Campos et al 2013)
+    S0=rep(0,Randoms) 
     if(!GSRU){
-    for(i in 1:Randoms) 
-      S0[i]=(var(y,na.rm=T)*0.5)/mean(
-        (t((t(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]])-
-              colMeans(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]]))))^2 )
+      for(i in 1:Randoms) 
+        S0[i]=(VY*0.5)/mean(
+          (t((t(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]])-
+                colMeans(C[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]]))))^2 )
     }else{
       for(i in 1:Randoms) 
-        S0[i]=(var(y,na.rm=T)*0.5)/
-        mean( (t((t(W[,Qs1[i+1]:Qs2[i+1]])-colMeans(W[,Qs1[i+1]:Qs2[i+1]]))))^2 )
+        S0[i]=(VY*0.5)/
+          mean( (t((t(W[,Qs1[i+1]:Qs2[i+1]])-colMeans(W[,Qs1[i+1]:Qs2[i+1]]))))^2 )
     }
     
-  }else{S0=rep(S,Randoms)}
-    
+  }else{S0=rep(S*VY,Randoms)}
+  
   # Saving memory for some vectors
   e = rep(0,N)
   
@@ -145,28 +146,26 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
   for(iteration in 1:Iter){
     
     # Sampling hyper-priors
-    S0a = runif(Randoms,S0*0.5,S0*1.5)
-    df0a = runif(Randoms,df0*0.5,df0*1.5)
+    S0a = runif(Randoms,S0*0.9,S0*1.1)
+    df0a = min(2,df0) * runif(1,0.9,1.1)
     dfu = q + df0a
-    if(is.null(S)){
-      S0b = runif(1,0.0001,2)
-    }else{
-        S0b = runif(1,S*0.5,S*1.5)
-        }
-    df0b = runif(1,min(2,df0)*0.5,min(2,df0)*1.5)
+    
+    # Residual hyper-priors
+    S0b = 0.5 * VY * runif(1,0.9,1.1)
+    df0b = min(2,df0) * runif(1,0.9,1.1)
     dfe = n + df0b
     
     # Random variance
     for(i in 1:Randoms){
       # (ZiAZ+S0v0)/x2(v)
       if(!GSRU){
-      Va[i] = (sum(crossprod(g[Qs1[i+1]:Qs2[i+1]],iK[[i]])*(g[Qs1[i+1]:Qs2[i+1]]))+  
-                 S0a[i]*df0a[i])/rchisq(1,df=dfu[i])
+        Va[i] = (sum(crossprod(g[Qs1[i+1]:Qs2[i+1]],iK[[i]])*(g[Qs1[i+1]:Qs2[i+1]]))+  
+                   S0a[i]*df0a[i])/rchisq(1,df=dfu[i])
       }else{
         Va[i] = (sum(crossprod(g[Qs1[i+1]:Qs2[i+1]]))+S0a[i]*df0a[i])/rchisq(1,df=dfu[i])
       }
     }
-      
+    
     # Residual variance
     e = y - W%*%g
     Ve = (crossprod(e)+S0b*df0b) / rchisq(1,df=dfe)
@@ -176,8 +175,8 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
     
     # Updating C
     if(!GSRU){
-    for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
-    C = WW+Sigma
+      for(i in 1:Randoms) Sigma[Qs1[i+1]:Qs2[i+1],Qs1[i+1]:Qs2[i+1]] = iK[[i]]*lambda[i]
+      C = WW+Sigma
     }
     
     # the C++ SAMP updates "g" and doesn't return anything
@@ -186,7 +185,7 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
     } else {
       SAMP2(W,g,y,xx,e,L,N,Ve) 
     }
-        
+    
     if(is.element(iteration,THIN)){
       include = include + 1;
       POSTg[,include] = g;
@@ -224,12 +223,12 @@ gibbs = function(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,Thin=2,DF=5,
   
   
   RESULTS = list(
-                 "Coef.estimate" = Mean.B,
-                 "VC.estimate" = Post.VC,
-                 "Posterior.Coef" = Coefficients,
-                 "Posterior.VC" = POSTv,
-                 "Fit.mean" = W1%*%Mean.B
-                 )
+    "Coef.estimate" = Mean.B,
+    "VC.estimate" = Post.VC,
+    "Posterior.Coef" = Coefficients,
+    "Posterior.VC" = POSTv,
+    "Fit.mean" = W1%*%Mean.B
+  )
   
   class(RESULTS) = "gibbs"
   

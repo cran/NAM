@@ -29,6 +29,10 @@ emEN <- function(y, gen, R2 = 0.5, alpha = 0.02) {
     .Call(`_NAM_emEN`, y, gen, R2, alpha)
 }
 
+emML <- function(y, gen, D = NULL) {
+    .Call(`_NAM_emML`, y, gen, D)
+}
+
 calcSize <- function(col, fam) {
     .Call(`_NAM_calcSize`, col, fam)
 }
