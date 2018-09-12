@@ -223,3 +223,63 @@ MCreml = function(y,K,X=NULL,MC=300,samp=300){
   result = list("samples"=samples,"modes"=VC)
   return(result)
 }
+                 
+press = function(y, K, MaxIt=10){
+  #
+  mu = mean(y,na.rm=T)
+  y = y-mu;
+  #
+  m = anyNA(y)
+  w = is.na(y)
+  #
+  if(!is.list(K)&length(K)!=2) K = eigen(K, TRUE);
+  U = K$vectors; D=K$values
+  #
+  press = function(lmb){
+    H = (U %*% diag(x= D/(lmb + D))%*%t(U))
+    if(m){
+      y = ifelse(w,0,y)
+      cnv = 1
+      its = 1
+      while(cnv>1e-8&its<MaxIt){
+        y0 = y
+        fit = c(tcrossprod(t(y),H));
+        y = y1 = ifelse(w,fit,y)
+        cnv = sum((y0[which(w)]-y1[which(w)])**2)
+        its = its+1
+        cat(its,cnv,'\n')
+      }
+    }else{
+      fit = c(tcrossprod(t(y),H));
+    }
+    res = y-fit
+    prs = sum((res^2)/(1-diag(H))^2)
+    return(prs)
+    }
+  #
+  OPT = optim(1, press, method = 'BFGS')
+  LMB = OPT$par; PRESS = OPT$value
+  H = (U %*%diag(x=D/(LMB+D))%*%t(U))
+  #
+  if(m){
+    y = ifelse(w,0,y)
+    cnv = 1
+    its = 1
+    while(cnv>1e-8&its<MaxIt){
+      y0 = y
+      fit = c(tcrossprod(t(y),H));
+      y = y1 = ifelse(w,fit,y)
+      cnv = sum((y0[which(w)]-y1[which(w)])**2)
+      its = its+1
+    }
+  }else{
+    fit = c(tcrossprod(t(y),H));
+  }
+  #
+  FIT = mu+fit
+  OUT = list(hat=FIT, lambda=LMB, press=PRESS)
+  return(OUT)}
+
+                 
+                 
+                 

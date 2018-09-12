@@ -97,7 +97,23 @@ GAU <- function(X) {
     .Call(`_NAM_GAU`, X)
 }
 
+GRM <- function(X, Code012 = FALSE) {
+    .Call(`_NAM_GRM`, X, Code012)
+}
+
 SPC <- function(y, blk, row, col, rN = 3L, cN = 1L) {
     .Call(`_NAM_SPC`, y, blk, row, col, rN, cN)
+}
+
+SPM <- function(blk, row, col, rN = 3L, cN = 1L) {
+    .Call(`_NAM_SPM`, blk, row, col, rN, cN)
+}
+
+BRR2 <- function(y, X1, X2, it = 1500, bi = 500, df = 5, R2 = 0.5) {
+    .Call(`_NAM_BRR2`, y, X1, X2, it, bi, df, R2)
+}
+
+emGWA <- function(y, gen) {
+    .Call(`_NAM_emGWA`, y, gen)
 }
 

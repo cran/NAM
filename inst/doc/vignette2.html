@@ -1,174 +1,289 @@
 <!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="pandoc" />
+<title>Meta-analysis of multiple populations along with GxE</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<meta name="author" content="Alencar Xavier and Shizhong Xu" />
-
-<meta name="date" content="2018-08-24" />
-
-<title>Meta-analysis</title>
-
-
-
-
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
 
 
-<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+<!-- MathJax scripts -->
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
 
 </head>
 
 <body>
-
-
-
-
-<h1 class="title toc-ignore">Meta-analysis</h1>
-<h4 class="author"><em>Alencar Xavier and Shizhong Xu</em></h4>
-<h4 class="date"><em>2018-08-24</em></h4>
-
-
-
-<div id="meta-analysis-of-multiple-populations-along-with-gxe" class="section level1">
 <h1>Meta-analysis of multiple populations along with GxE</h1>
-<div id="genome-wide-association" class="section level2">
+
 <h2>Genome-wide association</h2>
-<p>Let the dataset have <span class="math inline">\(n\)</span> observations, <span class="math inline">\(f\)</span> subpopulations, <span class="math inline">\(m\)</span> markers and <span class="math inline">\(e\)</span> environments. The method starts from the genome-wide association analysis in the <span class="math inline">\(j^{th}\)</span> environment, following the alternative model <span class="math inline">\(y_j = \mu_j + Z\hat{\gamma}_i + \xi_j + \epsilon_j\)</span>. Where <span class="math inline">\(y\)</span> is the vector corresponding to the response variable, <span class="math inline">\(\mu\)</span> is the intercept, <span class="math inline">\(Z\)</span> is a <span class="math inline">\(n\times f\)</span> incidence matrix indicating the haplotype of the maker under evaluation, <span class="math inline">\(\hat{\gamma}_i\)</span> is a vector of the allele effects of the <span class="math inline">\(i^{th}\)</span> marker of <span class="math inline">\(f\)</span> subpopulations, <span class="math inline">\(\xi\)</span> is a vector of length <span class="math inline">\(n\)</span> corresponding to the polygenic term and <span class="math inline">\(\epsilon\)</span> is a vector of residuals with length <span class="math inline">\(n\)</span>.</p>
-</div>
-<div id="meta-analysis" class="section level2">
+
+<p>Let the dataset have \(n\) observations, \(f\) subpopulations, \(m\) markers and \(e\) environments. The method starts from the genome-wide association analysis in the \(j^{th}\) environment, following the alternative model \(y_j = \mu_j + Z\hat{\gamma}_i + \xi_j + \epsilon_j\). Where \(y\) is the vector corresponding to the response variable, \(\mu\) is the intercept, \(Z\) is a \(n\times f\) incidence matrix indicating the haplotype of the maker under evaluation, \(\hat{\gamma}_i\) is a vector of the allele effects of the \(i^{th}\) marker of \(f\) subpopulations, \(\xi\) is a vector of length \(n\) corresponding to the polygenic term and \(\epsilon\) is a vector of residuals with length \(n\).</p>
+
 <h2>Meta-analysis</h2>
-<p>For each <span class="math inline">\(i\)</span> marker, the meta-analysis is based upon the concept of sufficient statistics, assuming that environments are independent and all information in each environment can be expressed by the allele effects <span class="math inline">\(\hat{\gamma}_i\)</span> and the observed residual matrix <span class="math inline">\(R_i\)</span> obtained from the association analysis. The meta-analysis attempt to verify whether the genetic (<span class="math inline">\(G\)</span>) and environmental (<span class="math inline">\(E\)</span>) components of <span class="math inline">\(\gamma\)</span> differ from zero and, in addition, to verify the existance of <span class="math inline">\(G\times E\)</span> component. In this step, the set of <span class="math inline">\(\hat{\gamma}\)</span> from the association analyses becomes the response variable, a vector with length <span class="math inline">\(e\times f\)</span>. For the <span class="math inline">\(i^{th}\)</span> marker, variance components are obtained from the following random model: <span class="math inline">\(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + H\delta_i + e_i\)</span>. Where <span class="math inline">\(\mu_i\)</span> is the intercept, <span class="math inline">\(Z\)</span> is a <span class="math inline">\(ef\times f\)</span> incidence matrix indicating the allele source, <span class="math inline">\(\alpha_i\)</span> is the genetic effect associated to the marker, <span class="math inline">\(W\)</span> is a <span class="math inline">\(ef\times e\)</span> incidence matrix indicating the environmental factor, <span class="math inline">\(\beta_i\)</span> is the coefficient associated to each environment, <span class="math inline">\(H\)</span> is the incidence matrix of genotype by environment interaction, <span class="math inline">\(\delta_i\)</span> is the coefficient associated to the <span class="math inline">\(G\times E\)</span> term, and <span class="math inline">\(e_i\)</span> is the vector of residuals with a known residual covariance matrix <span class="math inline">\(R\)</span>, a block diagonal matrix <span class="math inline">\(ef\times ef\)</span>.</p>
-</div>
-<div id="ammi-term" class="section level2">
+
+<p>For each \(i\) marker, the meta-analysis is based upon the concept of sufficient statistics, assuming that environments are independent and all information in each environment can be expressed by the allele effects \(\hat{\gamma}_i\) and the observed residual matrix \(R_i\) obtained from the association analysis. The meta-analysis attempt to verify whether the genetic (\(G\)) and environmental (\(E\)) components of \(\gamma\) differ from zero and, in addition, to verify the existance of \(G\times E\) component. In this step, the set of \(\hat{\gamma}\) from the association analyses becomes the response variable, a vector with length \(e\times f\). For the \(i^{th}\) marker, variance components are obtained from the following random model: \(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + H\delta_i + e_i\). Where \(\mu_i\) is the intercept, \(Z\) is a \(ef\times f\) incidence matrix indicating the allele source, \(\alpha_i\) is the genetic effect associated to the marker, \(W\) is a \(ef\times e\) incidence matrix indicating the environmental factor, \(\beta_i\) is the coefficient associated to each environment, \(H\) is the incidence matrix of genotype by environment interaction, \(\delta_i\) is the coefficient associated to the \(G\times E\) term, and \(e_i\) is the vector of residuals with a known residual covariance matrix \(R\), a block diagonal matrix \(ef\times ef\).</p>
+
 <h2>AMMI term</h2>
-<p>The <span class="math inline">\(G\times E\)</span> term might saturate the model once each regression coefficient <span class="math inline">\(\gamma\)</span> is observed as an unreplicated combination of genotype and environment. The saturation does not occur because the residuals are not independent and the structure is known. Yet, there exist an alternative reparameterization of this term: the additive main effect and multiplicative interaction (AMMI) term. The AMMI term works as follows: Suppose that the analysis are being performed in a dataset with <span class="math inline">\(f=5\)</span> subpopulations and <span class="math inline">\(e=4\)</span> environments. Once <span class="math inline">\(\gamma\)</span> has been estimated from the association analysis (step 1) and variance components of the genetic and environmental have been estimated with meta-analysis (step 2), then one can build the following <span class="math inline">\(E\)</span> matrix of residuals that also contains the higher-order interaction term:</p>
-<table>
-<thead>
-<tr class="header">
-<th></th>
+
+<p>The \(G\times E\) term might saturate the model once each regression coefficient \(\gamma\) is observed as an unreplicated combination of genotype and environment. The saturation does not occur because the residuals are not independent and the structure is known. Yet, there exist an alternative reparameterization of this term: the additive main effect and multiplicative interaction (AMMI) term. The AMMI term works as follows: Suppose that the analysis are being performed in a dataset with \(f=5\) subpopulations and \(e=4\) environments. Once \(\gamma\) has been estimated from the association analysis (step 1) and variance components of the genetic and environmental have been estimated with meta-analysis (step 2), then one can build the following \(E\) matrix of residuals that also contains the higher-order interaction term:</p>
+
+<table><thead>
+<tr>
+<th align="left"></th>
 <th align="left">E1</th>
 <th align="left">E2</th>
 <th align="left">E3</th>
 <th align="left">E4</th>
 </tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>G1</td>
-<td align="left"><span class="math inline">\(\varepsilon_{11}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{21}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{31}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{41}\)</span></td>
+</thead><tbody>
+<tr>
+<td align="left">G1</td>
+<td align="left">\(\varepsilon_{11}\)</td>
+<td align="left">\(\varepsilon_{21}\)</td>
+<td align="left">\(\varepsilon_{31}\)</td>
+<td align="left">\(\varepsilon_{41}\)</td>
 </tr>
-<tr class="even">
-<td>G2</td>
-<td align="left"><span class="math inline">\(\varepsilon_{12}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{22}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{32}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{42}\)</span></td>
+<tr>
+<td align="left">G2</td>
+<td align="left">\(\varepsilon_{12}\)</td>
+<td align="left">\(\varepsilon_{22}\)</td>
+<td align="left">\(\varepsilon_{32}\)</td>
+<td align="left">\(\varepsilon_{42}\)</td>
 </tr>
-<tr class="odd">
-<td>G3</td>
-<td align="left"><span class="math inline">\(\varepsilon_{13}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{23}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{33}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{43}\)</span></td>
+<tr>
+<td align="left">G3</td>
+<td align="left">\(\varepsilon_{13}\)</td>
+<td align="left">\(\varepsilon_{23}\)</td>
+<td align="left">\(\varepsilon_{33}\)</td>
+<td align="left">\(\varepsilon_{43}\)</td>
 </tr>
-<tr class="even">
-<td>G4</td>
-<td align="left"><span class="math inline">\(\varepsilon_{14}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{24}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{34}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{44}\)</span></td>
+<tr>
+<td align="left">G4</td>
+<td align="left">\(\varepsilon_{14}\)</td>
+<td align="left">\(\varepsilon_{24}\)</td>
+<td align="left">\(\varepsilon_{34}\)</td>
+<td align="left">\(\varepsilon_{44}\)</td>
 </tr>
-<tr class="odd">
-<td>G5</td>
-<td align="left"><span class="math inline">\(\varepsilon_{15}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{25}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{35}\)</span></td>
-<td align="left"><span class="math inline">\(\varepsilon_{45}\)</span></td>
+<tr>
+<td align="left">G5</td>
+<td align="left">\(\varepsilon_{15}\)</td>
+<td align="left">\(\varepsilon_{25}\)</td>
+<td align="left">\(\varepsilon_{35}\)</td>
+<td align="left">\(\varepsilon_{45}\)</td>
 </tr>
-</tbody>
-</table>
-<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is <span class="math inline">\(E = UDS'\)</span>. Where, <span class="math inline">\(U\)</span> is a <span class="math inline">\(e\times e\)</span> matrix, <span class="math inline">\(D\)</span> is a <span class="math inline">\(e\times f\)</span> retangular diagonal matrix, and <span class="math inline">\(S\)</span> is a <span class="math inline">\(f\times f\)</span> matrix. In analogy to the Eigendecomposition, <span class="math inline">\(U\)</span> and <span class="math inline">\(S\)</span> represent Eigenvectors while <span class="math inline">\(D\)</span> are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs <span class="math inline">\(E\)</span> using the first <span class="math inline">\(p=2\)</span> principal components:</p>
-<table>
-<thead>
-<tr class="header">
-<th></th>
+</tbody></table>
+
+<p>The AMMI term is extracted from the singlar-value decomposition (SVD). The SVD procedure is commonly used for the extraction of signals from non-square matrices. The decomposition is \(E = UDS'\). Where, \(U\) is a \(e\times e\) matrix, \(D\) is a \(e\times f\) retangular diagonal matrix, and \(S\) is a \(f\times f\) matrix. In analogy to the Eigendecomposition, \(U\) and \(S\) represent Eigenvectors while \(D\) are Eigenvalues. Likewise, a small fraction of principal components contain the most amount of information to recontruct the original matrix. Suppose one recontructs \(E\) using the first \(p=2\) principal components:</p>
+
+<table><thead>
+<tr>
+<th align="left"></th>
 <th align="left">E1</th>
 <th align="left">E2</th>
 <th align="left">E3</th>
 <th align="left">E4</th>
 </tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>G1</td>
-<td align="left"><span class="math inline">\(q_{11}\)</span></td>
-<td align="left"><span class="math inline">\(q_{21}\)</span></td>
-<td align="left"><span class="math inline">\(q_{31}\)</span></td>
-<td align="left"><span class="math inline">\(q_{41}\)</span></td>
+</thead><tbody>
+<tr>
+<td align="left">G1</td>
+<td align="left">\(q_{11}\)</td>
+<td align="left">\(q_{21}\)</td>
+<td align="left">\(q_{31}\)</td>
+<td align="left">\(q_{41}\)</td>
 </tr>
-<tr class="even">
-<td>G2</td>
-<td align="left"><span class="math inline">\(q_{12}\)</span></td>
-<td align="left"><span class="math inline">\(q_{22}\)</span></td>
-<td align="left"><span class="math inline">\(q_{32}\)</span></td>
-<td align="left"><span class="math inline">\(q_{42}\)</span></td>
+<tr>
+<td align="left">G2</td>
+<td align="left">\(q_{12}\)</td>
+<td align="left">\(q_{22}\)</td>
+<td align="left">\(q_{32}\)</td>
+<td align="left">\(q_{42}\)</td>
 </tr>
-<tr class="odd">
-<td>G3</td>
-<td align="left"><span class="math inline">\(q_{13}\)</span></td>
-<td align="left"><span class="math inline">\(q_{23}\)</span></td>
-<td align="left"><span class="math inline">\(q_{33}\)</span></td>
-<td align="left"><span class="math inline">\(q_{43}\)</span></td>
+<tr>
+<td align="left">G3</td>
+<td align="left">\(q_{13}\)</td>
+<td align="left">\(q_{23}\)</td>
+<td align="left">\(q_{33}\)</td>
+<td align="left">\(q_{43}\)</td>
 </tr>
-<tr class="even">
-<td>G4</td>
-<td align="left"><span class="math inline">\(q_{14}\)</span></td>
-<td align="left"><span class="math inline">\(q_{24}\)</span></td>
-<td align="left"><span class="math inline">\(q_{34}\)</span></td>
-<td align="left"><span class="math inline">\(q_{44}\)</span></td>
+<tr>
+<td align="left">G4</td>
+<td align="left">\(q_{14}\)</td>
+<td align="left">\(q_{24}\)</td>
+<td align="left">\(q_{34}\)</td>
+<td align="left">\(q_{44}\)</td>
 </tr>
-<tr class="odd">
-<td>G5</td>
-<td align="left"><span class="math inline">\(q_{15}\)</span></td>
-<td align="left"><span class="math inline">\(q_{25}\)</span></td>
-<td align="left"><span class="math inline">\(q_{35}\)</span></td>
-<td align="left"><span class="math inline">\(q_{45}\)</span></td>
+<tr>
+<td align="left">G5</td>
+<td align="left">\(q_{15}\)</td>
+<td align="left">\(q_{25}\)</td>
+<td align="left">\(q_{35}\)</td>
+<td align="left">\(q_{45}\)</td>
 </tr>
-</tbody>
-</table>
-<p>The matrix above can be rearranged as a vector, and be included into the model of meta-analysis replacing the current <span class="math inline">\(G\times E\)</span> term. Thus, the model for the <span class="math inline">\(i^{th}\)</span> marker can be also expressed as <span class="math inline">\(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + Q\tau_i + e_i\)</span>.</p>
-</div>
-<div id="hypothesis-testing" class="section level2">
+</tbody></table>
+
+<p>The matrix above can be rearranged as a vector, and be included into the model of meta-analysis replacing the current \(G\times E\) term. Thus, the model for the \(i^{th}\) marker can be also expressed as \(\gamma_i = \mu_i + Z\alpha_i + W\beta_i + Q\tau_i + e_i\).</p>
+
 <h2>Hypothesis testing</h2>
-<p>The log-likelihood of the model is, therefore, <span class="math inline">\(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\)</span>, where the variance is expressed as <span class="math inline">\(\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\)</span> and the log-likelihood of the model above is tested against <span class="math inline">\(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\)</span>, providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, <span class="math inline">\(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\)</span>.</p>
-</div>
-<div id="woodburys-matrix-identities" class="section level2">
-<h2>Woodbury’s matrix identities</h2>
-<p>The computational burden associated to the analysis above is originated from the determinant and inversion of the covariance matrix <span class="math inline">\(V\)</span>, a square matrix with <span class="math inline">\(ef\)</span> rows and columns. Let <span class="math inline">\(X=[Z\sigma_\alpha || W\sigma_\beta || Q\sigma_\tau]\)</span>, such that <span class="math inline">\(V = XX^T+R\)</span>. Using the Woodbury’s matrix identities, we have <span class="math inline">\(V^{-1} = R^{-1}-R^{-1}X(X^TR^{-1}X+I)^{-1}X^TR^{-1}\)</span> and <span class="math inline">\(|V| = |X^TR^{-1}X+I||R|\)</span>, where the square matrix to be inverted has dimension <span class="math inline">\(e+f+p\)</span>. For the example, in the analysis of a dataset with <span class="math inline">\(e=18\)</span> environments, <span class="math inline">\(f=41\)</span> subpopulations and using <span class="math inline">\(p=2\)</span> principal components for the <span class="math inline">\(G\times E\)</span> term, we invert a square matrix with dimension <span class="math inline">\(18+41+2=61\)</span> rows and columns intead of a matrix with <span class="math inline">\(18\times 41=738\)</span> rows and columns.</p>
-</div>
-</div>
 
+<p>The log-likelihood of the model is, therefore, \(L(\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau) = -0.5( log|V|+(y-\mu)^TV^{-1}(y-\mu) )\), where the variance is expressed as \(\sigma^2_\gamma = V = ZZ^T\sigma^2_\alpha + WW^T\sigma^2_\beta + QQ^T\sigma^2_\tau + R\) and the log-likelihood of the model above is tested against \(L(\mu=\sigma^2_\alpha=\sigma^2_\beta=\sigma^2_\tau=0)\), providing the evidence that at least one of the coefficients (intercept and variance components) is not null. Thus, \(LRT = -2(L_{\mu,\sigma^2_\alpha,\sigma^2_\beta,\sigma^2_\tau}-L_{0,0,0,0})\).</p>
 
+<h2>Woodbury&#39;s matrix identities</h2>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
+<p>The computational burden associated to the analysis above is originated from the determinant and inversion of the covariance matrix \(V\), a square matrix with \(ef\) rows and columns. Let \(X=[Z\sigma_\alpha || W\sigma_\beta || Q\sigma_\tau]\), such that \(V = XX^T+R\). Using the Woodbury&#39;s matrix identities, we have \(V^{-1} = R^{-1}-R^{-1}X(X^TR^{-1}X+I)^{-1}X^TR^{-1}\) and \(|V| = |X^TR^{-1}X+I||R|\), where the square matrix to be inverted has dimension \(e+f+p\). For the example, in the analysis of a dataset with \(e=18\) environments, \(f=41\) subpopulations and using \(p=2\) principal components for the \(G\times E\) term, we invert a square matrix with dimension \(18+41+2=61\) rows and columns intead of a matrix with \(18\times 41=738\) rows and columns.</p>
 
 </body>
+
 </html>

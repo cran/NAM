@@ -19,6 +19,7 @@
 \alias{emDE}
 \alias{emEN}
 \alias{emML}
+\alias{BRR2}
 \alias{Gdist}
 \alias{markov}
 \alias{eigX}
@@ -36,7 +37,11 @@
 \alias{IMP}
 \alias{NOR}
 \alias{GAU}
+\alias{GRM}
 \alias{SPC}
+\alias{SPM}
+\alias{press}
+\alias{emGWA}
 \title{
   Internal functions
 }
@@ -75,13 +80,23 @@ Some of the functions available for users include:
 
 13) \code{IMP(X):}{  Imputes missing points from matrix \code{X} with the average value of the column. This function does not return anything, rather it modifies \code{X} directly.}
 
-14) \code{GAU(X):}{ Created a Gaussian kernel from matrix \code{X}.}
+14) \code{GAU(X):}{ Creates a Gaussian kernel from matrix \code{X}.}
 
-15) \code{MSX(X):}{ Computes the cross-product of each column of \code{X} and the sum of variances of each column of \code{X}.}
+15) \code{GRM(X, Code012=FALSE):}{ Creates genomic relationship matrix as linear kernel from matrix \code{X}. If genotypes are coded as 012 and Code012=TRUE, the kinship is the same as proposed by VanRaden (2008), otherwise the outcome is an additive G2A kernel.}
 
-16) \code{NOR(y,X,cxx,xx,maxit=50,tol=10e-6):}{ Solves a ridge regression using GSRU, where  \code{y} corresponds to the response variable, \code{X} is the set of parameters, \code{cxx} and \code{xx} are the output from the MSX function, \code{maxit} and \code{tol} are the convergence criteria.}
+16) \code{MSX(X):}{ Computes the cross-product of each column of \code{X} and the sum of variances of each column of \code{X}.}
 
-17) \code{SPC(y,blk,row,col,rN=3,cN=1):}{ Computes a spatial covariate, similar to what could be obtained using NNsrc and NNcov but in a single step. It often is faster than NNsrc/NNcov.}
+17) \code{NOR(y,X,cxx,xx,maxit=50,tol=10e-6):}{ Solves a ridge regression using GSRU, where  \code{y} corresponds to the response variable, \code{X} is the set of parameters, \code{cxx} and \code{xx} are the output from the MSX function, \code{maxit} and \code{tol} are the convergence criteria.}
+
+18) \code{SPC(y,blk,row,col,rN=3,cN=1):}{ Computes a spatial covariate, similar to what could be obtained using NNsrc and NNcov but in a single step. It often is faster than NNsrc/NNcov.}
+
+19) \code{SPM(blk,row,col,rN=3,cN=1):}{ Computes a spatial matrix that capture nearest neighbots, to be used as design matrix of random effects. The least-square solution gives the same as SPC.}
+
+20) \code{BRR2(y,X1,X2,it=1500,bi=500,df=5,R2=0.5):}{ A simple C++ implementation of a Bayesian Ridge Regression that accomodates two random effects.}
+
+21) \code{press(y,K,MaxIt=10):}{Solves a PRESS-regularized GBLUP. You can provide K as a matrix or as the output of the functin eigen. MaxIt the maximum number of iterations to for updating missing values (if any) if H*y does not converge.} 
+
+22) \code{emGWA(y,gen):}{ A vanilla algorithm written in C++ for GWAS (very simple, but very efficient). It fits a snpBLUP via EM-REML based GSRU, then run an additional round checkinkg the likelihood of treating each marker as fixed effect instead of random, thus avoiding double-fitting. It returns the marker p-values, snpBLUP marker effects for genomic prediction, LS marker effects from the GWAS, variance components, heritability, and GEBVs (fitted values).}
 
 }
 \author{
@@ -92,7 +107,7 @@ Some of the functions available for users include:
 data(tpod)
 fast.impute = markov(gen,chr)
 
-# A matrix
+# Wright's A matrix 
 PedMat()
 
 # Pairwise LD
@@ -119,4 +134,23 @@ ls(Ks)
 # Genomic regression fitted via EM
 h = emBA(y,gen)
 plot(h$b,pch=20)
+
+# GBLUP and RRBLUP
+g = GRM(gen)
+eg = eigen(g)
+gblup = emML(y=y, gen=eg$vectors,D=eg$values)
+rrblup = emML(y=y, gen=gen)
+plot(gblup$hat,rrblup$hat,xlab = 'gblup',ylab='rrblup')
+
+# Vanilla GWAS
+gwa = emGWA(y,gen)
+plot(gwa$PVAL,pch=20)
+
 }
+\keyword{ NAM }
+\keyword{ BLUP }
+\keyword{ GWAS }
+\keyword{ LD }
+\keyword{ GRM }
+\keyword{ SPATIAL }
+\keyword{ PEDIGREE }

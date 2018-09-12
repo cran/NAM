@@ -749,8 +749,19 @@ NumericMatrix GAU(NumericMatrix X){
   int n = X.nrow(); NumericVector D; NumericMatrix K(n,n); double d2, md;
   for(int i=0; i<n; i++){; for(int j=0; j<n; j++){
     if(i==j){ K(i,j)=0; }else if(j>i){; D = X(i,_)-X(j,_);
-    d2 = sum(D*D); d2 = d2*d2; K(i,j)=d2; K(j,i)=d2; }}}; md = mean(K);
+    d2 = sum(D*D); K(i,j)=d2; K(j,i)=d2; }}}; md = mean(K);
     for(int i=0; i<n; i++){K(i,_) = exp(-K(i,_)/md);} return K;}
+
+// [[Rcpp::export]]
+NumericMatrix GRM(NumericMatrix X, bool Code012 = false){
+  int n = X.nrow(), p = X.ncol();
+  NumericMatrix K(n,n); NumericVector xx(p); double zz, Sum2pq=0.0;
+  for(int i=0; i<p; i++){ xx[i] = mean(X(_,i)); }
+  if(Code012){for(int i=0; i<p; i++){ Sum2pq = Sum2pq + xx[i]*xx[i]/2;}
+  }else{ for(int i=0; i<p; i++){ Sum2pq = Sum2pq + var(X(_,i));}}
+  for(int i=0; i<n; i++){; for(int j=0; j<n; j++){; if(i<=j ){
+   zz = sum( (X(i,_)-xx(i))*(X(j,_)-xx(j)) );
+   K(i,j)=zz; K(j,i)=zz;}}}; return K/Sum2pq;}
 
 // [[Rcpp::export]]
 NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, int rN=3, int cN=1){
@@ -759,3 +770,153 @@ NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, Numeric
       if( (i>j) & (blk[i]==blk[j]) & (abs(row[i]-row[j])<=rN) & (abs(col[i]-col[j])<=cN) ){
         Phe[i] = Phe[i]+y[j]; Obs[i] = Obs[i]+1; Phe[j] = Phe[j]+y[i]; Obs[j] = Obs[j]+1; }}}
   Cov = Phe/Obs; return Cov;}
+
+// [[Rcpp::export]]
+NumericMatrix SPM(NumericVector blk, NumericVector row, NumericVector col, int rN=3, int cN=1){
+  int n = blk.size(); NumericMatrix X(n,n); for(int i=0; i<n; i++){; for(int j=0; j<n; j++){
+      if( (blk[i]==blk[j]) & (i>j) & (abs(row[i]-row[j])<=rN) & (abs(col[i]-col[j])<=cN) ){
+        X(i,j) = 1; X(j,i) = 1; }else{ X(i,j) = 0; X(j,i) = 0; }}; X(i,i) = 0;}; return X;}
+
+// [[Rcpp::export]]
+SEXP BRR2(NumericVector y, NumericMatrix X1, NumericMatrix X2,
+             double it = 1500, double bi = 500, double df = 5, double R2 = 0.5){
+  // Get dimensions of X
+  int n = X1.nrow();
+  int p1 = X1.ncol();
+  int p2 = X2.ncol();
+  // Estimate crossproducts and MSx
+  NumericVector xx1(p1), vx1(p1);
+  for(int i=0; i<p1; i++){
+    xx1[i] = sum(X1(_,i)*X1(_,i));
+    vx1[i] = var(X1(_,i));}
+  double MSx1 = sum(vx1);
+  NumericVector xx2(p2), vx2(p2);
+  for(int i=0; i<p2; i++){
+    xx2[i] = sum(X2(_,i)*X2(_,i));
+    vx2[i] = var(X2(_,i));}
+  double MSx2 = sum(vx2);
+  // Get priors
+  double vy = var(y);
+  double Sb1 = (R2)*df*vy/MSx1;
+  double Sb2 = (R2)*df*vy/MSx2;
+  double Se = (1-R2)*df*vy;
+  double mu = mean(y);
+  // Create empty objects
+  double b_t0,b_t1,eM,h2,MU,VE,vg,vb1,vb2,VB1,VB2,Lmb1=MSx1,Lmb2=MSx2,ve=vy;
+  NumericVector b1(p1),B1(p1),b2(p2),B2(p2),e=y-mu,fit(n);
+  // MCMC loop
+  for(int i=0; i<it; i++){
+    // Update marker effects 1
+    for(int j=0; j<p1; j++){
+      b_t0 = b1[j];
+      b_t1 = R::rnorm((sum(X1(_,j)*e)+xx1[j]*b_t0)/(xx1[j]+Lmb1),sqrt(ve/(xx1[j]+Lmb1)));
+      b1[j] = b_t1;
+      e = e - X1(_,j)*(b_t1-b_t0);
+    }
+    // Update marker effects 1
+    for(int j=0; j<p2; j++){
+      b_t0 = b2[j];
+      b_t1 = R::rnorm((sum(X2(_,j)*e)+xx2[j]*b_t0)/(xx2[j]+Lmb2),sqrt(ve/(xx2[j]+Lmb2)));
+      b2[j] = b_t1;
+      e = e - X2(_,j)*(b_t1-b_t0);
+    }
+    // Update intercept
+    eM = R::rnorm(mean(e),sqrt(ve/n));
+    mu = mu+eM; e = e-eM;
+    // Update residual variance and lambda
+    ve = (sum(e*e)+Se)/R::rchisq(n+df);
+    vb1 = (Sb1+sum(b1*b1))/R::rchisq(df+p1);
+    vb2 = (Sb2+sum(b2*b2))/R::rchisq(df+p2);
+    Lmb1 = ve/vb1;
+    Lmb2 = ve/vb2;
+    // Store posterior sums
+    if(i>bi){
+      MU=MU+mu; VE=VE+ve;
+      B1=B1+b1; VB1=VB1+vb1; 
+      B2=B2+b2; VB2=VB2+vb2; 
+    }
+  }
+  // Get posterior means
+  double MCMC = it-bi;
+  MU = MU/MCMC; VE = VE/MCMC;
+  B1 = B1/MCMC; VB1 = VB1/MCMC; 
+  B2 = B2/MCMC; VB2 = VB2/MCMC; 
+  // Get fitted values and h2
+  vg = (VB1*MSx1+VB2*MSx2); h2 = vg/(vg+VE);
+  for(int k=0; k<n; k++){fit[k] = sum(X1(k,_)*B1)+sum(X2(k,_)*B2)+MU;}
+  // Return output
+  return List::create(Named("hat") = fit, Named("mu") = MU,
+                      Named("b1") = B1, Named("b2") = B2, 
+                      Named("vb1") = VB1, Named("vb2") = VB2,
+                      Named("ve") = VE, Named("h2") = h2);}
+
+// [[Rcpp::export]]
+SEXP emGWA(NumericVector y, NumericMatrix gen){
+  int maxit = 500;
+  double tol = 10e-8;
+  // Functions starts here
+  int p = gen.ncol();
+  int n = gen.nrow();
+  // Beta, mu and epsilon
+  double b0, eM, ve, vb, h2, mu = mean(y), vy = var(y);
+  NumericVector b(p), e = y-mu;
+  // Marker variance
+  NumericVector xx(p), vx(p);
+  for(int i=0; i<p; i++){
+    xx[i] = sum(gen(_,i)*gen(_,i));
+    vx[i] = var(gen(_,i));}
+  double MSx = sum(vx), Lmb=MSx;
+  // Convergence control
+  NumericVector bc(p);
+  int numit = 0;
+  double cnv = 1;
+  // Loop
+  while(numit<maxit){
+    // Regression coefficients loop
+    bc = b+0;
+    for(int j=0; j<p; j++){
+      b0 = b[j];
+      b[j] = (sum(gen(_,j)*e)+xx[j]*b0)/(xx[j]+Lmb);
+      e = e-gen(_,j)*(b[j]-b0);}
+    // Variance components update
+    ve = sum(e*y)/(n-1);
+    vb = (vy-ve)/MSx;
+    Lmb = ve/vb;
+    // Intercept update
+    eM = mean(e);
+    mu = mu+eM;
+    e = e-eM;
+    // Convergence
+    ++numit;
+    cnv = sum(abs(bc-b));
+    if( cnv<tol ){break;}}
+  // Fitting the model
+  NumericVector fit(n);
+  for(int k=0; k<n; k++){ fit[k] = sum(gen(k,_)*b)+mu; }
+  h2 = vb*MSx/(vb*MSx+ve);
+  // Genome-wide screening
+  NumericVector LRT(p),PVAL(p),y0(n),e0(n),e1(n),b_ols(p);
+  double ve0, ve1, L0, L1;
+  for(int j=0; j<p; j++){
+    // Full conditional phenotype
+    y0 = e+gen(_,j)*b[j];
+    // Fixed effect marker
+    b_ols[j] = sum(gen(_,j)*y0)/xx[j];
+    // Null model
+    e0 = y0-mean(y0);
+    // Alternative model
+    e1 = y0-gen(_,j)*b_ols[j];
+    e1 = e1-mean(e1);
+    // ReML variance
+    ve0 = sum(y0*e0)/(n-1);
+    ve1 = sum(y0*e1)/(n-1);
+    // Likelihood ratio
+    L0 = -sum(e0*e0)/(2*ve0)-0.5*n*log(6.28*ve0);
+    L1 = -sum(e1*e1)/(2*ve1)-0.5*n*log(6.28*ve1);
+    LRT[j] = 2*(L1-L0);}
+  PVAL = -log10(1-pchisq(LRT,1,true));
+  // Output
+  return List::create(Named("mu")=mu, Named("b")=b, Named("b_LS")=b_ols,
+                      Named("h2")=h2, Named("hat")=fit,
+                      Named("Vb")=vb, Named("Ve")=ve,
+                      Named("LRT")=LRT, Named("PVAL")=PVAL);}

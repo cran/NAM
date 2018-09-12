@@ -6,7 +6,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Background for Meta-analysis}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \VignetteEncoding{UTF-8}
 ---
 ```{r,echo=FALSE,message=F,comment=F,warning=F}
 require(knitr)

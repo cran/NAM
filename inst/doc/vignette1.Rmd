@@ -6,7 +6,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to NAM}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \VignetteEncoding{UTF-8}
 ---
 
 # 1. Installing the NAM package
@@ -211,7 +211,7 @@ The meaning of each column from PolyTest is summarized below:
 
 The output of the  GWAS function provides the allele effect into the GWAS of multiple populations context, testing one marker at a time. To find out the effect of each marker conditional to the genome (i.e. given all the other makers are in the model). This technique is known as whole-genome regression (WGR) method.
 
-+ `WGR = wgr( y = phenotype, gen = genotypes)`
++ `WGR = wgr( y = phenotype, gen = genotypes )`
 + `Allele_effect = WGR$g`
 + `plot(abs(Allele_effect))` *# Have a look*
 
@@ -261,7 +261,7 @@ Two arguments are necessary for this function: the genotypic matrix (`gen`) and 
 + `my_FST = Fst ( gen = genotypes, fam = stratification )`
 + `plot(my_FST)`
 
-# 6. BLUPs
+# 6. BLUPs and GEBVs
 
 Considering that phenotypes are often replaced by BLUP values for mapping and selection, the NAM package provide functions that allow users to solve mixed models to compute BLUPs and variance components: `reml` and `gibbs`.
 
@@ -286,8 +286,7 @@ Another possibility is to fit a GBLUP, useful to obtain breeding values using mo
 
 Genomic relationship matrix
 
-+ `G = tcrossprod(gen)`
-+ `G = G/mean(diag(G))`
++ `G = GRM(gen)`
 
 Fit the model
 
@@ -303,7 +302,7 @@ Now, lets see how to fit a GBLUP with the environment factor set as random effec
 
 Genomic relationship matrix
 
-+ `G = tcrossprod(gen); G = G/mean(diag(G))`
++ `G = GRM(gen)`
 + `iG = chol2inv(G)`
 
 Fit the model
@@ -320,9 +319,9 @@ Fit BRR using the gibbs function
 
 +  `FIT_BRR = gibbs ( y = trait, X = ~ env , Z = gen, S=NULL)`
 
-Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When multiple random effects are used in `gibbs`, the argument `Z` accepts formula or a list of matrices and the argument `iK` accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the `gibbs` function, `iR` allows users to include residual covariance structure.
+Both functions `reml` and `gibbs` accept formulas and matrices as inputs. When multiple random effects are used in `gibbs`, the argument `Z` accepts formula or a list of matrices and the argument `iK` accepts matrix (if only the first random effect has known structure) or a list of matrices (if multiple random effects have known covariance structure). An additional argument in the `gibbs` function, `iR` allows users to include residual covariance structure. An example of `iR` could be the inverse kernel to informs the spatial layout of the observations, such as the outcome of the function `covar`, to account for heteroscedasticity due to spatial auto-correlation.
 
-Although it is possible to use `reml` and `gibbs` to generate breeding values, the functions `gmm` and `wgr` (also implemented in the bWGR package) enables the use of more appropriated and optimized models for genomic prediction. Some popular methods that can be obtained from this function (Bayesian alphabet). To estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
+Although it is possible to use `reml` and `gibbs` to generate breeding values, the functions `wgr` (also implemented in the bWGR package) and `gmm` enables the use of more appropriated and optimized models for genomic prediction. Some faster algorithms not based on MCMC are also available, such as `emBB`, `emML`, `emDE`, `press` and others. Some popular methods that can be obtained from this function (Bayesian alphabet). The NAM package provides a wide variety of methods to estimate breeding values for observed genotypes or predict unphenotyped material, fit the model as follows:
 
 **a. BLUP**
 
@@ -395,6 +394,10 @@ Although it is possible to use `reml` and `gibbs` to generate breeding values, t
 **r. Maximum likelihood**
 
 + `eML = emML(y = phenotype, gen = genotype)`
+
+**r. PRESS-regularized gblup**
+
++ `ePRESS = press(y = phenotype, K = GRM(genotype))`
 
 For a comparison of the ten methods, one can perform a cross-validation study. In cross-validation studies, a \code{k} part of the data is omitted and predicted back. The procedure is repeated various times. Prediction statistics such as mean-squared prediction error (MSPE) and prediction ability (PA) are computed by the comparison between observed and predicted values. For sake of example, load the script
 
