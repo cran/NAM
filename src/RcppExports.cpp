@@ -279,13 +279,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // CNT
-void CNT(NumericMatrix X);
+NumericMatrix CNT(NumericMatrix X);
 RcppExport SEXP _NAM_CNT(SEXP XSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    CNT(X);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(CNT(X));
+    return rcpp_result_gen;
 END_RCPP
 }
 // MSX
@@ -300,13 +301,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // IMP
-void IMP(NumericMatrix X);
+NumericMatrix IMP(NumericMatrix X);
 RcppExport SEXP _NAM_IMP(SEXP XSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    IMP(X);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(IMP(X));
+    return rcpp_result_gen;
 END_RCPP
 }
 // NOR
@@ -408,6 +410,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// BCpi
+SEXP BCpi(NumericVector y, NumericMatrix X, double it, double bi, double df, double R2);
+RcppExport SEXP _NAM_BCpi(SEXP ySEXP, SEXP XSEXP, SEXP itSEXP, SEXP biSEXP, SEXP dfSEXP, SEXP R2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< double >::type it(itSEXP);
+    Rcpp::traits::input_parameter< double >::type bi(biSEXP);
+    Rcpp::traits::input_parameter< double >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< double >::type R2(R2SEXP);
+    rcpp_result_gen = Rcpp::wrap(BCpi(y, X, it, bi, df, R2));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_NAM_emBA", (DL_FUNC) &_NAM_emBA, 4},
@@ -439,6 +457,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NAM_SPM", (DL_FUNC) &_NAM_SPM, 5},
     {"_NAM_BRR2", (DL_FUNC) &_NAM_BRR2, 7},
     {"_NAM_emGWA", (DL_FUNC) &_NAM_emGWA, 2},
+    {"_NAM_BCpi", (DL_FUNC) &_NAM_BCpi, 6},
     {NULL, NULL, 0}
 };
 

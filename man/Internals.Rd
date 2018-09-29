@@ -19,6 +19,7 @@
 \alias{emDE}
 \alias{emEN}
 \alias{emML}
+\alias{emCV}
 \alias{BRR2}
 \alias{Gdist}
 \alias{markov}
@@ -42,6 +43,7 @@
 \alias{SPM}
 \alias{press}
 \alias{emGWA}
+\alias{BCpi}
 \title{
   Internal functions
 }
@@ -74,11 +76,11 @@ Some of the functions available for users include:
 
 11) \code{NNcov(NN,y):}{  This function utilizes the output of \code{NNsrc} to generate a numeric vector, averageing the observed values of \code{y}. This function is useful to generate field covariates to control micro-environmental variance without krigging.}
 
-11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}), BLASSO2 (\code{emDE}), Elastic-Net (\code{emEN}), maximum likelihood (\code{emML}), and Ridge regression (\code{emRR}).}
+11) \code{emXX(y,gen,...):}{  Fits whole-genome regressions using the expectation-maximization algorithm as opposed to MCMC. Currently avaible methods include BayesA (\code{emBA}), BayesB (\code{emBB}), BayesC (\code{emBC}), BLASSO (\code{emBL}), BLASSO2 (\code{emDE}), Elastic-Net (\code{emEN}), maximum likelihood (\code{emML}), and Ridge regression (\code{emRR}). A cross-validation option is also available (\code{emCV}). Vide package bWGR for the documentation of these functions.}
 
-12) \code{CNT(X):}{  Centralizes parameters from matrix \code{X}. Useful to convert allele coding from 012 or -101 into G2A coding. This function does not return anything, rather it modifies \code{X} directly.}
+12) \code{CNT(X):}{  Centralizes parameters from matrix \code{X}.}
 
-13) \code{IMP(X):}{  Imputes missing points from matrix \code{X} with the average value of the column. This function does not return anything, rather it modifies \code{X} directly.}
+13) \code{IMP(X):}{  Imputes missing points from matrix \code{X} with the average value of the column.}
 
 14) \code{GAU(X):}{ Creates a Gaussian kernel from matrix \code{X}.}
 
@@ -97,6 +99,8 @@ Some of the functions available for users include:
 21) \code{press(y,K,MaxIt=10):}{Solves a PRESS-regularized GBLUP. You can provide K as a matrix or as the output of the functin eigen. MaxIt the maximum number of iterations to for updating missing values (if any) if H*y does not converge.} 
 
 22) \code{emGWA(y,gen):}{ A vanilla algorithm written in C++ for GWAS (very simple, but very efficient). It fits a snpBLUP via EM-REML based GSRU, then run an additional round checkinkg the likelihood of treating each marker as fixed effect instead of random, thus avoiding double-fitting. It returns the marker p-values, snpBLUP marker effects for genomic prediction, LS marker effects from the GWAS, variance components, heritability, and GEBVs (fitted values).}
+
+23) \code{BCpi(y,X,it=3000,bi=500,df=5,R2=0.5):}{ A vanilla implementation in C++ of BayesCpi for GWAS or GWP. It returns the marker p-values (as the minus log probability of marker excluded), marker effects for genomic prediction, probability of marker included, variance components, heritability, and GEBVs (fitted values). }
 
 }
 \author{

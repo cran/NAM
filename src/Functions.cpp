@@ -718,7 +718,7 @@ NumericMatrix timesVec(NumericVector aa, NumericVector h, NumericMatrix bb, int 
 }
 
 // [[Rcpp::export]]
-void CNT(NumericMatrix X){for(int j=0;j<X.ncol();j++){X(_,j)=X(_,j)-mean(X(_,j));}}
+NumericMatrix CNT(NumericMatrix X){for(int j=0;j<X.ncol();j++){X(_,j)=X(_,j)-mean(X(_,j));}; return(X);}
 
 // [[Rcpp::export]]
 SEXP MSX(NumericMatrix X){
@@ -727,11 +727,16 @@ SEXP MSX(NumericMatrix X){
   double cxx = sum(xx-sx)/(n-1); return List::create(Named("cxx")=cxx,Named("xx")=xx);}
 
 // [[Rcpp::export]]
-void IMP(NumericMatrix X){;int p = X.ncol(); int n = X.nrow();
-LogicalVector MIS(n); NumericVector x(n); NumericVector z; double EXP;
-for(int j=0; j<p; j++){;if(is_true(any(is_na(X(_,j))))){
-  x = X(_,j); MIS = is_na(x);z = x[!MIS]; EXP = mean(z);
-  X(_,j) = ifelse(MIS,EXP,x);};};};
+NumericMatrix IMP(NumericMatrix X){
+  int p = X.ncol(); int n = X.nrow();
+  LogicalVector MIS(n); NumericVector x(n);
+  NumericVector z; double EXP;
+  for(int j=0; j<p; j++){
+    if(is_true(any(is_na(X(_,j))))){
+      x = X(_,j); MIS = is_na(x);
+      z = x[!MIS]; EXP = mean(z);
+      X(_,j) = ifelse(MIS,EXP,x);}
+  };return(X);};
 
 // [[Rcpp::export]]
 SEXP NOR(NumericVector y, NumericMatrix X, double cxx, NumericVector xx, int maxit = 50, double tol = 10e-6){
@@ -757,11 +762,21 @@ NumericMatrix GRM(NumericMatrix X, bool Code012 = false){
   int n = X.nrow(), p = X.ncol();
   NumericMatrix K(n,n); NumericVector xx(p); double zz, Sum2pq=0.0;
   for(int i=0; i<p; i++){ xx[i] = mean(X(_,i)); }
-  if(Code012){for(int i=0; i<p; i++){ Sum2pq = Sum2pq + xx[i]*xx[i]/2;}
-  }else{ for(int i=0; i<p; i++){ Sum2pq = Sum2pq + var(X(_,i));}}
-  for(int i=0; i<n; i++){; for(int j=0; j<n; j++){; if(i<=j ){
-   zz = sum( (X(i,_)-xx(i))*(X(j,_)-xx(j)) );
-   K(i,j)=zz; K(j,i)=zz;}}}; return K/Sum2pq;}
+  if(Code012){
+    for(int i=0; i<p; i++){ Sum2pq = Sum2pq + xx[i]*xx[i]/2;}
+  }else{
+    for(int i=0; i<p; i++){Sum2pq = Sum2pq + var(X(_,i));}
+  }
+  for(int i=0; i<n; i++){
+    for(int j=0; j<n; j++){
+      if(i<=j ){
+        zz = sum( (X(i,_)-xx)*(X(j,_)-xx) );
+        K(i,j)=zz; K(j,i)=zz;
+      }
+    }
+  }
+  return K/Sum2pq;
+}
 
 // [[Rcpp::export]]
 NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, int rN=3, int cN=1){
@@ -920,3 +935,86 @@ SEXP emGWA(NumericVector y, NumericMatrix gen){
                       Named("h2")=h2, Named("hat")=fit,
                       Named("Vb")=vb, Named("Ve")=ve,
                       Named("LRT")=LRT, Named("PVAL")=PVAL);}
+
+// [[Rcpp::export]]
+SEXP BCpi(NumericVector y, NumericMatrix X,
+              double it = 3000, double bi = 500,
+              double df = 5, double R2 = 0.5){
+  // Get dimensions of X
+  int p = X.ncol(), n = X.nrow();
+  // Estimate crossproducts and MSx
+  NumericVector xx(p), vx(p);
+  for(int i=0; i<p; i++){
+    xx[i] = sum(X(_,i)*X(_,i));
+    vx[i] = var(X(_,i));}
+  double MSx = sum(vx);
+  // Get priors
+  double priorA = 1;
+  double priorB = 1;
+  double pi = 0.5;
+  double vy = var(y);
+  double Sb = df*(R2)*vy/MSx/(1-pi);
+  double Se = df*(1-R2)*vy;
+  double mu = mean(y);
+  // Create empty objects
+  double b0,b1,b2,eM,h2,C,MU,VB,VE,Pi,cj,dj,pj,vg,ve=vy,vb=Sb;
+  double PiAlpha,PiBeta,PiMean,PiVar;
+  NumericVector d(p),b(p),D(p),B(p),fit(n);
+  NumericVector e=y-mu,e1(n),e2(n);
+  double Lmb=ve/vb;
+  // MCMC loop
+  for(int i=0; i<it; i++){
+    C = -0.5/ve;
+    // Update marker effects
+    for(int j=0; j<p; j++){
+      b0 = b[j];
+      // Sample marker effect
+      b1 = R::rnorm((sum(X(_,j)*e)+xx[j]*b0)/(xx[j]+Lmb),sqrt(ve/(xx[j]+Lmb)));
+      b2 = R::rnorm(0,sqrt(ve/(xx[j]+Lmb)));
+      e1 = e-X(_,j)*(b1-b0); // Pr(with marker)
+      e2 = e-X(_,j)*(0-b0); // Pr(without marker)
+      // Pr(marker included)
+      cj = exp(C*sum(e1*e1)); // Likelihood(with marker)
+      dj = exp(C*sum(e2*e2)); // Likelihood(without marker)
+      pj = (1-pi)*cj/dj;
+      if(pj>1) pj = 1;
+      // Smple from Bernoulli
+      if(R::rbinom(1,pj)==1){
+        b[j] = b1; d[j] = 1;
+      }else{
+        b[j] = b2; d[j] = 0;
+      }
+      // Update residuals
+      e = e - X(_,j)*(b[j]-b0);
+    }
+    // Update intercept
+    eM = R::rnorm(mean(e),sqrt(ve/n));
+    mu = mu+eM; e = e-eM;
+    // Update variance components and lambda
+    vb = (sum(b*b)+Sb)/R::rchisq(p+df);
+    ve = (sum(e*e)+Se)/R::rchisq(n+df);
+    Lmb = ve/vb;
+    // Update Pi from beta
+    PiMean = mean(d); PiVar = var(d);
+    PiAlpha = priorA+((1-PiMean)/PiVar-1/PiMean)*(PiMean*PiMean);
+    PiBeta = priorB+PiAlpha*(1/PiMean-1);
+    pi = R::rbeta(PiAlpha,PiBeta);
+    Sb = df*(R2)*vy/MSx/(1-pi);
+    // Store posterior sums
+    if(i>bi){MU=MU+mu; B=B+b; D=D+d; VB=VB+vb; VE=VE+ve; Pi = Pi+pi;}
+  }
+  // Get posterior means
+  double MCMC = it-bi;
+  MU = MU/MCMC; B = B/MCMC; D = D/MCMC;
+  VB = VB/MCMC; VE = VE/MCMC; Pi = Pi/MCMC;
+  // Getting GWAS results
+  NumericVector PVAL = -log(1-D);
+  // Get fitted values and h2
+  vg = VB*MSx; h2 = vg/(vg+VE);
+  for(int k=0; k<n; k++){fit[k] = sum(X(k,_)*B)+MU;}
+  // Return output
+  return List::create(Named("mu") = MU, Named("b") = B,
+                      Named("d") = D, Named("pi") = Pi,
+                      Named("hat") = fit, Named("h2") = h2,
+                      Named("vb") = VB, Named("ve") = VE,
+                      Named("PVAL") = PVAL);}

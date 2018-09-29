@@ -243,7 +243,7 @@ gmm = function(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...){
     if(KERN){
       Vb = (sum(g^2/V) + Sk_prior)/rchisq(1, df_prior + p)
       Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-      L = Ve/(Vb*V)
+      L = c(Ve)/(Vb*V)
     }else{
       # Update BayesA variance components
       S_conj = rgamma(1, p * df_prior/2 + shape_prior, sum(1/(g^2))/2 + rate_prior)
@@ -251,8 +251,8 @@ gmm = function(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...){
       Vb = (S_conj + g^2)/rchisq(p, df_prior + 1)
       S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
       # Update Ve and Lambda
-      Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-      L = Ve/Vb
+      Ve = c(crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
+      L = c(Ve)/c(Vb)
     }
     
   }
@@ -326,20 +326,20 @@ gmm = function(y,gen,dta=NULL,it=75,bi=25,th=1,model="BRR",...){
       if(model=="BRR"){
         Va = (sum(g^2) + S_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
-        Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-        L = c(Ve/Vm)
+        Ve = c(crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
+        L = c(Ve)/c(Vm)
       }
       if(model=="BayesA"){
         Vm = (S_conj + g^2)/rchisq(p, df_prior + 1)
         S_conj = rgamma(1, p * df_prior/2 + shape_prior,sum(1/Vb)/2 + rate_prior)  
         Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-        L = c(Ve/Vm)
+        L = c(Ve)/c(Vm)
       }
       if(KERN){
         Va = (sum(g^2/V) + Sk_prior)/rchisq(1, df_prior + p)
         Vm = rep(Va,p)
         Ve = (crossprod(e)+Se_prior)/rchisq(1,n+df_prior)
-        L = Ve/(Vm*V)
+        L = c(Ve)/c(Vm*V)
       }
     }
     

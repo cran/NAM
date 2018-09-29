@@ -78,7 +78,7 @@ timesVec <- function(aa, h, bb, q) {
 }
 
 CNT <- function(X) {
-    invisible(.Call(`_NAM_CNT`, X))
+    .Call(`_NAM_CNT`, X)
 }
 
 MSX <- function(X) {
@@ -86,7 +86,7 @@ MSX <- function(X) {
 }
 
 IMP <- function(X) {
-    invisible(.Call(`_NAM_IMP`, X))
+    .Call(`_NAM_IMP`, X)
 }
 
 NOR <- function(y, X, cxx, xx, maxit = 50L, tol = 10e-6) {
@@ -115,5 +115,9 @@ BRR2 <- function(y, X1, X2, it = 1500, bi = 500, df = 5, R2 = 0.5) {
 
 emGWA <- function(y, gen) {
     .Call(`_NAM_emGWA`, y, gen)
+}
+
+BCpi <- function(y, X, it = 3000, bi = 500, df = 5, R2 = 0.5) {
+    .Call(`_NAM_BCpi`, y, X, it, bi, df, R2)
 }
 
