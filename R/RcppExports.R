@@ -33,6 +33,10 @@ emML <- function(y, gen, D = NULL) {
     .Call(`_NAM_emML`, y, gen, D)
 }
 
+emMX <- function(y, gen, R2 = 0.5) {
+    .Call(`_NAM_emMX`, y, gen, R2)
+}
+
 calcSize <- function(col, fam) {
     .Call(`_NAM_calcSize`, col, fam)
 }
@@ -101,11 +105,11 @@ GRM <- function(X, Code012 = FALSE) {
     .Call(`_NAM_GRM`, X, Code012)
 }
 
-SPC <- function(y, blk, row, col, rN = 3L, cN = 1L) {
+SPC <- function(y, blk, row, col, rN = 3, cN = 1) {
     .Call(`_NAM_SPC`, y, blk, row, col, rN, cN)
 }
 
-SPM <- function(blk, row, col, rN = 3L, cN = 1L) {
+SPM <- function(blk, row, col, rN = 3, cN = 1) {
     .Call(`_NAM_SPM`, blk, row, col, rN, cN)
 }
 
@@ -119,5 +123,13 @@ emGWA <- function(y, gen) {
 
 BCpi <- function(y, X, it = 3000, bi = 500, df = 5, R2 = 0.5) {
     .Call(`_NAM_BCpi`, y, X, it, bi, df, R2)
+}
+
+emML2 <- function(y, X1, X2, D1 = NULL, D2 = NULL) {
+    .Call(`_NAM_emML2`, y, X1, X2, D1, D2)
+}
+
+mrr <- function(Y, X) {
+    .Call(`_NAM_mrr`, Y, X)
 }
 

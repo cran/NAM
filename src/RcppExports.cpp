@@ -117,6 +117,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// emMX
+SEXP emMX(NumericVector y, NumericMatrix gen, double R2);
+RcppExport SEXP _NAM_emMX(SEXP ySEXP, SEXP genSEXP, SEXP R2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type gen(genSEXP);
+    Rcpp::traits::input_parameter< double >::type R2(R2SEXP);
+    rcpp_result_gen = Rcpp::wrap(emMX(y, gen, R2));
+    return rcpp_result_gen;
+END_RCPP
+}
 // calcSize
 int calcSize(NumericVector col, NumericVector fam);
 RcppExport SEXP _NAM_calcSize(SEXP colSEXP, SEXP famSEXP) {
@@ -351,7 +364,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // SPC
-NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, int rN, int cN);
+NumericVector SPC(NumericVector y, NumericVector blk, NumericVector row, NumericVector col, double rN, double cN);
 RcppExport SEXP _NAM_SPC(SEXP ySEXP, SEXP blkSEXP, SEXP rowSEXP, SEXP colSEXP, SEXP rNSEXP, SEXP cNSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -360,14 +373,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type blk(blkSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type row(rowSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
-    Rcpp::traits::input_parameter< int >::type rN(rNSEXP);
-    Rcpp::traits::input_parameter< int >::type cN(cNSEXP);
+    Rcpp::traits::input_parameter< double >::type rN(rNSEXP);
+    Rcpp::traits::input_parameter< double >::type cN(cNSEXP);
     rcpp_result_gen = Rcpp::wrap(SPC(y, blk, row, col, rN, cN));
     return rcpp_result_gen;
 END_RCPP
 }
 // SPM
-NumericMatrix SPM(NumericVector blk, NumericVector row, NumericVector col, int rN, int cN);
+NumericMatrix SPM(NumericVector blk, NumericVector row, NumericVector col, double rN, double cN);
 RcppExport SEXP _NAM_SPM(SEXP blkSEXP, SEXP rowSEXP, SEXP colSEXP, SEXP rNSEXP, SEXP cNSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -375,8 +388,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type blk(blkSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type row(rowSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type col(colSEXP);
-    Rcpp::traits::input_parameter< int >::type rN(rNSEXP);
-    Rcpp::traits::input_parameter< int >::type cN(cNSEXP);
+    Rcpp::traits::input_parameter< double >::type rN(rNSEXP);
+    Rcpp::traits::input_parameter< double >::type cN(cNSEXP);
     rcpp_result_gen = Rcpp::wrap(SPM(blk, row, col, rN, cN));
     return rcpp_result_gen;
 END_RCPP
@@ -426,6 +439,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// emML2
+SEXP emML2(NumericVector y, NumericMatrix X1, NumericMatrix X2, Rcpp::Nullable<Rcpp::NumericVector> D1, Rcpp::Nullable<Rcpp::NumericVector> D2);
+RcppExport SEXP _NAM_emML2(SEXP ySEXP, SEXP X1SEXP, SEXP X2SEXP, SEXP D1SEXP, SEXP D2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X1(X1SEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X2(X2SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type D1(D1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type D2(D2SEXP);
+    rcpp_result_gen = Rcpp::wrap(emML2(y, X1, X2, D1, D2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mrr
+SEXP mrr(NumericMatrix Y, NumericMatrix X);
+RcppExport SEXP _NAM_mrr(SEXP YSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(mrr(Y, X));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_NAM_emBA", (DL_FUNC) &_NAM_emBA, 4},
@@ -436,6 +476,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NAM_emDE", (DL_FUNC) &_NAM_emDE, 3},
     {"_NAM_emEN", (DL_FUNC) &_NAM_emEN, 4},
     {"_NAM_emML", (DL_FUNC) &_NAM_emML, 3},
+    {"_NAM_emMX", (DL_FUNC) &_NAM_emMX, 3},
     {"_NAM_calcSize", (DL_FUNC) &_NAM_calcSize, 2},
     {"_NAM_funI", (DL_FUNC) &_NAM_funI, 4},
     {"_NAM_funX", (DL_FUNC) &_NAM_funX, 2},
@@ -458,6 +499,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NAM_BRR2", (DL_FUNC) &_NAM_BRR2, 7},
     {"_NAM_emGWA", (DL_FUNC) &_NAM_emGWA, 2},
     {"_NAM_BCpi", (DL_FUNC) &_NAM_BCpi, 6},
+    {"_NAM_emML2", (DL_FUNC) &_NAM_emML2, 5},
+    {"_NAM_mrr", (DL_FUNC) &_NAM_mrr, 2},
     {NULL, NULL, 0}
 };
 

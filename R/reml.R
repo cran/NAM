@@ -1,5 +1,7 @@
 reml=function(y,X=NULL,Z=NULL,K=NULL){
   
+  Y=y
+  
   anyNA = function(x) any(is.na(x))
   if(!is.matrix(y)){
     # Dealing with random effect
@@ -64,7 +66,7 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
       beta=qr.solve(xx,yx)
       sigma2=(yy-t(yx)%*%solve(xx)%*%yx)/(n-q)
       sigma2 = as.numeric(sigma2)
-      var=diag((chol2inv(xx))*sigma2)
+      var=diag((solve(xx))*sigma2)
       stderr=sqrt(var)
       return(c(beta,stderr,sigma2))}
     # Eigendecomposition of K
@@ -109,13 +111,15 @@ reml=function(y,X=NULL,Z=NULL,K=NULL){
     if(model=='Mixed'){
       ZZ = crossprod(z)
       diag(K0)=diag(K0)+1e-8
-      ZZ = ZZ + chol2inv(K0)*(Ve/Vg)
+      ZZ = ZZ + solve(K0)*(Ve/Vg)
       Zy = crossprod(z,re)
       U = solve(ZZ,Zy)
     }
     REML = list("VC"=VC,"Fixed"=B,"EBV"=U,loglik=parm$value)
     
   }else{
+    
+    Y = y
     N = nrow(y)
     if(is.null(X)){X = matrix(1,N,1)}else{
       if(is.matrix(X)){if(nrow(X)!=N) stop("Fixed effect does not match dimensions of response variable")
@@ -280,7 +284,7 @@ press = function(y, K, MaxIt=10){
   OUT = list(hat=FIT, lambda=LMB, press=PRESS)
   return(OUT)}
 
-emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,llo=NULL){
+emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE, llo=NULL){
   folds = function(Seed, y, gen, k) {
     N = nrow(gen)
     set.seed(Seed)
@@ -296,9 +300,10 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
     f6 = emBB(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f7 = emBC(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f8 = emML(y[-w], gen[-w, ])
+    f9 = emMX(y[-w], gen[-w, ], R2 = R2)
     cat("DONE WITH CROSS-VALIDATION CYCLE", Seed, "\n")
     NamesMod = c("emRR", "emEN", "emBL", "emDE", "emBA", 
-                 "emBB", "emBC", "emML", "OBSERVATION")
+                 "emBB", "emBC", "emML", "emMX", "OBSERVATION")
     M = matrix(NA, Nk, length(NamesMod))
     colnames(M) = NamesMod
     for (i in 1:(length(NamesMod)-1)) M[, i] = gen[w, ] %*% get(paste("f", i,sep = ""))$b
@@ -318,9 +323,10 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
     f6 = emBB(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f7 = emBC(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f8 = emML(y[-w], gen[-w, ])
+    f9 = emMX(y[-w], gen[-w, ], R2 = R2)
     cat("DONE WITH CROSS-VALIDATION CYCLE", lev, "\n")
     NamesMod = c("emRR", "emEN", "emBL", "emDE", "emBA", 
-                 "emBB", "emBC", "emML", "OBSERVATION")
+                 "emBB", "emBC", "emML", "emMX", "OBSERVATION")
     M = matrix(NA, Nk, length(NamesMod))
     colnames(M) = NamesMod
     for (i in 1:(length(NamesMod)-1)) M[, i] = gen[w, ] %*% get(paste("f", i,sep = ""))$b
@@ -352,6 +358,3 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
   }
   return(sCV(b))
 }
-                 
-                 
-                 
