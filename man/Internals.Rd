@@ -32,7 +32,6 @@
 \alias{LD}
 \alias{G2A_Kernels}
 \alias{Import_data}
-\alias{.Random.seed}
 \alias{NNsrc}
 \alias{NNcov}
 \alias{CNT}
@@ -114,6 +113,9 @@ Some of the functions available for users include:
   Alencar Xavier
 }
 \examples{
+\dontrun{
+
+
 # Forward gen imputation
 data(tpod)
 fast.impute = markov(gen,chr)
@@ -156,7 +158,7 @@ plot(gblup$hat,rrblup$hat,xlab = 'gblup',ylab='rrblup')
 # Vanilla GWAS
 gwa = emGWA(y,gen)
 plot(gwa$PVAL,pch=20)
-
+}
 }
 \keyword{ NAM }
 \keyword{ BLUP }

@@ -11,7 +11,7 @@ Mixed model solver through Bayesian Gibbs Sampling or iterative solution.
 }
 \usage{
 gibbs(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,Iter=1500,Burn=500,
-      Thin=2,DF=5,S=0.5,nor=TRUE,GSRU=FALSE)
+      Thin=2,DF=5,S=NULL,nor=TRUE,GSRU=FALSE)
 ml(y,Z=NULL,X=NULL,iK=NULL,iR=NULL,DF=5,S=0.5,nor=TRUE)
 gibbs2(Y,Z=NULL,X=NULL,iK=NULL,Iter=150,Burn=50,Thin=1,DF=5,S=0.5,nor=TRUE)
 }
@@ -79,7 +79,8 @@ Xavier, A., Hall, B., Casteel, S., Muir, W. and Rainey, K.M. (2017). Using unsup
 Alencar Xavier
 }
 \examples{
-
+\dontrun{
+      
 data(tpod)
 
 # Fitting GBLUP
@@ -115,7 +116,7 @@ plot(test2,col=3,lwd=2)
 # Heritability
 print(paste('h2 =',round(test2$VC.estimate[1]/sum(test2$VC.estimate),3)))
 
-
+}
 }
 \keyword{ BLUP }
 \keyword{ BGS }

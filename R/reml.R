@@ -282,9 +282,11 @@ press = function(y, K, MaxIt=10){
   #
   FIT = mu+fit
   OUT = list(hat=FIT, lambda=LMB, press=PRESS)
-  return(OUT)}
+  return(OUT)
+}
 
-emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE, llo=NULL){
+                 
+emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE, llo=NULL, tbv=NULL){
   folds = function(Seed, y, gen, k) {
     N = nrow(gen)
     set.seed(Seed)
@@ -299,15 +301,18 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
     f5 = emBA(y[-w], gen[-w, ], R2 = R2, df = df)
     f6 = emBB(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f7 = emBC(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
-    f8 = emML(y[-w], gen[-w, ])
     f9 = emMX(y[-w], gen[-w, ], R2 = R2)
     cat("DONE WITH CROSS-VALIDATION CYCLE", Seed, "\n")
     NamesMod = c("emRR", "emEN", "emBL", "emDE", "emBA", 
-                 "emBB", "emBC", "emML", "emMX", "OBSERVATION")
+                 "emBB", "emBC", "emML", "OBSERVATION")
     M = matrix(NA, Nk, length(NamesMod))
     colnames(M) = NamesMod
     for (i in 1:(length(NamesMod)-1)) M[, i] = gen[w, ] %*% get(paste("f", i,sep = ""))$b
-    M[,length(NamesMod)] = Y[w]
+    if(is.null(tbv)){
+      M[,length(NamesMod)] = Y[w]
+    }else{
+      M[,length(NamesMod)] = tbv[w]
+    }
     return(M)
   }
   llo_folds = function(lev, y, gen) {
@@ -323,14 +328,17 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
     f6 = emBB(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f7 = emBC(y[-w], gen[-w, ], Pi = Pi, R2 = R2, df = df)
     f8 = emML(y[-w], gen[-w, ])
-    f9 = emMX(y[-w], gen[-w, ], R2 = R2)
     cat("DONE WITH CROSS-VALIDATION CYCLE", lev, "\n")
     NamesMod = c("emRR", "emEN", "emBL", "emDE", "emBA", 
-                 "emBB", "emBC", "emML", "emMX", "OBSERVATION")
+                 "emBB", "emBC", "emML", "OBSERVATION")
     M = matrix(NA, Nk, length(NamesMod))
     colnames(M) = NamesMod
     for (i in 1:(length(NamesMod)-1)) M[, i] = gen[w, ] %*% get(paste("f", i,sep = ""))$b
-    M[,length(NamesMod)] = Y[w]
+    if(is.null(tbv)){
+      M[,length(NamesMod)] = Y[w]
+    }else{
+      M[,length(NamesMod)] = tbv[w]
+    }
     return(M)
   }
   if(is.null(llo)){
@@ -347,7 +355,7 @@ emCV = function (y, gen, k=5, n=5, Pi=0.75, alpha=0.02, df=10, R2=0.5, avg=TRUE,
     if(avg){
       dta = matrix(0, 0, m)
       for (i in 1:n) dta = rbind(dta, cv[[i]])
-      PA = sort(cor(dta)[-m, m], decreasing = TRUE)
+      PA = sort(cor(dta,use='p')[-m, m], decreasing = TRUE)
       return(round(PA, digits = 4))
     }else{
       dta = c()
