@@ -1,4 +1,4 @@
-bb3e97dd357a4bb458210330e301946f *DESCRIPTION
+cb9c4cc96363b0169f14663e0ae2e0d3 *DESCRIPTION
 024fc38fc1f2a1a7626dc578e2c4a7f7 *NAMESPACE
 5c939fcab34c1a94831ac82ed61f5cd9 *R/RcppExports.R
 8990a8bc6255464c95b76847e9c36a82 *R/gibbs.R
@@ -23,17 +23,17 @@ ea73b5e81d5a8b0c8ccaf3c5cbcc0221 *inst/add/gwasPAR.R
 3e734ec62a63d3dfaa829351c18095d7 *inst/add/sparseGMM.R
 72efc944737d8e88b11a8e52d5b9c987 *inst/add/wgrMIXED.R
 129eaf85297bb148933c338c1909f1d4 *inst/doc/background_stat_gen.pdf
-fc73ddb9a87b17d5535cfcdd5fc87883 *inst/doc/gwa_description.pdf
+cc3464030c35d87ec0e9c9a74fdf09a6 *inst/doc/gwa_description.pdf
 0ca72190616de24eaddcb8bab1790c60 *inst/doc/gwa_ge_interactions.pdf
 364a84f594b07a4cc1032d693bdb86c3 *inst/doc/vignette1.Rmd
-a5622b6c8db8b3fb822cbc1577bbb559 *inst/doc/vignette1.html
+7d4b63e5028e5d4eb0f05c9005f39b70 *inst/doc/vignette1.html
 f58110637989cfff1e897991e81a9a89 *inst/doc/vignette2.R
 5650c863b87fb0e903417f3be2ccb64b *inst/doc/vignette2.Rmd
-86e31d95a2a7380ba7f58592b78f63ff *inst/doc/vignette2.html
+0e822a872104fbd2f47420f8c5783712 *inst/doc/vignette2.html
 11c3c8c90c480f2fd4dc9cdfce96e8a9 *man/Fst.Rd
 5d781d6fd3214104d0ce224dbabc2064 *man/Internals.Rd
 199388c19191f1c8523731ce83d1be78 *man/Manhattan.Rd
-869c9c00d7a41f4492db948a528bf2db *man/NAM-package.Rd
+bc479e796763716fc5a81e4958c0ebcb *man/NAM-package.Rd
 8a9b5fa254723e8b35ad9f46a48e903d *man/gibbs.Rd
 816117119d72fe17e687a13992710018 *man/gmm.Rd
 5b3205f178926c51ac6d5faffcc954af *man/gwas.Rd
@@ -43,7 +43,7 @@ f58110637989cfff1e897991e81a9a89 *inst/doc/vignette2.R
 8683b8b2738779333d8b3af088f73a31 *man/snpQC.Rd
 bfba89817b0e3f316bbd29aa8d8f8eaa *man/tpod.Rd
 e6cc078301292fa22c99cf02f208ee99 *man/wgr.Rd
-4ff9378c8a87b5d563e2866da46c0df2 *src/Functions.cpp
+359b503c321a1f61ead9761e68f3f3e7 *src/Functions.cpp
 f7b47dd45bb46fc3b848450508c867b8 *src/RcppExports.cpp
 7c22b1b500cab25872924e218f1645f5 *src/c.c
 364a84f594b07a4cc1032d693bdb86c3 *vignettes/vignette1.Rmd
