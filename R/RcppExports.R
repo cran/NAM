@@ -133,3 +133,11 @@ mrr <- function(Y, X) {
     .Call(`_NAM_mrr`, Y, X)
 }
 
+mrrV2 <- function(Y, X) {
+    .Call(`_NAM_mrrV2`, Y, X)
+}
+
+mrr2X <- function(Y, X1, X2) {
+    .Call(`_NAM_mrr2X`, Y, X1, X2)
+}
+

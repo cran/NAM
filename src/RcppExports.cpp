@@ -466,6 +466,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// mrrV2
+SEXP mrrV2(NumericMatrix Y, NumericMatrix X);
+RcppExport SEXP _NAM_mrrV2(SEXP YSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(mrrV2(Y, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mrr2X
+SEXP mrr2X(NumericMatrix Y, NumericMatrix X1, NumericMatrix X2);
+RcppExport SEXP _NAM_mrr2X(SEXP YSEXP, SEXP X1SEXP, SEXP X2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X1(X1SEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X2(X2SEXP);
+    rcpp_result_gen = Rcpp::wrap(mrr2X(Y, X1, X2));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_NAM_emBA", (DL_FUNC) &_NAM_emBA, 4},
@@ -501,6 +526,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_NAM_BCpi", (DL_FUNC) &_NAM_BCpi, 6},
     {"_NAM_emML2", (DL_FUNC) &_NAM_emML2, 5},
     {"_NAM_mrr", (DL_FUNC) &_NAM_mrr, 2},
+    {"_NAM_mrrV2", (DL_FUNC) &_NAM_mrrV2, 2},
+    {"_NAM_mrr2X", (DL_FUNC) &_NAM_mrr2X, 3},
     {NULL, NULL, 0}
 };
 
