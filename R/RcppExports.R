@@ -13,6 +13,10 @@ emBC <- function(y, gen, df = 10, R2 = 0.5, Pi = 0.75) {
     .Call(`_NAM_emBC`, y, gen, df, R2, Pi)
 }
 
+emBD <- function(y, gen, df = 10, R2 = 0.5) {
+    .Call(`_NAM_emBD`, y, gen, df, R2)
+}
+
 emRR <- function(y, gen, df = 10, R2 = 0.5) {
     .Call(`_NAM_emRR`, y, gen, df, R2)
 }
@@ -139,5 +143,17 @@ mrrV2 <- function(Y, X) {
 
 mrr2X <- function(Y, X1, X2) {
     .Call(`_NAM_mrr2X`, Y, X1, X2)
+}
+
+mkr <- function(Y, K) {
+    .Call(`_NAM_mkr`, Y, K)
+}
+
+mkr2X <- function(Y, K1, K2) {
+    .Call(`_NAM_mkr2X`, Y, K1, K2)
+}
+
+mrrFast <- function(Y, X) {
+    .Call(`_NAM_mrrFast`, Y, X)
 }
 
